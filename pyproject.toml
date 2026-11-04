@@ -70,10 +70,6 @@ include = ["/mvp_community", "/README.md", "/LICENSE"]
 # pytest, pytest-django, pytest-xdist, factory-boy, coverage and django-stubs.
 dev = [
     "mvp-shared[dev,test]",
-    # Some guarantees can only be measured in a real browser: a resolved height,
-    # a computed colour, an element that moves when the window does. Rendered
-    # markup cannot answer any of them.
-    "pytest-playwright>=0.5",
 ]
 
 [tool.uv.sources]
@@ -135,7 +131,7 @@ extension = "html"
 [tool.ruff]
 extend = "ruff-base.toml"
 
-[tool.ruff.lint.per-file-ignores]
+[tool.ruff.lint.extend-per-file-ignores]
 "tests/*" = ["S101", "S105", "S106", "B017", "A001", "RUF059"]
 # The demo project is a demonstration target, never deployed: its settings
 # carry a literal SECRET_KEY on purpose.

@@ -645,7 +645,6 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "mvp-shared", extra = ["dev", "test"] },
-    { name = "pytest-playwright" },
 ]
 
 [package.metadata]
@@ -656,10 +655,7 @@ requires-dist = [
 provides-extras = ["notifications", "mail", "activity", "sharecards"]
 
 [package.metadata.requires-dev]
-dev = [
-    { name = "mvp-shared", extras = ["dev", "test"], git = "https://github.com/django-mvp/shared.git?tag=v0.6.0" },
-    { name = "pytest-playwright", specifier = ">=0.5" },
-]
+dev = [{ name = "mvp-shared", extras = ["dev", "test"], git = "https://github.com/django-mvp/shared.git?tag=v0.6.0" }]
 
 [[package]]
 name = "django-mvp-forms"

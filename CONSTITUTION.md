@@ -57,6 +57,8 @@ A public API change ships its documentation in the same pull request: README
 and CHANGELOG updated. Docstrings, component annotations and code comments
 follow
 [`docs/contributing/standards/code-documentation.md`](docs/contributing/standards/code-documentation.md).
+The pages under `docs/` follow
+[`docs/contributing/standards/documentation.md`](docs/contributing/standards/documentation.md).
 If the repository builds documentation, it builds clean. The README is written
 for someone deciding whether to install this, and its links are absolute so
 they resolve on the package index as well as on the repository page.
@@ -147,31 +149,49 @@ hierarchy built for a second implementation that does not exist.
 
 ## Project articles
 
-<!--
-  Articles XI onward are this package's own. They hold the rules that are
-  specific to what it does — the ones a reviewer would otherwise have to infer
-  from the code.
-
-  Write one when a decision would otherwise be re-argued on every pull request.
-  A rule belongs here if breaking it should block a merge. Anything softer is a
-  convention for the README, and anything that was a one-time choice is a
-  decision record under docs/adr/.
-
-  Two examples of the shape, to be replaced:
--->
-
 ### Article XI — Compatibility
 
 The public API is semver-stable. A deprecation lives one minor version with a
-warning before it is removed, and the CHANGELOG says what replaces it.
+warning before it is removed, and the CHANGELOG says what replaces it. The
+public API includes every component tag, template name and setting, since a host
+project overrides templates by name.
 
 ### Article XII — Scope
 
-<!--
-  What this package refuses to do, and why. This is the article that stops
-  scope creep arriving one reasonable-sounding pull request at a time. Name the
-  neighbouring concern that is deliberately somebody else's.
--->
+This package presents the work of established packages and adds none of its
+own. It has no models and no migrations. It does not decide who is notified,
+when, or how: the packages each extra is built on do. When a feature needs
+behaviour that no package provides, the first answer is a different package, and
+writing it here is the last.
+
+Deliberately somebody else's:
+
+- **Real-time delivery.** No websockets or server-sent events. Counts refresh by
+  polling.
+- **Native phone push.** Web push to browsers and installed web apps only.
+- **Sending mail.** Mail leaves through whichever provider django-anymail is
+  configured for.
+- **Forums.**
+
+### Article XIII — Extras and integration modules
+
+Every feature is an extra. The base install depends on django-mvp and nothing
+else, and importing `mvp_community` never imports a package that belongs to an
+extra. Code that does import one lives in that extra's integration module, and
+a host project imports it when it uses the extra. A test installs the package
+without any extra and imports everything outside the integration modules.
+
+Everything stays in the one app, `mvp_community`, until a need forces a second
+one. Wanting a feature to be separate is not that need: the extra already
+separates it.
+
+### Article XIV — Templates before code
+
+A feature here is templates first. Python is written only for the wiring
+between packages, or where a template cannot do the job. When a host project
+needs different behaviour, the supported route is overriding a template or a
+component, so templates are named and structured to be overridden one at a
+time.
 
 ## Quality bar
 
