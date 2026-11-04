@@ -1,35 +1,9 @@
 # Roadmap — django-mvp-community
 
-<!--
-  The order the work happens in, and what each release is gated on.
+**Date:** 2026-11-04
 
-  This file is written against GOALS.md and is the only place a release plan
-  lives. It holds briefs, not specifications: each item says what a person gets
-  and why it comes when it does, in enough detail that someone could pick it up
-  and write the specification without asking what was meant.
-
-  Rules:
-  - Items are R1, R2, R3 …, assigned once and never reused. They are cited from
-    issues and pull requests.
-  - Each item names the goals it advances, by ID.
-  - Group items under the release they are gated on, not under a date. This
-    package has no delivery dates and inventing them would only make the file
-    wrong.
-  - Status is derived from the item's issues, not asserted here. An item is
-    delivered when its issues are closed; saying so twice creates two answers
-    that drift.
-  - An item that is no longer wanted is rewritten or deleted, not struck
-    through. Git already records what it said.
-  - Write in plain language, for a reader who has not seen the code. An item
-    titled after a module name tells them nothing.
-
-  The versioning table below is the standard and applies as written. Replace
-  everything under it.
--->
-
-This document is designed against [GOALS.md](../GOALS.md). See also
-[CONTEXT.md](../CONTEXT.md) for vocabulary and
-[CONSTITUTION.md](../CONSTITUTION.md) for the standards every change is held to.
+This document was designed against [GOALS.md](../GOALS.md). See also [CONTEXT.md](../CONTEXT.md)
+for domain terminology and [CONSTITUTION.md](../CONSTITUTION.md) for project standards.
 
 ## Versioning
 
@@ -44,25 +18,123 @@ Releases are gated on goal importance, not on a count of features.
 | `1.x` | Stable line: fixes and additive features only |
 | `2.0` | The next major, where breaking changes go |
 
-A goal is not one minor release: some take several, and one release can move
-two. Once `1.0` ships, a breaking change never goes out as `1.x` — it waits for
-the next major.
+A goal is not one minor: some take several releases, and one release can move two. Once `1.0`
+ships, a breaking change never goes out as `1.x` — it waits for the next major.
+
+*Aspirational goals may be developed against v2 or v1 as required.*
 
 ## Essential goals: v0.1.0
 
 Everything needed to reach a minimum usable release.
 
-### R1 — <what a person gets, in plain language>
+### R1 — Features install one at a time
 
-*advances G1*
+*feature · advances G2, G3*
 
-<!--
-  Two or three paragraphs. What exists afterwards that did not before, what it
-  is for, and what it deliberately does not cover. Name the alternative that
-  was considered and set aside, if there was one — that is the part a reader
-  cannot reconstruct.
--->
+Every later item arrives as an extra, so the way an extra is installed, switched on and kept out
+of a project that does not use it comes first. A project installs the package with no extras and
+gets nothing it did not ask for, then names the extras it wants at install time.
+
+**Deliverables:**
+- Installing the package without any extra imports nothing that belongs to an extra.
+- Installing an extra brings exactly the packages that feature is built on.
+- A host project switches an extra's pages and menu entries on by installing it and including
+  its URLs, with no further configuration where a sensible default exists.
+- Documentation of how to install each extra and how to override any template the package ships.
+
+Serves G2 and G3. Out of scope: any feature itself.
+
+### R2 — Email that looks like the application
+
+*feature · advances G4*
+
+Notifications, digests and reminders all reach people by email, so branded, translated email is
+the base the notification items build on. It builds on django-mvp's own base email layout, so the
+project's other mail and this package's mail look the same.
+
+**Deliverables:**
+- Email the host project sends through the mail extra carries the project's look and is sent in
+  the recipient's language.
+- Email templates can be edited and translated per language without a code change.
+- Every non-essential email can be unsubscribed from in one click, from the email itself.
+- Staff can see what was sent, to whom, and whether it was delivered.
+
+Serves G4. Out of scope: choosing or running a mail provider, and campaign or newsletter tools.
+
+### R3 — Notifications on the site
+
+*feature · advances G1, G3*
+
+The bell, the unread count and the notifications page are the package's first reason to exist.
+A person sees what happened, marks it read, and chooses which kinds of notification they want.
+
+**Deliverables:**
+- A bell in the application shell showing the person's unread count, kept current without a page
+  reload.
+- A notifications page listing a person's notifications, newest first, with read and unread
+  states and a way to mark all read.
+- A notification preferences page in the Account Center where a person turns each notification
+  type and channel on or off.
+- Every page and component above can be replaced by overriding one template.
+
+Serves G1 and G3. Out of scope: deciding when a notification is sent, which belongs to the host
+project.
+
+### R4 — Notifications by email, and digests
+
+*feature · advances G1, G4*
+
+Joins the two previous items: a notification a person chose to receive by email arrives as
+email, and someone who prefers fewer emails gets a daily or weekly digest instead.
+
+**Deliverables:**
+- Email as a notification channel, honouring each person's preferences.
+- A daily and a weekly digest a person can choose instead of one email per notification.
+- Digest and notification emails carry the one-click unsubscribe from R2.
+
+Serves G1 and G4. Out of scope: push and reminders.
 
 ## Expected goals: v1.0.0
 
-<!-- Items gated on the complete release. Same shape. -->
+What a complete, dependable version is expected to have.
+
+### R5 — Web push
+
+*feature · advances G5*
+
+Notifications reach a person's browser or installed web app as push, through the same
+preferences. Includes the subscribe and unsubscribe controls, and the explanation people need
+before a phone will accept push from a web app.
+
+### R6 — Reminders on a person's own schedule
+
+*feature · advances G6*
+
+A person chooses when to be reminded, such as weekdays at 7pm, and the reminder arrives then in
+their timezone, through the channels they chose. Needs R3 to R5.
+
+### R7 — Activity feeds and following
+
+*feature · advances G7*
+
+A project shows what happened as a feed, and a person follows other people and objects to see
+their activity. Includes the follow control, the feed component and a "following" page in the
+Account Center.
+
+## Aspirational goals: v2.0
+
+Genuine wants whose absence never makes the package incomplete.
+
+### R8 — Share images for shared links
+
+*feature · advances G8*
+
+A link to a page shows a generated preview image of that page when shared, made in the
+background and kept until the page changes.
+
+### R9 — Comments
+
+*feature · advances G9*
+
+People comment on any page or object, with replies, reporting and reactions. Waits until the
+package it would build on has a stable release line.
