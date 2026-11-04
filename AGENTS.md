@@ -10,8 +10,11 @@ templates, components, menu entries, Account Center pages and settings around
 them, plus the few helpers that connect one package to another.
 
 No models, no logic of its own, no migrations. Code that imports an extra's
-packages lives in that extra's integration module and nowhere else, so the base
-install imports nothing it may not have. Most changes here are templates.
+packages lives in that extra's integration module,
+`mvp_community.integrations.<extra>`, and nowhere else, so the base install
+imports nothing it may not have. `tests/test_smoke.py` imports every other
+module with each extra's packages blocked, and fails on one that reaches for
+them. Most changes here are templates.
 
 ## Stack and commands
 

@@ -29,20 +29,15 @@ Everything needed to reach a minimum usable release.
 
 ### R1 — Features install one at a time
 
-*feature · advances G2, G3*
+*delivered in [#5](https://github.com/django-mvp/django-mvp-community/issues/5) · advances G2, G3*
 
-Every later item arrives as an extra, so the way an extra is installed, switched on and kept out
-of a project that does not use it comes first. A project installs the package with no extras and
-gets nothing it did not ask for, then names the extras it wants at install time.
+The base install depends on Django and django-mvp alone, and code that imports an extra's
+packages lives only in `mvp_community.integrations.<extra>`. A test imports every other module
+with each extra's packages blocked, so a module that reaches for one fails the suite even where
+the extra is installed. The README covers installing an extra and overriding any template by
+name. Each extra's packages, pages and URLs arrive with the item that builds its feature.
 
-**Deliverables:**
-- Installing the package without any extra imports nothing that belongs to an extra.
-- Installing an extra brings exactly the packages that feature is built on.
-- A host project switches an extra's pages and menu entries on by installing it and including
-  its URLs, with no further configuration where a sensible default exists.
-- Documentation of how to install each extra and how to override any template the package ships.
-
-Serves G2 and G3. Out of scope: any feature itself.
+Serves G2 and G3.
 
 ### R2 — Email that looks like the application
 
