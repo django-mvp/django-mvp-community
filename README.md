@@ -5,9 +5,11 @@
 [![Publish](https://github.com/django-mvp/django-mvp-community/actions/workflows/publish.yml/badge.svg)](https://github.com/django-mvp/django-mvp-community/actions/workflows/publish.yml)
 [![codecov](https://codecov.io/gh/django-mvp/django-mvp-community/branch/main/graph/badge.svg)](https://codecov.io/gh/django-mvp/django-mvp-community)
 [![PyPI](https://img.shields.io/pypi/v/django-mvp-community)](https://pypi.org/project/django-mvp-community/)
+[![Development status](https://img.shields.io/pypi/status/django-mvp-community)](https://pypi.org/project/django-mvp-community/)
 [![Python](https://img.shields.io/pypi/pyversions/django-mvp-community)](https://pypi.org/project/django-mvp-community/)
 [![Django](https://img.shields.io/pypi/djversions/django-mvp-community)](https://pypi.org/project/django-mvp-community/)
 [![License](https://img.shields.io/github/license/django-mvp/django-mvp-community)](https://github.com/django-mvp/django-mvp-community/blob/main/LICENSE)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 Notifications, mail and activity pages for django-mvp projects, built on established Django packages
 

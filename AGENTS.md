@@ -1,28 +1,17 @@
 # AGENTS.md — Agent configuration for django-mvp-community
 
-<!--
-  A thin index, not a manual. Anything long enough to skim past is long enough
-  to be ignored, and an ignored instruction is worse than an absent one: it
-  reads as covered.
-
-  Keep to what someone cannot work out from the code in a minute — the commands
-  that actually run here, the conventions that fail quietly, and pointers to
-  the files that hold the detail. Everything with its own home stays in that
-  home: standards in CONSTITUTION.md, vocabulary in CONTEXT.md, decisions in
-  docs/adr/.
-
-  Rewrite the paragraph below to say what this package is and, just as
-  usefully, what it is not. Use the words CONTEXT.md defines.
--->
-
 Notifications, mail and activity pages for django-mvp projects, built on established Django packages
 
-<!--
-  Then a short paragraph on the shape of the package. The most useful sentence
-  is usually the one ruling something out — "presentation only: no models, no
-  views, no URLs, no migrations" tells a reader more than a list of what is
-  there, which they can see.
--->
+Each extra is built on established Django packages: notifications, push
+and reminders on django-generic-notifications, django-push-notifications and
+django-celery-beat, mail on django-post-office and django-anymail, activity on
+django-activity-stream, and share cards on Playwright. This package supplies the
+templates, components, menu entries, Account Center pages and settings around
+them, plus the few helpers that connect one package to another.
+
+No models, no logic of its own, no migrations. Code that imports an extra's
+packages lives in that extra's integration module and nowhere else, so the base
+install imports nothing it may not have. Most changes here are templates.
 
 ## Stack and commands
 
@@ -142,6 +131,8 @@ their status checks carry the calling job as a prefix. The required checks are:
 - `call-tests / Test Python 3.12, Django 6.0`
 - `call-tests / Test Python 3.13, Django 5.2`
 - `call-tests / Test Python 3.13, Django 6.0`
+- `call-tests / Test Python 3.12, Django 6.1`
+- `call-tests / Test Python 3.13, Django 6.1`
 
 `tests.yml` and `build.yml` deliberately carry no `paths:` filter on
 `pull_request`. A required check that is filtered out never reports, and a
