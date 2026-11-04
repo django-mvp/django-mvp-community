@@ -86,6 +86,48 @@ This package requires [django-mvp](https://github.com/django-mvp/django-mvp).
 It renders inside django-mvp's layout and reads its colours from the theme
 django-mvp supplies, so it does nothing useful on its own.
 
+## Extras
+
+Each feature is an extra, installed by naming it:
+
+```bash
+pip install "django-mvp-community[notifications]"
+```
+
+The extras are `notifications`, `mail`, `activity` and `sharecards`. An extra
+brings the packages its feature is built on, and the base install depends on
+Django and django-mvp alone. Importing `mvp_community` never imports a package
+that belongs to an extra, so a project carries nothing for a feature it does
+not use.
+
+Code that needs an extra's packages lives in that extra's integration module,
+`mvp_community.integrations.<extra>`, and nowhere else in the package. A
+project switches an extra on by installing it and importing from that module.
+No feature has been built yet, so every extra is empty for now: installing one
+adds no packages, and there is no integration module to import.
+
+## Overriding a template
+
+Any template this package ships can be replaced on its own, without forking
+the package. A template's name is its path below `mvp_community/templates/`,
+and Django uses the first template it finds with that name. Put a file with the
+same name in the project's own template directory, the one listed in
+`TEMPLATES["DIRS"]`, and Django uses it instead of this package's. A template
+in an app listed above `mvp_community` in `INSTALLED_APPS` overrides it in the
+same way.
+
+Components follow the same rule. A component's tag is its path below
+`templates/cotton/`, so this file in the project replaces the component
+`<c-mvp_community.name>` everywhere it is used:
+
+```text
+templates/cotton/mvp_community/name.html
+```
+
+Template names are part of the public interface. Renaming one is a breaking
+change, made only after a release that warns about it, with the CHANGELOG
+naming what replaces it.
+
 ## Quickstart
 
 <!--
