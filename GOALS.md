@@ -1,53 +1,29 @@
 # Goals
 
-<!--
-  The standing directions this package works toward. Each row is a capability
-  or a quality to steer by, not a task that gets ticked off — "a chart is
-  usable by someone who cannot see it" is a goal; "add ARIA labels to the chart
-  component" is a task.
+These are the standing directions `django-mvp-community` works toward. Each one is a capability or
+quality to steer by, not a task that gets ticked off. Whether any goal has been served well enough
+is decided in the roadmap, the feature specs, and review, never by the goal itself.
 
-  How to tell them apart: a goal is still true after the work that served it is
-  merged. If finishing something makes the line meaningless, it belongs in the
-  roadmap.
-
-  Keep this short. Four to eight rows. A goal list nobody can hold in their
-  head is not steering anything.
-
-  Rules for the table:
-  - IDs are G1, G2, G3 …, assigned once and never reused. The roadmap cites
-    them, so renumbering silently breaks those references.
-  - Importance is a tag, not a ranking. Two goals can both be Essential.
-      Essential — not worth adopting the package without it.
-      Expected   — a complete, dependable version is expected to have it.
-    A third tier is almost always a way of avoiding the decision.
-  - Status and Notes stay empty until there is something true to put in them.
-    Whether a goal has been served well enough is decided in the roadmap and in
-    review, never in this file.
-  - Write each goal as an outcome for someone using the package, in their
-    words. Not "implement X", not a component name, not a module.
-
-  Replace the rows below.
--->
-
-These are the standing directions django-mvp-community works
-toward. Each one is a capability or quality to steer by, not a task that gets
-ticked off. Whether any goal has been served well enough is decided in the
-roadmap, in the specifications, and in review, never by the goal itself.
-
-This file carries no version numbers and no release plan; that lives in
-[the roadmap](docs/ROADMAP.md). For what the package is, what it stays out of,
-and the principles that settle a close call, read the *Scope & philosophy*
-section of the [README](README.md).
+This file carries no version numbers or release plan; that lives in the roadmap. For what the
+package is, what it stays out of, and the principles that settle a close call, read the
+*Scope & philosophy* section of the [README](README.md).
 
 Importance is a tag on each goal, not a ranking:
 
 - **Essential** — not worth adopting without it.
 - **Expected** — a complete, dependable version is expected to have it.
+- **Aspirational** — a genuine want whose absence never makes the package incomplete.
 
 | ID | Goal | Importance | Status | Notes |
 |----|------|------------|--------|-------|
-| G1 | | Essential | | |
-| G2 | | Essential | | |
-| G3 | | Expected | | |
+| G1 | A project's notifications look like the rest of its application: a bell with an unread count, a notifications page, and each person's notification preferences in the Account Center | Essential | | |
+| G2 | Each feature is installed on its own, and a project never carries the packages of a feature it does not use | Essential | | |
+| G3 | Any page or component can be changed by overriding one template, without forking the package | Essential | | |
+| G4 | Email from the project matches its look, is translated, can be gathered into a digest, and can be unsubscribed from in one click | Essential | | |
+| G5 | Notifications reach people by web push as well as on the site and by email, through the same preferences | Expected | | |
+| G6 | People get reminders on a schedule they choose, in their own timezone | Expected | | |
+| G7 | A project can show feeds of activity and let people follow other people and objects | Expected | | |
+| G8 | A shared link to a page shows a generated preview image of it | Aspirational | | |
+| G9 | People can comment on any page or object | Aspirational | | |
 
-_Revise as the goals change._
+_Written 2026-11-04. Revise as the goals change._
