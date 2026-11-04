@@ -1,0 +1,57 @@
+name: Publish
+
+# Publishes to PyPI when a release is published, or when a v* tag is pushed by
+# a user. Release creation itself belongs to the Tag Release workflow, and the
+# CHANGELOG section is written before release by Prepare Release.
+#
+# The filename matters: PyPI's trusted publisher is configured against a
+# specific workflow file, so renaming this one breaks publishing with an
+# invalid-publisher error until the PyPI project settings are updated to match.
+#
+# Note: a release or tag created by the Tag Release workflow with the default
+# GITHUB_TOKEN does not trigger this workflow. GitHub suppresses events raised
+# by its own Actions token to stop recursive runs. Set the RELEASE_TOKEN secret
+# (see the django-mvp/shared README, Release Flow) or run this manually.
+
+on:
+  push:
+    tags:
+      - "v*"
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  publish-pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    permissions:
+      # Mandatory for trusted publishing.
+      id-token: write
+      contents: read
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.2.0
+        with:
+          python-version: '3.13'
+
+      # --check fails when uv.lock is out of date with pyproject.toml, so a
+      # release never ships from a tree whose lockfile disagrees with it.
+      - name: Build package
+        run: |
+          uv lock --check
+          uv build
+
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Both triggers above fire for a single release, because creating a
+          # release also pushes its tag. Two jobs then build identical
+          # artifacts and race to upload, and the loser would otherwise fail
+          # with "400 File already exists". PyPI rejects a same-version
+          # re-upload regardless of this setting, so nothing is masked by
+          # making that case a no-op.
+          skip-existing: true

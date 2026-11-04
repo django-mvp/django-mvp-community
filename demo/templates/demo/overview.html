@@ -1,0 +1,27 @@
+{% extends "page_view.html" %}
+{% block page.content %}
+  <c-mvp.section title="What this is" icon="overview">
+    <c-mvp.text>
+      Notifications, mail and activity pages for django-mvp projects, built on established Django packages
+    </c-mvp.text>
+    <c-mvp.text>
+      This page is the demonstration project. It is not distributed with the package —
+      it exists so the package can be looked at in a browser while it is being written,
+      and so a reviewer has somewhere to see every state it can be in.
+    </c-mvp.text>
+  </c-mvp.section>
+
+  <c-mvp.section title="The starter component" icon="overview">
+    <c-mvp.text>
+      The package ships one component to prove the chain works end to end: the tag
+      resolves, the page renders it, and a test asserts it. Replace it with the first
+      real component and delete both the template and this section.
+    </c-mvp.text>
+
+    <c-mvp_community.example title="It renders">
+      <c-mvp.text>
+        Everything between the tags arrives as the component's slot.
+      </c-mvp.text>
+    </c-mvp_community.example>
+  </c-mvp.section>
+{% endblock page.content %}

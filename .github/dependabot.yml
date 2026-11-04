@@ -1,0 +1,62 @@
+# Dependabot configuration.
+#
+# The load-bearing choice is the grouping: one group per ecosystem matching
+# "*", so a cycle's updates arrive as a SINGLE pull request. That is what makes
+# auto-merge-dependabot.yml viable — one pull request, one set of checks,
+# merged when they pass. Partial grouping (a "django*" group, a "dev tools"
+# group, everything else loose) opens a pull request per package instead, and
+# they accumulate faster than anyone merges them.
+#
+# `reviewers:` is deliberately absent. GitHub removed that option on
+# 2025-08-08 because it overlapped with code owners, and repositories still
+# carrying it are being silently ignored. Use a CODEOWNERS file if review
+# assignment is wanted.
+#
+# There is no npm ecosystem here, because this package ships no build pipeline
+# of its own. Add one if that changes. Add a docker ecosystem only if a
+# Dockerfile exists — Dependabot does not read docker-compose.yml.
+version: 2
+updates:
+  # Python dependencies (uv.lock)
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    # mvp-shared is a git dependency pinned to a tag, and the same tag is
+    # pinned again in every workflow that calls django-mvp/shared. The two have
+    # to move together, which a Dependabot bump to pyproject.toml and uv.lock
+    # alone cannot do, so the tag is bumped by hand when a shared release lands.
+    ignore:
+      - dependency-name: "mvp-shared"
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      github-actions:
+        patterns:
+          - "*"

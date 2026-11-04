@@ -1,0 +1,26 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'mvp_community/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.pre-commit-config.yaml'
+      - 'ruff-base.toml'
+      - '.github/workflows/build.yml'
+  # No paths filter on pull_request: these checks are required by the branch
+  # ruleset, and a path-filtered required check never reports on an
+  # out-of-scope pull request, which blocks the merge.
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+jobs:
+  call-build:
+    uses: django-mvp/shared/.github/workflows/build.yml@v0.6.0
+    with:
+      source-dir: mvp_community
+    secrets: inherit

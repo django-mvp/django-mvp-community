@@ -1,0 +1,30 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'mvp_community/**'
+      - 'tests/**'
+      - 'demo/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/tests.yml'
+  # No paths filter on pull_request: these checks are required by the branch
+  # ruleset, and a path-filtered required check never reports on an
+  # out-of-scope pull request, which blocks the merge.
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+jobs:
+  call-tests:
+    uses: django-mvp/shared/.github/workflows/tests.yml@v0.6.0
+    with:
+      coverage-package: mvp_community
+      # Some of this package's guarantees can only be measured in a real
+      # browser. Without chromium those tests fail rather than skip, because a
+      # checks page cannot tell a skipped test from a passing one.
+      install-playwright: true
+    secrets: inherit

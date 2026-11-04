@@ -1,0 +1,21 @@
+# Coverage gating.
+#
+# 100% is brittle: it fails a pull request over a single defensive branch or an
+# unreachable guard. These are floors with headroom, not a ratchet.
+#   project — overall coverage floor for the package.
+#   patch   — coverage required of the lines changed in a pull request.
+# The 1% threshold absorbs rounding and small, justified dips.
+#
+# An organisation account refuses a tokenless upload, so this repository needs
+# its own CODECOV_TOKEN secret. Without one the upload step reports
+# "Token required because branch is protected" and no coverage is recorded.
+coverage:
+  status:
+    project:
+      default:
+        target: 90%
+        threshold: 1%
+    patch:
+      default:
+        target: 85%
+        threshold: 1%

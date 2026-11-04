@@ -1,0 +1,70 @@
+# Pre-commit configuration.
+#
+# The Python tools (ruff, mypy, deptry) run as *local* hooks through `uv run`,
+# so their versions come from the shared dev bundle — one version source for
+# every repository built this way, instead of per-repo `rev:` pins that drift
+# under autoupdate. `uv run <tool>` at a terminal behaves identically to the
+# hook.
+#
+# black and pyupgrade are deliberately absent: `ruff format` is a drop-in black
+# replacement, and ruff's UP rules cover pyupgrade.
+
+exclude: "^docs/|/migrations/"
+default_stages: [pre-commit]
+
+repos:
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+
+  # uv-lock rewrites uv.lock when pyproject.toml has moved on. The build
+  # workflow's `uv sync --locked` fails on a stale lockfile, so running this
+  # here means the lockfile is already correct by the time CI looks at it.
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.12.18
+    hooks:
+      - id: uv-lock
+
+  # Local hooks that use the project environment
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff (lint)
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+        require_serial: true
+      - id: ruff-format
+        name: ruff (format)
+        entry: uv run ruff format
+        language: system
+        types: [python]
+        require_serial: true
+      - id: mypy
+        name: mypy
+        entry: uv run mypy
+        language: system
+        # Without require_serial, pre-commit splits the file list into parallel
+        # batches, and concurrent mypy processes race on the shared .mypy_cache —
+        # INTERNAL ERROR on a cold cache. One serial invocation is also what
+        # mirrors-mypy ships.
+        require_serial: true
+        types: [python]
+        files: ^mvp_community/
+      - id: deptry
+        name: deptry
+        entry: uv run deptry .
+        language: system
+        pass_filenames: false
+        always_run: true
+
+# pre-commit.ci runs only the env-independent hooks; the local project-env hooks
+# run in each repo's own CI (the shared build workflow's Code Quality job).
+ci:
+  autoupdate_schedule: monthly
+  skip: [ruff, ruff-format, mypy, deptry]
+  submodules: false

@@ -1,0 +1,171 @@
+[project]
+name = "django-mvp-community"
+description = "Notifications, mail and activity pages for django-mvp projects, built on established Django packages"
+# Pre-viable. The first published release is 0.1.0, cut once the Essential
+# goals in GOALS.md are delivered; until then the version stays in 0.0.x and
+# nothing is uploaded to the package index.
+version = "0.0.1"
+authors = [
+    { name = "Samuel Jennings", email = "samuel.scott.jennings@gmail.com" },
+]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
+# django-mvp is a hard dependency rather than an integration: this package's
+# markup sits inside django-mvp's layout primitives and reads its colours from
+# the theme django-mvp supplies. Without it, whatever this renders arrives on
+# an unstyled page.
+dependencies = ["django>=5.2", "django-mvp>=0.28.1"]
+keywords = ["django", "django-mvp", "cotton"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 5.2",
+    "Framework :: Django :: 6.0",
+    "Framework :: Django :: 6.1",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+]
+
+# Each feature is an optional extra. A feature's dependencies are added to its
+# extra when the feature is built.
+[project.optional-dependencies]
+notifications = []
+mail = []
+activity = []
+sharecards = []
+
+[project.urls]
+Homepage = "https://github.com/django-mvp/django-mvp-community"
+Repository = "https://github.com/django-mvp/django-mvp-community"
+Issues = "https://github.com/django-mvp/django-mvp-community/issues"
+
+[tool.hatch.build.targets.wheel]
+# The demo project is deliberately absent: it is a place to look at this
+# package while it is being written, not something a consuming project should
+# receive.
+packages = ["mvp_community"]
+
+# Hatchling's default source distribution is the whole working tree: tests, the
+# demonstration project, documentation and CI configuration. Listing what ships
+# keeps it to the package, the readme and the licence. Hatchling adds
+# .gitignore itself, so that a build from the source distribution leaves out
+# what the repository does. The leading slashes anchor each entry to the
+# repository root, so `/README.md` does not also match `tests/README.md`.
+[tool.hatch.build.targets.sdist]
+include = ["/mvp_community", "/README.md", "/LICENSE"]
+
+# django-cotton is deliberately absent from the dependency list. django-mvp
+# pins it exactly, and a second constraint here could only ever fight that one.
+# This package has no say in which version a project runs.
+
+[dependency-groups]
+# Shared toolchain bundle, pinned to a release tag so every package built this
+# way runs one version of each tool. Ships ruff, mypy, deptry, pre-commit,
+# pytest, pytest-django, pytest-xdist, factory-boy, coverage and django-stubs.
+dev = [
+    "mvp-shared[dev,test]",
+    # Some guarantees can only be measured in a real browser: a resolved height,
+    # a computed colour, an element that moves when the window does. Rendered
+    # markup cannot answer any of them.
+    "pytest-playwright>=0.5",
+]
+
+[tool.uv.sources]
+mvp-shared = { git = "https://github.com/django-mvp/shared.git", tag = "v0.6.0" }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.settings"
+pythonpath = [".", "tests"]
+testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--tb=short",
+    "-ra",
+]
+# A browser test runs inside a greenlet with an event loop under it, and Django
+# refuses synchronous database work from an async context — so building the
+# test database for `live_server` raises before any page loads. The check
+# exists to stop application code calling the ORM from an async view, which is
+# not what is happening here: the only database work in this suite is the
+# harness building and tearing down its own test database.
+#
+# Scoping this to the browser tests was tried and does not work. pytest-django
+# sets the database up from an autouse fixture, which runs before any fixture a
+# test can ask for.
+env = ["DJANGO_ALLOW_ASYNC_UNSAFE=1"]
+
+[tool.coverage.report]
+skip_empty = true
+show_missing = true
+
+[tool.coverage.run]
+branch = true
+source = ["mvp_community"]
+
+[tool.djlint]
+profile = "django"
+indent = 2
+preserve_leading_space = true
+preserve_blank_lines = true
+format_attribute_template_tags = true
+format_css = true
+format_js = true
+max_line_length = 120
+max_attribute_length = 70
+include = "H006,H013,H020,H021,H023,H025,H030,H031"
+ignore = "H017"
+extension = "html"
+
+# Lint and format are both ruff's: it replaces black (formatting), isort (the I
+# rules) and pyupgrade (the UP rules), so those three do not appear here. The
+# shared rule set lives in ruff-base.toml, copied in rather than referenced
+# remotely — `extend` only accepts a local path.
+[tool.ruff]
+extend = "ruff-base.toml"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S105", "S106", "B017", "A001", "RUF059"]
+# The demo project is a demonstration target, never deployed: its settings
+# carry a literal SECRET_KEY on purpose.
+"demo/*" = ["S101", "S105", "S106"]
+
+[tool.mypy]
+files = ["mvp_community"]
+disallow_untyped_defs = "False"
+disallow_any_unimported = "False"
+ignore_missing_imports = "True"
+no_implicit_optional = "True"
+check_untyped_defs = "False"
+warn_return_any = "True"
+warn_unused_ignores = "True"
+show_error_codes = "True"
+exclude = ["docs/", "migrations/", "tests/settings.py"]
+mypy_path = "mvp_community/"
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "tests.settings"
+ignore_missing_model_attributes = "True"
+
+[tool.deptry]
+extend_exclude = ["tests/", "demo/", "docs/"]
+
+[tool.deptry.per_rule_ignores]
+# django-mvp is a real runtime dependency that no Python module here imports.
+# The dependency is at the template and theme level: this package's markup
+# renders inside django-mvp's layout and reads its colours from the theme
+# django-mvp supplies. Dropping it would leave every page unstyled while every
+# import still resolved.
+DEP002 = ["django-mvp"]

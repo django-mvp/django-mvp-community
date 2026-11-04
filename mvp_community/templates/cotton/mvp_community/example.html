@@ -1,0 +1,12 @@
+{# @description A starter component: a section with an optional heading. Replace it with the first real component. #}
+{# @prop title:text | description:"Heading drawn above the slot. None when empty." #}
+{# @slot Everything between the tags arrives as the component's slot. — The section's content. #}
+{# The directory name is the tag's first segment; renaming it breaks every tag silently. #}
+<c-vars title="" />
+
+<section {{ attrs }}>
+  {% if title %}
+    <h2 class="text-lg font-semibold">{{ title }}</h2>
+  {% endif %}
+  {{ slot }}
+</section>
