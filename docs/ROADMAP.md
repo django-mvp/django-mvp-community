@@ -110,7 +110,7 @@ their timezone, through the channels they chose. Needs R3 to R5.
 
 ### R7 — Activity feeds and following
 
-*feature · advances G7*
+*delivered in [#12](https://github.com/django-mvp/django-mvp-community/issues/12) · advances G7*
 
 A project shows what happened as a feed, and a person follows other people and objects to see
 their activity. Includes the follow control, the feed component and a "following" page in the
