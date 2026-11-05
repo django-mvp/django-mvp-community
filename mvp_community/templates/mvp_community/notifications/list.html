@@ -7,12 +7,8 @@
       <c-button size="sm" type="submit" only>{% trans "Mark all read" %}</c-button>
     </form>
   {% endif %}
-  <a href="{% url 'mvp_community_notifications:preferences' %}"
-     class="btn btn-ghost btn-sm btn-square"
-     title="{% trans "Notification preferences" %}">
-    <c-icon name="notifications.preferences" aria-hidden="true" only />
-    <span class="sr-only">{% trans "Notification preferences" %}</span>
-  </a>
+  {% url 'mvp_community_notifications:preferences' as preferences_url %}
+  <c-button href="{{ preferences_url }}" ghost square size="sm" icon="notifications.preferences" title="{% trans "Notification preferences" %}" aria-label="{% trans "Notification preferences" %}" only />
 {% endblock page.actions %}
 {% block page.content %}
   {% if page_obj.paginator.count %}
@@ -23,18 +19,13 @@
         {% endfor %}
       </c-list>
     </c-mvp.card>
-    {% if page_obj.has_other_pages %}
-      <div class="flex justify-center pt-4">
-        <c-mvp.pagination :page_obj="page_obj" page_window="1" show_first_and_last size="sm" label="{% trans "Notification pages" %}" />
-      </div>
-    {% endif %}
+    <c-mvp.page.list.footer :page_obj="page_obj" size="sm" />
   {% else %}
     <c-mvp.card only>
-      <div class="flex flex-col items-center gap-2 py-10 text-center">
-        <c-icon name="notifications" class="text-5xl text-base-content/40" aria-hidden="true" only />
-        <p class="font-semibold">{% trans "No notifications yet" %}</p>
-        <p class="text-sm text-base-content/70">{% trans "When something happens that concerns you, it appears here." %}</p>
-      </div>
+      <c-mvp.page.list.empty icon="notifications"
+                             heading="{% trans "No notifications yet" %}"
+                             message="{% trans "When something happens that concerns you, it appears here." %}"
+                             only />
     </c-mvp.card>
   {% endif %}
 {% endblock page.content %}

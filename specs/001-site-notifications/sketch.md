@@ -25,10 +25,10 @@
 - Every seeded notification links to the home page.
 - The bell is switched on by naming it in the demo's settings, and the icons `notifications` and `notifications.preferences` are registered in the demo's settings. A host project would have to do both.
 - The Account Center menu entry is registered from the demo's app config.
-- The context processor that gives the bell its first count is added in the demo's settings.
+- The context processor that gives the bell its first count, and `django.contrib.humanize` for the "2 hours ago" times, are added in the demo's settings.
 - "Send me a notification" on the overview page exists only so the bell's count can be watched rising.
 - The email column on the preferences page and the "System Message" row are the package's defaults, shown as they come.
 
 ## What was ruled by eye
 
-Nothing yet.
+- Every page is built from django-mvp and daisy-cotton components and the classes django-mvp's stylesheet already ships, with no styles of its own.

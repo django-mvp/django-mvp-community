@@ -68,7 +68,7 @@ class PreferencesView(LoginRequiredMixin, MVPTemplateView):
 
     template_name = "mvp_community/notifications/preferences.html"
     page_title = _("Notification preferences")
-    page_subtitle = _("Choose which notifications you receive, and where")
+    page_lead = _("Choose which notifications you receive, and where.")
     breadcrumbs = [{"text": _("Account Center")}, {"text": _("Notifications")}]
 
     def get_context_data(self, **kwargs):

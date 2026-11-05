@@ -10,13 +10,12 @@
       <form method="post">
         {% csrf_token %}
         <c-mvp.card tight only>
-          <div class="overflow-x-auto">
-            <table class="table">
+          <c-table aria-label="{% trans "Notification preferences" %}" only>
               <thead>
                 <tr>
                   <th scope="col">{% trans "Notification" %}</th>
                   {% for channel in channels %}
-                    <th scope="col" class="text-center w-24">{{ channel.name }}</th>
+                    <th scope="col" class="text-center">{{ channel.name }}</th>
                   {% endfor %}
                 </tr>
               </thead>
@@ -24,9 +23,9 @@
                 {% for row in preferences %}
                   <tr>
                     <th scope="row" class="font-normal">
-                      <span class="font-medium" id="type-{{ row.notification_type.key }}">{{ row.notification_type.name }}</span>
+                      <span class="font-medium">{{ row.notification_type.name }}</span>
                       {% if row.notification_type.description %}
-                        <p class="text-sm text-base-content/70">{{ row.notification_type.description }}</p>
+                        <c-mvp.text muted tight size="sm" :text="row.notification_type.description" only />
                       {% endif %}
                     </th>
                     {% for key, choice in row.channels.items %}
@@ -48,8 +47,7 @@
                   </tr>
                 {% endfor %}
               </tbody>
-            </table>
-          </div>
+          </c-table>
         </c-mvp.card>
         <div class="flex justify-end pt-4">
           <c-button variant="primary" type="submit" only>{% trans "Save" %}</c-button>
@@ -57,7 +55,7 @@
       </form>
     {% else %}
       <c-mvp.card only>
-        <p class="py-6 text-center text-base-content/70">{% trans "This site sends no notifications you can choose between." %}</p>
+        <c-mvp.page.list.empty icon="notifications" heading="{% trans "Nothing to choose" %}" message="{% trans "This site sends no notifications you can turn on or off." %}" only />
       </c-mvp.card>
     {% endif %}
   </c-mvp.page>

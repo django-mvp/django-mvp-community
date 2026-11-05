@@ -32,6 +32,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.sites",
+    # The notifications page says when each one arrived as "2 hours ago".
+    "django.contrib.humanize",
     "django.contrib.staticfiles",
     "mvp",
     # The components django-mvp's own templates are built from. Below "mvp",
