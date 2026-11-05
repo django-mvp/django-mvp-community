@@ -103,8 +103,12 @@ not use.
 Code that needs an extra's packages lives in that extra's integration module,
 `mvp_community.integrations.<extra>`, and nowhere else in the package. A
 project switches an extra on by installing it and importing from that module.
-No feature has been built yet, so every extra is empty for now: installing one
-adds no packages, and there is no integration module to import.
+
+The `notifications` extra is built and documented in
+[Notifications](https://github.com/django-mvp/django-mvp-community/blob/main/docs/developer/notifications.md):
+a bell in the header, a notifications page, and notification preferences in
+the Account Center. The other extras are empty for now: installing one adds no
+packages, and there is no integration module to import.
 
 ## Overriding a template
 

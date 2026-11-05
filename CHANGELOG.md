@@ -25,3 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - The package, generated and not yet doing anything.
+- The `notifications` extra: a bell in the header showing the signed-in
+  person's unread count, a notifications page with "Mark all read", and a
+  notification preferences page in the Account Center, all built on
+  django-generic-notifications. Install it with
+  `pip install "django-mvp-community[notifications]"`.
