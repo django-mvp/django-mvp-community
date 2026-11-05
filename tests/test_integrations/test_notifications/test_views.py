@@ -3,13 +3,16 @@
 import re
 
 from django.conf import settings
+from django.contrib.messages import SUCCESS, get_messages
 from django.db import connection
 from django.shortcuts import resolve_url
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from generic_notifications import send_notification
 from generic_notifications.channels import EmailChannel, WebsiteChannel
+from generic_notifications.preferences import get_notification_preferences
 from generic_notifications.registry import registry
+from generic_notifications.utils import get_unread_count
 
 from demo.notifications import NewFollower, ReplyReceived, SecurityNotice
 from mvp_community.integrations.notifications.views import PreferencesView
@@ -268,3 +271,70 @@ class TestPreferencesViewGet:
 
         title = re.search(r"<title>(.*?)</title>", page, re.S).group(1)
         assert str(PreferencesView.page_title) in title
+
+
+def current_choices(user) -> dict[str, str]:
+    """Return the form data that would save the person's choices unchanged."""
+    return {
+        f"{row['notification_type'].key}__{key}": "on"
+        for row in get_notification_preferences(user)
+        for key, choice in row["channels"].items()
+        if choice["enabled"] and not choice["required"]
+    }
+
+
+class TestPreferencesViewPost:
+    def test_signed_out_is_sent_to_sign_in(self, client, db) -> None:
+        response = client.post(PREFERENCES_URL, {})
+
+        assert response.status_code == 302
+        assert response["Location"].startswith(SIGN_IN_URL)
+
+    def test_a_type_turned_off_is_shown_off_and_every_other_choice_is_unchanged(
+        self, client, signed_in
+    ) -> None:
+        before = client.get(PREFERENCES_URL).content.decode()
+        data = current_choices(signed_in)
+        data.pop("reply_received__website")
+
+        client.post(PREFERENCES_URL, data)
+
+        after = client.get(PREFERENCES_URL).content.decode()
+        assert "checked" in toggle(before, "reply_received__website")
+        assert "checked" not in toggle(after, "reply_received__website")
+        unchanged = [name for name in data if name != "reply_received__website"]
+        assert unchanged
+        assert all(toggle(after, name) == toggle(before, name) for name in unchanged)
+
+    def test_a_notification_of_a_turned_off_type_never_reaches_the_person(
+        self, client, signed_in
+    ) -> None:
+        data = current_choices(signed_in)
+        data.pop("reply_received__website")
+        client.post(PREFERENCES_URL, data)
+
+        send_notification(
+            recipient=signed_in, notification_type=ReplyReceived, subject="Too late"
+        )
+
+        assert list(client.get(LIST_URL).context["page_obj"]) == []
+        assert get_unread_count(signed_in) == 0
+
+    def test_one_already_received_stays_listed_after_its_type_is_turned_off(
+        self, client, signed_in, notification
+    ) -> None:
+        data = current_choices(signed_in)
+        data.pop("reply_received__website")
+
+        client.post(PREFERENCES_URL, data)
+
+        assert list(client.get(LIST_URL).context["page_obj"]) == [notification]
+
+    def test_saving_adds_a_success_message_and_goes_back_to_the_page(
+        self, client, signed_in
+    ) -> None:
+        response = client.post(PREFERENCES_URL, current_choices(signed_in))
+
+        assert response.status_code == 302
+        assert response["Location"] == PREFERENCES_URL
+        assert [m.level for m in get_messages(response.wsgi_request)] == [SUCCESS]

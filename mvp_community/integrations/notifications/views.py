@@ -1,5 +1,6 @@
 """The notifications page, the bell's refresh and the preferences page."""
 
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -7,7 +8,10 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from generic_notifications.models import Notification
-from generic_notifications.preferences import get_notification_preferences
+from generic_notifications.preferences import (
+    get_notification_preferences,
+    save_notification_preferences,
+)
 from generic_notifications.registry import registry
 from generic_notifications.utils import get_notifications
 from mvp.views import MVPListView, MVPTemplateView
@@ -100,3 +104,17 @@ class PreferencesView(LoginRequiredMixin, MVPTemplateView):
         context["preferences"] = get_notification_preferences(self.request.user)
         context["channels"] = registry.get_all_channels()
         return context
+
+    def post(self, request):
+        """Save the choices, say so, and come back to the page.
+
+        Args:
+            request: The POST request carrying one ``<type>__<channel>`` field
+                for each choice switched on.
+
+        Returns:
+            A redirect to the preferences page.
+        """
+        save_notification_preferences(request.user, request.POST)
+        messages.success(request, _("Your notification preferences are saved."))
+        return redirect("mvp_community_notifications:preferences")
