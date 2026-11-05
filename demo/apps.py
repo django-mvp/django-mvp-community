@@ -32,8 +32,8 @@ class DemoConfig(AppConfig):
     verbose_name = "Demo"
 
     def ready(self):
-        """Register the sidebar entries and the site-naming hook."""
-        from demo import menus  # noqa: F401
+        """Register the sidebar entries, the notification types and the site-naming hook."""
+        from demo import menus, notifications  # noqa: F401
 
         # Hung off the sites app: Django skips post_migrate for an app with no
         # models, and connecting before SiteConfig.ready() means this runs first.

@@ -57,3 +57,22 @@ class TestOverviewPageInABrowser:
         page.goto(live_server.url + reverse("overview"))
 
         assert errors == []
+
+
+class TestDemoNotificationTypes:
+    # The demo registers its types from DemoConfig.ready(), so a page that lists
+    # them has something to list.
+
+    @pytest.mark.parametrize(
+        "key", ["reply_received", "new_follower", "course_updated", "security_notice"]
+    )
+    def test_the_demo_registers_its_notification_types(self, key: str) -> None:
+        from generic_notifications.registry import registry
+
+        assert registry.get_type(key).key == key
+
+    def test_a_security_notice_is_always_sent_on_the_site(self) -> None:
+        from generic_notifications.channels import WebsiteChannel
+        from generic_notifications.registry import registry
+
+        assert WebsiteChannel in registry.get_type("security_notice").required_channels

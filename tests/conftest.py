@@ -7,6 +7,10 @@ from django import template as dj_template
 from django.template import Context
 from django.urls import reverse
 from django_cotton.compiler_regex import CottonCompiler
+from generic_notifications import send_notification
+
+from demo.notifications import NewFollower, ReplyReceived
+from tests.factories import UserFactory
 
 
 @pytest.fixture(scope="session")
@@ -45,3 +49,40 @@ def chromium():
                 pytrace=False,
             )
         pytest.skip(unavailable)
+
+
+@pytest.fixture
+def person(db):
+    return UserFactory()
+
+
+@pytest.fixture
+def signed_in(client, person):
+    client.force_login(person)
+    return person
+
+
+@pytest.fixture
+def notification(person):
+    return send_notification(
+        recipient=person,
+        notification_type=ReplyReceived,
+        subject="Anna replied",
+        text="Try the second exercise first.",
+        url="/elsewhere/",
+    )
+
+
+@pytest.fixture
+def make_notifications(person):
+    def make(count, recipient=None, notification_type=NewFollower):
+        return [
+            send_notification(
+                recipient=recipient or person,
+                notification_type=notification_type,
+                subject=f"Notification {index}",
+            )
+            for index in range(count)
+        ]
+
+    return make

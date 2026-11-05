@@ -24,12 +24,16 @@ CSRF_COOKIE_SECURE = False
 INSTALLED_APPS = [
     "demo",
     "mvp_community",
+    # The notifications extra: the package it is built on.
+    "generic_notifications",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.sites",
+    # The notifications page says when each one arrived as "2 hours ago".
+    "django.contrib.humanize",
     "django.contrib.staticfiles",
     "mvp",
     # The components django-mvp's own templates are built from. Below "mvp",
@@ -148,3 +152,7 @@ USE_I18N = True
 LANGUAGE_CODE = "en-us"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Notifications also go out by email. The demo prints them to the console
+# instead of reaching for a mail server it does not have.
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
