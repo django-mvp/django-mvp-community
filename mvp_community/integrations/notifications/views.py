@@ -7,8 +7,10 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from generic_notifications.models import Notification
+from generic_notifications.preferences import get_notification_preferences
+from generic_notifications.registry import registry
 from generic_notifications.utils import get_notifications
-from mvp.views import MVPListView
+from mvp.views import MVPListView, MVPTemplateView
 
 
 class NotificationListView(LoginRequiredMixin, MVPListView):
@@ -82,3 +84,19 @@ class BellView(View):
         if not request.user.is_authenticated:
             return HttpResponse(status=204)
         return render(request, "mvp_community/notifications/bell_partial.html")
+
+
+class PreferencesView(LoginRequiredMixin, MVPTemplateView):
+    """Which notification types reach the person on which channel."""
+
+    template_name = "mvp_community/notifications/preferences.html"
+    page_title = _("Notification preferences")
+    page_lead = _("Choose which notifications you receive, and where.")
+    breadcrumbs = [{"text": _("Account Center")}, {"text": _("Notifications")}]
+
+    def get_context_data(self, **kwargs):
+        """Add the types, the channels and the person's current choices."""
+        context = super().get_context_data(**kwargs)
+        context["preferences"] = get_notification_preferences(self.request.user)
+        context["channels"] = registry.get_all_channels()
+        return context

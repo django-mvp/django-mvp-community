@@ -1,5 +1,7 @@
 """The notifications extra's views, asserted as rendered through the demo."""
 
+import re
+
 from django.conf import settings
 from django.db import connection
 from django.shortcuts import resolve_url
@@ -7,8 +9,10 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from generic_notifications import send_notification
 from generic_notifications.channels import EmailChannel, WebsiteChannel
+from generic_notifications.registry import registry
 
-from demo.notifications import ReplyReceived
+from demo.notifications import NewFollower, ReplyReceived, SecurityNotice
+from mvp_community.integrations.notifications.views import PreferencesView
 
 SIGN_IN_URL = resolve_url(settings.LOGIN_URL)
 LIST_URL = reverse("mvp_community_notifications:list")
@@ -198,3 +202,69 @@ class TestBellView:
         response = client.get(self.BELL_URL)
 
         assert (response.status_code, response.content) == (204, b"")
+
+
+PREFERENCES_URL = reverse("mvp_community_notifications:preferences")
+
+
+def toggle(page: str, name: str) -> str:
+    """Return the opening tag of the control named ``name``, or an empty string."""
+    match = re.search(rf"<input[^>]*name=\"{re.escape(name)}\"[^>]*>", page)
+    return match.group(0) if match else ""
+
+
+class TestPreferencesViewGet:
+    def test_signed_out_is_sent_to_sign_in(self, client, db) -> None:
+        response = client.get(PREFERENCES_URL)
+
+        assert response.status_code == 302
+        assert response["Location"].startswith(SIGN_IN_URL)
+
+    def test_every_type_is_listed_against_every_channel_it_allows(
+        self, client, signed_in
+    ) -> None:
+        page = client.get(PREFERENCES_URL).content.decode()
+
+        names = {
+            f"{kind.key}__{channel.key}"
+            for kind in registry.get_all_types()
+            for channel in registry.get_all_channels()
+        }
+        assert names
+        assert all(toggle(page, name) for name in names)
+
+    def test_a_choice_is_drawn_as_the_person_made_it(self, client, signed_in) -> None:
+        NewFollower.disable_channel(signed_in, EmailChannel)
+        NewFollower.enable_channel(signed_in, WebsiteChannel)
+
+        page = client.get(PREFERENCES_URL).content.decode()
+
+        assert "checked" not in toggle(page, "new_follower__email")
+        assert "checked" in toggle(page, "new_follower__website")
+
+    def test_a_required_choice_is_drawn_on_and_disabled(
+        self, client, signed_in
+    ) -> None:
+        page = client.get(PREFERENCES_URL).content.decode()
+
+        required = toggle(page, f"{SecurityNotice.key}__{WebsiteChannel.key}")
+        assert "checked" in required
+        assert "disabled" in required
+
+    def test_with_no_types_registered_the_empty_state_is_drawn(
+        self, client, signed_in, monkeypatch
+    ) -> None:
+        monkeypatch.setattr(registry, "_type_classes", {})
+
+        page = client.get(PREFERENCES_URL).content.decode()
+
+        assert "mvp-list-empty" in page
+        assert toggle(page, "reply_received__website") == ""
+
+    def test_the_browser_title_carries_the_views_page_title(
+        self, client, signed_in
+    ) -> None:
+        page = client.get(PREFERENCES_URL).content.decode()
+
+        title = re.search(r"<title>(.*?)</title>", page, re.S).group(1)
+        assert str(PreferencesView.page_title) in title

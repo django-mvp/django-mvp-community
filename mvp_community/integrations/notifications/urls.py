@@ -15,4 +15,9 @@ urlpatterns = [
     path("notifications/read/", views.MarkAllReadView.as_view(), name="mark_all_read"),
     path("notifications/<int:pk>/", views.OpenNotificationView.as_view(), name="open"),
     path("notifications/bell/", views.BellView.as_view(), name="bell"),
+    path(
+        "account-center/notifications/",
+        views.PreferencesView.as_view(),
+        name="preferences",
+    ),
 ]
