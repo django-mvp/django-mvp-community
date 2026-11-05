@@ -1,0 +1,23 @@
+{# @description One notification as a list row: its subject and text, and when it arrived. An unread one carries a dot and a bold subject. A notification with a link opens it and is marked read on the way. #}
+{# @prop notification:text | description:"The notification to draw." #}
+{% load i18n humanize %}
+<c-vars notification />
+<c-list.row only>
+  {# Every row has the dot, so the text lines up; on a read one it is invisible. #}
+  <c-status variant="primary" class="mt-2{% if notification.is_read %} opacity-0{% endif %}" only />
+  <div class="list-col-grow min-w-0">
+    {% if not notification.is_read %}<span class="sr-only">{% trans "Unread:" %}</span>{% endif %}
+    {% if notification.url %}
+      <a href="{% url 'mvp_community_notifications:open' notification.pk %}"
+         class="link link-hover{% if not notification.is_read %} font-semibold{% endif %}">{{ notification.get_subject }}</a>
+    {% else %}
+      <span{% if not notification.is_read %} class="font-semibold"{% endif %}>{{ notification.get_subject }}</span>
+    {% endif %}
+    {% with text=notification.get_text %}
+      {% if text %}<c-mvp.text muted tight size="sm" class="break-words" :text="text" only />{% endif %}
+    {% endwith %}
+    <time class="text-xs text-base-content/60"
+          datetime="{{ notification.added|date:"c" }}"
+          title="{{ notification.added|date:"DATETIME_FORMAT" }}">{{ notification.added|naturaltime }}</time>
+  </div>
+</c-list.row>

@@ -58,7 +58,7 @@ Serves G4. Out of scope: choosing or running a mail provider, and campaign or ne
 
 ### R3 — Notifications on the site
 
-*feature · advances G1, G3*
+*delivered in [#7](https://github.com/django-mvp/django-mvp-community/issues/7) · advances G1, G3*
 
 The bell, the unread count and the notifications page are the package's first reason to exist.
 A person sees what happened, marks it read, and chooses which kinds of notification they want.

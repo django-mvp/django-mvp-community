@@ -72,15 +72,19 @@ here.
 pip install django-mvp-community
 ```
 
-Then add it to `INSTALLED_APPS`, after `mvp`:
+Then add it to `INSTALLED_APPS`, above `mvp`:
 
 ```python
 INSTALLED_APPS = [
     # ...
-    "mvp",
     "mvp_community",
+    "mvp",
 ]
 ```
+
+It goes above `mvp` because some of its templates extend django-mvp's templates of
+the same name, such as the Account Center's landing page. Django uses the first one
+it finds, so listed below `mvp` they are never used.
 
 This package requires [django-mvp](https://github.com/django-mvp/django-mvp).
 It renders inside django-mvp's layout and reads its colours from the theme
@@ -103,8 +107,12 @@ not use.
 Code that needs an extra's packages lives in that extra's integration module,
 `mvp_community.integrations.<extra>`, and nowhere else in the package. A
 project switches an extra on by installing it and importing from that module.
-No feature has been built yet, so every extra is empty for now: installing one
-adds no packages, and there is no integration module to import.
+
+The `notifications` extra is built and documented in
+[Notifications](https://github.com/django-mvp/django-mvp-community/blob/main/docs/developer/notifications.md):
+a bell in the header, a notifications page, and notification preferences in
+the Account Center. The other extras are empty for now: installing one adds no
+packages, and there is no integration module to import.
 
 ## Overriding a template
 

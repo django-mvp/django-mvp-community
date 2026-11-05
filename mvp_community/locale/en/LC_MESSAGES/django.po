@@ -1,0 +1,77 @@
+# English catalogue for django-mvp-community.
+# This file is distributed under the same license as the package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: django-mvp-community\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-05 09:02-0600\n"
+"PO-Revision-Date: 2026-11-05 00:00+0000\n"
+"Last-Translator: Samuel Jennings <samuel.scott.jennings@gmail.com>\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Community"
+msgstr ""
+
+msgid "Notifications"
+msgstr ""
+
+msgid "Notification preferences"
+msgstr ""
+
+msgid "Choose which notifications you receive, and where."
+msgstr ""
+
+msgid "Account Center"
+msgstr ""
+
+msgid "Your notification preferences are saved."
+msgstr ""
+
+#, python-format
+msgid "Notifications, %(counter)s unread"
+msgid_plural "Notifications, %(counter)s unread"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Unread:"
+msgstr ""
+
+msgid "Manage notifications"
+msgstr ""
+
+msgid "Mark all read"
+msgstr ""
+
+msgid "No notifications yet"
+msgstr ""
+
+msgid "When something happens that concerns you, it appears here."
+msgstr ""
+
+msgid "Notification"
+msgstr ""
+
+msgid "Not available"
+msgstr ""
+
+#, python-format
+msgid "%(type)s by %(channel)s"
+msgstr ""
+
+msgid "Always sent"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Nothing to choose"
+msgstr ""
+
+msgid "This site sends no notifications you can turn on or off."
+msgstr ""

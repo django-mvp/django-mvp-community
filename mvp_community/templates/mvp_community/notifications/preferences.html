@@ -1,0 +1,63 @@
+{% extends "mvp/account/base.html" %}
+{% load i18n %}
+{% block title %}{{ page.title }}{% endblock title %}
+{% block account.content %}
+  <c-mvp.page only>
+    <c-mvp.page.title :layout="page.title_layout" only>
+      <c-slot name="heading">{{ page.title_args.title }}</c-slot>
+      <c-slot name="lead">{{ page.title_args.lead }}</c-slot>
+    </c-mvp.page.title>
+    {% if preferences %}
+      <form method="post">
+        {% csrf_token %}
+        <c-mvp.card tight only>
+          <c-table aria-label="{% trans "Notification preferences" %}" only>
+              <thead>
+                <tr>
+                  <th scope="col">{% trans "Notification" %}</th>
+                  {% for channel in channels %}
+                    <th scope="col" class="text-center">{{ channel.name }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in preferences %}
+                  <tr>
+                    <th scope="row" class="font-normal">
+                      <span class="font-medium">{{ row.notification_type.name }}</span>
+                      {% if row.notification_type.description %}
+                        <c-mvp.text muted tight size="sm" :text="row.notification_type.description" only />
+                      {% endif %}
+                    </th>
+                    {% for key, choice in row.channels.items %}
+                      <td class="text-center">
+                        {% if choice.forbidden %}
+                          <span aria-hidden="true">—</span><span class="sr-only">{% trans "Not available" %}</span>
+                        {% else %}
+                          {% blocktrans asvar label with type=row.notification_type.name channel=choice.channel.name %}{{ type }} by {{ channel }}{% endblocktrans %}
+                          {% if choice.required %}
+                            <c-form.toggle name="{{ row.notification_type.key }}__{{ key }}" checked disabled size="sm" variant="primary" aria-label="{{ label }}" title="{% trans "Always sent" %}" only />
+                          {% elif choice.enabled %}
+                            <c-form.toggle name="{{ row.notification_type.key }}__{{ key }}" checked size="sm" variant="primary" aria-label="{{ label }}" only />
+                          {% else %}
+                            <c-form.toggle name="{{ row.notification_type.key }}__{{ key }}" size="sm" variant="primary" aria-label="{{ label }}" only />
+                          {% endif %}
+                        {% endif %}
+                      </td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+          </c-table>
+        </c-mvp.card>
+        <div class="flex justify-end pt-4">
+          <c-button variant="primary" type="submit" only>{% trans "Save" %}</c-button>
+        </div>
+      </form>
+    {% else %}
+      <c-mvp.card only>
+        <c-mvp.page.list.empty icon="notifications" heading="{% trans "Nothing to choose" %}" message="{% trans "This site sends no notifications you can turn on or off." %}" only />
+      </c-mvp.card>
+    {% endif %}
+  </c-mvp.page>
+{% endblock account.content %}

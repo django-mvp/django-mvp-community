@@ -1,0 +1,31 @@
+{% extends "page_view.html" %}
+{% load i18n %}
+{% block page.actions %}
+  {% if page_obj.paginator.count %}
+    <form method="post" action="{% url 'mvp_community_notifications:mark_all_read' %}">
+      {% csrf_token %}
+      <c-button size="sm" type="submit" only>{% trans "Mark all read" %}</c-button>
+    </form>
+  {% endif %}
+  {% url 'mvp_community_notifications:preferences' as preferences_url %}
+  <c-button href="{{ preferences_url }}" ghost square size="sm" icon="notifications.preferences" title="{% trans "Notification preferences" %}" aria-label="{% trans "Notification preferences" %}" only />
+{% endblock page.actions %}
+{% block page.content %}
+  {% if page_obj.paginator.count %}
+    <c-mvp.card tight only>
+      <c-list only>
+        {% for notification in page_obj %}
+          <c-mvp_community.notifications.item :notification="notification" only />
+        {% endfor %}
+      </c-list>
+    </c-mvp.card>
+    <c-mvp.page.list.footer :page_obj="page_obj" size="sm" />
+  {% else %}
+    <c-mvp.card only>
+      <c-mvp.page.list.empty icon="notifications"
+                             heading="{% trans "No notifications yet" %}"
+                             message="{% trans "When something happens that concerns you, it appears here." %}"
+                             only />
+    </c-mvp.card>
+  {% endif %}
+{% endblock page.content %}

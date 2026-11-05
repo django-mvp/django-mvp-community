@@ -1,0 +1,27 @@
+{# @description The bell in the shell's header: a link to the notifications page with the signed-in person's unread count, refreshed every minute. Draws nothing for a signed-out visitor. Name it in MVP_CONFIG layout.navbar.end as "mvp_community.notifications.bell". #}
+{% load i18n mvp_community_notifications %}
+{% if request.user.is_authenticated %}
+  {% notifications_unread_count as count %}
+    <div id="mvp-community-bell"
+         hx-get="{% url 'mvp_community_notifications:bell' %}"
+         hx-trigger="every 60s, notifications:changed from:body"
+         hx-swap="outerHTML">
+      {% url 'mvp_community_notifications:list' as list_url %}
+      <c-button href="{{ list_url }}" ghost square size="sm" title="{% trans "Notifications" %}" only>
+        {% if count %}
+          <c-indicator only>
+            <c-slot name="items">
+              <c-indicator.item class="badge badge-primary badge-xs" placement="top end" only>
+                <span aria-hidden="true">{% if count > 99 %}99+{% else %}{{ count }}{% endif %}</span>
+              </c-indicator.item>
+            </c-slot>
+            <c-icon name="notifications" aria-hidden="true" only />
+          </c-indicator>
+          <span class="sr-only">{% blocktrans count counter=count %}Notifications, {{ counter }} unread{% plural %}Notifications, {{ counter }} unread{% endblocktrans %}</span>
+        {% else %}
+          <c-icon name="notifications" aria-hidden="true" only />
+          <span class="sr-only">{% trans "Notifications" %}</span>
+        {% endif %}
+      </c-button>
+    </div>
+{% endif %}
