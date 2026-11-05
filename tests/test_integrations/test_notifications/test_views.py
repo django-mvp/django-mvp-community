@@ -176,3 +176,25 @@ class TestMarkAllReadView:
 
     def test_a_get_is_refused(self, client, signed_in) -> None:
         assert client.get(MARK_ALL_READ_URL).status_code == 405
+
+
+class TestBellView:
+    BELL_URL = reverse("mvp_community_notifications:bell")
+
+    def test_it_returns_the_bell_with_the_current_count(
+        self, client, signed_in, make_notifications
+    ) -> None:
+        make_notifications(4)
+
+        content = client.get(self.BELL_URL).content.decode()
+
+        assert 'id="mvp-community-bell"' in content
+        assert '<span aria-hidden="true">4</span>' in content
+
+    def test_it_returns_the_bell_alone_not_the_page(self, client, signed_in) -> None:
+        assert "<html" not in client.get(self.BELL_URL).content.decode()
+
+    def test_signed_out_gets_no_content_and_no_redirect(self, client, db) -> None:
+        response = client.get(self.BELL_URL)
+
+        assert (response.status_code, response.content) == (204, b"")

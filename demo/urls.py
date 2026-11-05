@@ -2,10 +2,15 @@
 
 from django.urls import include, path
 
-from demo.views import OverviewView
+from demo.views import OverviewView, SendNotificationView
 
 urlpatterns = [
     path("", OverviewView.as_view(), name="overview"),
+    path(
+        "send-notification/",
+        SendNotificationView.as_view(),
+        name="send_notification",
+    ),
     path("", include("mvp_community.integrations.notifications.urls")),
     # django-mvp's Account Center, with a development sign-in and sign-out
     # until an account app such as allauth is installed.

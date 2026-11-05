@@ -1,7 +1,7 @@
 {# @description The bell in the shell's header: a link to the notifications page with the signed-in person's unread count, refreshed every minute. Draws nothing for a signed-out visitor. Name it in MVP_CONFIG layout.navbar.end as "mvp_community.notifications.bell". #}
-{% load i18n %}
+{% load i18n mvp_community_notifications %}
 {% if request.user.is_authenticated %}
-  {% with count=notifications_unread|default:0 %}
+  {% notifications_unread_count as count %}
     <div id="mvp-community-bell"
          hx-get="{% url 'mvp_community_notifications:bell' %}"
          hx-trigger="every 60s, notifications:changed from:body"
@@ -24,5 +24,4 @@
         {% endif %}
       </c-button>
     </div>
-  {% endwith %}
 {% endif %}

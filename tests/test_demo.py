@@ -76,3 +76,59 @@ class TestDemoNotificationTypes:
         from generic_notifications.registry import registry
 
         assert WebsiteChannel in registry.get_type("security_notice").required_channels
+
+
+class TestBellInTheShell:
+    BELL = 'id="mvp-community-bell"'
+
+    def test_the_count_is_shown_to_a_person_with_unread_notifications(
+        self, client, signed_in, make_notifications
+    ) -> None:
+        make_notifications(3)
+
+        page = client.get(reverse("overview")).content.decode()
+
+        assert '<span aria-hidden="true">3</span>' in page
+
+    def test_no_count_is_shown_when_nothing_is_unread(self, client, signed_in) -> None:
+        page = client.get(reverse("overview")).content.decode()
+
+        assert self.BELL in page
+        assert 'class="badge' not in page.split(self.BELL, 1)[1].split("</div>", 1)[0]
+
+    def test_the_bell_links_to_the_notifications_page(self, client, signed_in) -> None:
+        page = client.get(reverse("overview")).content.decode()
+
+        bell = page.split(self.BELL, 1)[1].split("</div>", 1)[0]
+        assert f'href="{reverse("mvp_community_notifications:list")}"' in bell
+
+    def test_the_bell_refreshes_itself_from_its_route_and_on_the_changed_event(
+        self, client, signed_in
+    ) -> None:
+        page = client.get(reverse("overview")).content.decode()
+
+        bell = page.split(self.BELL, 1)[1].split(">", 1)[0]
+        assert f'hx-get="{reverse("mvp_community_notifications:bell")}"' in bell
+        assert "notifications:changed" in bell
+
+    def test_a_signed_out_visitor_sees_no_bell(self, client, db) -> None:
+        assert self.BELL not in client.get(reverse("overview")).content.decode()
+
+
+class TestSendNotificationView:
+    URL = "/send-notification/"
+
+    def test_it_sends_the_signed_in_person_a_notification_and_asks_the_bell_to_refresh(
+        self, client, signed_in
+    ) -> None:
+        response = client.post(self.URL)
+
+        assert response.status_code == 204
+        assert response["HX-Trigger"] == "notifications:changed"
+        assert signed_in.notifications.count() == 1
+
+    def test_signed_out_is_sent_to_sign_in(self, client, db) -> None:
+        response = client.post(self.URL)
+
+        assert response.status_code == 302
+        assert response["Location"].startswith(SIGN_IN_URL)

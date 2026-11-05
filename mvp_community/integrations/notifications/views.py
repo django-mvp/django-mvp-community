@@ -1,7 +1,8 @@
 """The notifications page, the bell's refresh and the preferences page."""
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404, redirect
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -61,3 +62,23 @@ class OpenNotificationView(LoginRequiredMixin, View):
         notification = get_object_or_404(request.user.notifications, pk=pk)
         notification.mark_as_read()
         return redirect(notification.url or "mvp_community_notifications:list")
+
+
+class BellView(View):
+    """The bell alone, which the bell fetches to keep its count current."""
+
+    def get(self, request):
+        """Render the bell with a fresh count.
+
+        A signed-out request gets no content rather than a redirect: htmx
+        follows a redirect and would swap the sign-in page into the header.
+
+        Args:
+            request: The GET request.
+
+        Returns:
+            The bell, or an empty 204 response for a signed-out visitor.
+        """
+        if not request.user.is_authenticated:
+            return HttpResponse(status=204)
+        return render(request, "mvp_community/notifications/bell_partial.html")

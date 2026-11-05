@@ -139,6 +139,13 @@ MVP_CONFIG = {
         "sidebar": {
             "title": "django-mvp-community",
         },
+        "navbar": {
+            "end": [
+                "mvp_community.notifications.bell",
+                "mvp.actions.theme-controller",
+                "mvp.actions.login",
+            ],
+        },
     },
     "theme": {
         # Several to switch between, so what this package renders can be looked
