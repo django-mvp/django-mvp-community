@@ -17,6 +17,7 @@
 - Mark all read needs a form post that marks every one of the person's notifications read.
 - The preferences page needs every declared type against every registered channel, with the person's choice and whether that choice is required or forbidden, and a post that saves it.
 - The Account Center card and entry need to appear only when the notifications URLs are included.
+- Each page's own title needs to reach the browser's title bar. The sketch's preferences page shows only "Account Center" there.
 
 ## What the sketch faked
 
@@ -32,3 +33,5 @@
 ## What was ruled by eye
 
 - Every page is built from django-mvp and daisy-cotton components and the classes django-mvp's stylesheet already ships, with no styles of its own.
+- The pages belonging to the Account Center sit behind `account-center/`, so the preferences page is at `account-center/notifications/`. The notifications page and the bell stay under `notifications/`.
+- The "System Message" row and the Email column, which django-generic-notifications registers by itself, stay on the preferences page for now.
