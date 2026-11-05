@@ -7,7 +7,7 @@
 **Adopted.** The package's brainstorm names django-generic-notifications for the notifications extra, and the sketch is built on it. Version 2.4.0 supplies everything the three stories read and write:
 
 - `Notification`, with `read` as a timestamp, `url`, `subject` and `text`, and the queryset helpers `unread()` and `for_channel()`.
-- `generic_notifications.utils`: `get_unread_count(user)`, `get_notifications(user)` and `mark_notifications_as_read(user)`, all scoped to the site channel by default.
+- `generic_notifications.utils`: `get_unread_count(user)`, `get_notifications(user)` and `mark_notifications_as_read(user)`, The first two are scoped to the site channel by default. `mark_notifications_as_read` is not: it marks every channel's notifications read, so the plan does not use it.
 - `Notification.mark_as_read()`.
 - `generic_notifications.preferences`: `get_notification_preferences(user)`, which returns the type-by-channel grid with each choice and whether it is required or forbidden, and `save_notification_preferences(user, data)`, which saves the grid from form fields named `<type>__<channel>`.
 - A registry of types and channels. The package registers the site and email channels and a "System Message" type on its own.
@@ -32,10 +32,10 @@ Every line under "What the screens need from the code" in `sketch.md` is met by 
 |---|---|
 | Unread count | installed package: `generic_notifications.utils.get_unread_count` |
 | One person's notifications, newest first | installed package: `get_notifications`, model ordering `-added` |
-| Mark all read | installed package: `mark_notifications_as_read` |
+| Mark all read | installed package: `get_notifications(user, unread_only=True)`, then a queryset `update` |
 | Mark one read | installed package: `Notification.mark_as_read` |
 | Preferences grid and saving it | installed package: `get_notification_preferences`, `save_notification_preferences` |
-| Pagination | Django: `Paginator`; display: django-mvp `c-mvp.page.list.footer` |
+| Page context, sign-in, pagination | django-mvp `MVPListView` and `MVPTemplateView` with Django's `LoginRequiredMixin`; display: `c-mvp.page.list.footer` |
 | Empty state | django-mvp `c-mvp.page.list.empty` |
 | List rows, dot, table, toggle, indicator, button | daisy-cotton components |
 | Account Center page, menu and card | django-mvp `mvp/account/base.html`, `AccountCenterMenu`, `account.cards` block |

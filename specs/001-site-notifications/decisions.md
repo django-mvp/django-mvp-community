@@ -17,5 +17,24 @@
 ## D3 — Preferences sit under account-center/
 
 **Decision:** `account-center/notifications/`.
-**Why:** Sam's ruling at the sketch gate: pages that belong to the Account Center sit behind `account-center/`.
+**Why:** Sam's ruling at the sketch gate: pages that belong to the Account Center sit behind `account-center/`. django-mvp's own Account Center landing page is at `account/` in the demo, and the projects built on it mount it under `account-center/` themselves, so this page is where those projects put the rest of their Account Center.
 **ADR:** none — a route, recorded in the spec and the docs.
+
+## D4 — Saving preferences clears digest-frequency choices
+
+**Decision:** known limitation, left as it is. `save_notification_preferences` deletes every digest-frequency choice and re-saves only the ones posted, and this page posts none.
+**Why:** digests arrive with a later feature, which adds the frequency choice to this page. Until then no person can have one.
+**Revisit if:** the digest feature is specified. It must post the frequency fields.
+**ADR:** none — a watch item for the digest feature.
+
+## D5 — Type and channel names come untranslated
+
+**Decision:** the preferences page shows the names django-generic-notifications and the host project give, and the documentation says so.
+**Why:** the names belong to the package and the project, not to this one.
+**ADR:** none — local.
+
+## D6 — The bell's refresh answers a signed-out request with 204
+
+**Decision:** no redirect from the bell's refresh route.
+**Why:** htmx follows a redirect and would swap the sign-in page into the header. The spec keeps the last count when a refresh fails.
+**ADR:** none — local.
