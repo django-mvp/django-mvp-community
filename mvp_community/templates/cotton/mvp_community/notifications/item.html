@@ -1,0 +1,30 @@
+{# @description One notification as a list row: the unread mark, its subject and text, who it came from and when. A notification with a link opens it and is marked read on the way. #}
+{# @prop notification:text | description:"The notification to draw." #}
+{% load i18n %}
+<c-vars notification />
+<c-list.row class="items-start{% if not notification.is_read %} bg-base-200/60{% endif %}" only>
+  <div class="pt-1.5">
+    {% if notification.is_read %}
+      <span class="block size-2.5" aria-hidden="true"></span>
+    {% else %}
+      <span class="status status-primary block size-2.5" aria-hidden="true"></span>
+      <span class="sr-only">{% trans "Unread" %}</span>
+    {% endif %}
+  </div>
+  <div class="list-col-grow min-w-0">
+    {% if notification.url %}
+      <a href="{% url 'mvp_community_notifications:open' notification.pk %}"
+         class="link link-hover{% if not notification.is_read %} font-semibold{% endif %}">{{ notification.get_subject }}</a>
+    {% else %}
+      <span class="{% if not notification.is_read %}font-semibold{% endif %}">{{ notification.get_subject }}</span>
+    {% endif %}
+    {% with text=notification.get_text %}
+      {% if text %}<p class="text-sm text-base-content/70 break-words">{{ text }}</p>{% endif %}
+    {% endwith %}
+  </div>
+  <time class="text-xs text-base-content/60 whitespace-nowrap pt-1"
+        datetime="{{ notification.added|date:"c" }}"
+        title="{{ notification.added|date:"DATETIME_FORMAT" }}">
+    {% blocktrans with since=notification.added|timesince %}{{ since }} ago{% endblocktrans %}
+  </time>
+</c-list.row>

@@ -599,6 +599,18 @@ wheels = [
 ]
 
 [[package]]
+name = "django-generic-notifications"
+version = "2.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/92/c6/6b2abd8a9f7127df2524432848ace55c7424045c1814f777754d0b298502/django_generic_notifications-2.4.0.tar.gz", hash = "sha256:e83e21c2021d96042cb8d0971b40b43e49d35f423179cc41b8f70f41781d284d", size = 19423, upload-time = "2026-05-14T17:05:36.724Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8f/c5/db960de5e7f5d5a386c8afe7aa807e7bf28ad4f1234558ac110508cede05/django_generic_notifications-2.4.0-py3-none-any.whl", hash = "sha256:63e5ce18eb5cab05fa4b15fce8f97cd5d82aab77360fa2513f8d92a49b8ddc3b", size = 28962, upload-time = "2026-05-14T17:05:35.522Z" },
+]
+
+[[package]]
 name = "django-model-info"
 version = "2026.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -642,6 +654,11 @@ dependencies = [
     { name = "django-mvp" },
 ]
 
+[package.optional-dependencies]
+notifications = [
+    { name = "django-generic-notifications" },
+]
+
 [package.dev-dependencies]
 dev = [
     { name = "mvp-shared", extra = ["dev", "test"] },
@@ -650,6 +667,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "django", specifier = ">=5.2" },
+    { name = "django-generic-notifications", marker = "extra == 'notifications'", specifier = ">=2.4" },
     { name = "django-mvp", specifier = ">=0.28.1" },
 ]
 provides-extras = ["notifications", "mail", "activity", "sharecards"]

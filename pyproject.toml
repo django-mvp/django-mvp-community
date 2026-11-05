@@ -35,7 +35,9 @@ classifiers = [
 # Each feature is an optional extra. A feature's dependencies are added to its
 # extra when the feature is built.
 [project.optional-dependencies]
-notifications = []
+notifications = [
+    "django-generic-notifications>=2.4",
+]
 mail = []
 activity = []
 sharecards = []

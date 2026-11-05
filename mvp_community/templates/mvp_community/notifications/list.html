@@ -1,0 +1,40 @@
+{% extends "page_view.html" %}
+{% load i18n %}
+{% block page.actions %}
+  {% if page_obj.paginator.count %}
+    <form method="post" action="{% url 'mvp_community_notifications:mark_all_read' %}">
+      {% csrf_token %}
+      <c-button size="sm" type="submit" only>{% trans "Mark all read" %}</c-button>
+    </form>
+  {% endif %}
+  <a href="{% url 'mvp_community_notifications:preferences' %}"
+     class="btn btn-ghost btn-sm btn-square"
+     title="{% trans "Notification preferences" %}">
+    <c-icon name="notifications.preferences" aria-hidden="true" only />
+    <span class="sr-only">{% trans "Notification preferences" %}</span>
+  </a>
+{% endblock page.actions %}
+{% block page.content %}
+  {% if page_obj.paginator.count %}
+    <c-mvp.card tight only>
+      <c-list only>
+        {% for notification in page_obj %}
+          <c-mvp_community.notifications.item :notification="notification" only />
+        {% endfor %}
+      </c-list>
+    </c-mvp.card>
+    {% if page_obj.has_other_pages %}
+      <div class="flex justify-center pt-4">
+        <c-mvp.pagination :page_obj="page_obj" page_window="1" show_first_and_last size="sm" label="{% trans "Notification pages" %}" />
+      </div>
+    {% endif %}
+  {% else %}
+    <c-mvp.card only>
+      <div class="flex flex-col items-center gap-2 py-10 text-center">
+        <c-icon name="notifications" class="text-5xl text-base-content/40" aria-hidden="true" only />
+        <p class="font-semibold">{% trans "No notifications yet" %}</p>
+        <p class="text-sm text-base-content/70">{% trans "When something happens that concerns you, it appears here." %}</p>
+      </div>
+    </c-mvp.card>
+  {% endif %}
+{% endblock page.content %}

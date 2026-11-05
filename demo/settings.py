@@ -24,6 +24,8 @@ CSRF_COOKIE_SECURE = False
 INSTALLED_APPS = [
     "demo",
     "mvp_community",
+    # The notifications extra: the package it is built on.
+    "generic_notifications",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -78,6 +80,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "mvp.context_processors.mvp_config",
+                "mvp_community.integrations.notifications.context_processors.notifications",
             ],
         },
     },
@@ -123,6 +126,8 @@ EASY_ICONS = {
         "packs": ["mvp.utils.BS5_ICONS"],
         "icons": {
             "overview": "bi bi-house",
+            "notifications": "bi bi-bell",
+            "notifications.preferences": "bi bi-sliders",
         },
     },
 }
@@ -132,6 +137,13 @@ MVP_CONFIG = {
     "layout": {
         "sidebar": {
             "title": "django-mvp-community",
+        },
+        "navbar": {
+            "end": [
+                "mvp_community.notifications.bell",
+                "mvp.actions.theme-controller",
+                "mvp.actions.login",
+            ],
         },
     },
     "theme": {
@@ -148,3 +160,7 @@ USE_I18N = True
 LANGUAGE_CODE = "en-us"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Notifications also go out by email. The demo prints them to the console
+# instead of reaching for a mail server it does not have.
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
