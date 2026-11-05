@@ -9,8 +9,13 @@ class UserFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = get_user_model()
-        skip_postgeneration_save = True
 
     username = factory.Sequence(lambda n: f"person{n}@example.com")
     email = factory.LazyAttribute(lambda user: user.username)
-    password = factory.PostGenerationMethodCall("set_password", "password")
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        # create_user hashes the password and saves once. A password set after
+        # the save is never written, and the session hash then fails to match.
+        kwargs.setdefault("password", "password")
+        return cls._get_manager(model_class).create_user(*args, **kwargs)

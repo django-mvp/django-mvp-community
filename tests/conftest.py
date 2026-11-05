@@ -1,13 +1,16 @@
 """Fixtures shared across the test suite."""
 
 import os
+from datetime import timedelta
 
 import pytest
 from django import template as dj_template
 from django.template import Context
 from django.urls import reverse
+from django.utils import timezone
 from django_cotton.compiler_regex import CottonCompiler
 from generic_notifications import send_notification
+from generic_notifications.models import Notification
 
 from demo.notifications import NewFollower, ReplyReceived
 from tests.factories import UserFactory
@@ -75,14 +78,21 @@ def notification(person):
 
 @pytest.fixture
 def make_notifications(person):
+    # Each one arrived a minute before the last, so "newest first" has one answer.
     def make(count, recipient=None, notification_type=NewFollower):
-        return [
-            send_notification(
+        now = timezone.now()
+        made = []
+        for index in range(count):
+            sent = send_notification(
                 recipient=recipient or person,
                 notification_type=notification_type,
                 subject=f"Notification {index}",
             )
-            for index in range(count)
-        ]
+            Notification.objects.filter(pk=sent.pk).update(
+                added=now - timedelta(minutes=index)
+            )
+            sent.refresh_from_db()
+            made.append(sent)
+        return made
 
     return make

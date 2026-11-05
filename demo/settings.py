@@ -127,6 +127,8 @@ EASY_ICONS = {
         "packs": ["mvp.utils.BS5_ICONS"],
         "icons": {
             "overview": "bi bi-house",
+            "notifications": "bi bi-bell",
+            "notifications.preferences": "bi bi-sliders",
         },
     },
 }

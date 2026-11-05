@@ -38,3 +38,10 @@
 **Decision:** no redirect from the bell's refresh route.
 **Why:** htmx follows a redirect and would swap the sign-in page into the header. The spec keeps the last count when a refresh fails.
 **ADR:** none — local.
+
+## D7 — The notifications page lands with its mark-all-read route and the icons it names
+
+**Decision:** the commit for the notifications page also carries the mark-all-read route and view and the two icon names, which the task list gave to later tasks.
+**Why:** the approved list template links to the mark-all-read route and draws the preferences icon, and a template that names a route or icon that does not exist raises. The page could not render a populated list without them. The mark-all-read tests were written and seen failing before the view existed, and are committed with that task.
+**Revisit if:** the list template stops naming either.
+**ADR:** none — local.
