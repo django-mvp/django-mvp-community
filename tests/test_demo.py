@@ -110,6 +110,7 @@ class TestBellInTheShell:
         bell = page.split(self.BELL, 1)[1].split(">", 1)[0]
         assert f'hx-get="{reverse("mvp_community_notifications:bell")}"' in bell
         assert "notifications:changed" in bell
+        assert "every 60s" in bell
 
     def test_a_signed_out_visitor_sees_no_bell(self, client, db) -> None:
         assert self.BELL not in client.get(reverse("overview")).content.decode()

@@ -114,6 +114,21 @@ class TestOpenNotificationView:
         assert notification.read is not None
         assert response["Location"] == notification.url
 
+    def test_a_link_to_another_site_goes_to_the_list_instead(
+        self, client, signed_in, make_notifications
+    ) -> None:
+        (notification,) = make_notifications(1)
+        notification.url = "https://elsewhere.example/"
+        notification.save()
+
+        response = client.get(
+            reverse("mvp_community_notifications:open", args=[notification.pk])
+        )
+
+        notification.refresh_from_db()
+        assert notification.read is not None
+        assert response["Location"] == reverse("mvp_community_notifications:list")
+
     def test_another_persons_is_not_found_and_stays_unread(
         self, client, signed_in, make_notifications, django_user_model
     ) -> None:

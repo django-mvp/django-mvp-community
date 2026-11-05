@@ -72,15 +72,19 @@ here.
 pip install django-mvp-community
 ```
 
-Then add it to `INSTALLED_APPS`, after `mvp`:
+Then add it to `INSTALLED_APPS`, above `mvp`:
 
 ```python
 INSTALLED_APPS = [
     # ...
-    "mvp",
     "mvp_community",
+    "mvp",
 ]
 ```
+
+It goes above `mvp` because some of its templates extend django-mvp's templates of
+the same name, such as the Account Center's landing page. Django uses the first one
+it finds, so listed below `mvp` they are never used.
 
 This package requires [django-mvp](https://github.com/django-mvp/django-mvp).
 It renders inside django-mvp's layout and reads its colours from the theme

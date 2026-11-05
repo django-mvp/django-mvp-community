@@ -5,6 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from generic_notifications.models import Notification
@@ -63,11 +64,20 @@ class OpenNotificationView(LoginRequiredMixin, View):
             pk: The notification's primary key. Another person's is a 404.
 
         Returns:
-            A redirect to the notification's url, or to the list when it has none.
+            A redirect to the notification's url, or to the list when it has
+            none or it points at another site.
         """
         notification = get_object_or_404(request.user.notifications, pk=pk)
         notification.mark_as_read()
-        return redirect(notification.url or "mvp_community_notifications:list")
+        # A url can be built from what someone typed, so a link off this site
+        # is never followed from here.
+        if notification.url and url_has_allowed_host_and_scheme(
+            notification.url,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            return redirect(notification.url)
+        return redirect("mvp_community_notifications:list")
 
 
 class BellView(View):

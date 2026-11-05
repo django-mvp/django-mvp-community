@@ -14,13 +14,13 @@ Install the extra, add four settings and include the URLs.
    pip install "django-mvp-community[notifications]"
    ```
 
-2. Add `generic_notifications` and `django.contrib.humanize` to `INSTALLED_APPS`, after `mvp_community`. The notifications page says when each notification arrived as "2 hours ago", which `humanize` supplies:
+2. Add `generic_notifications` and `django.contrib.humanize` to `INSTALLED_APPS`, after `mvp_community`, which sits above `mvp` so its Account Center card is used. The notifications page says when each notification arrived as "2 hours ago", which `humanize` supplies:
 
    ```python
    INSTALLED_APPS = [
        # ...
-       "mvp",
        "mvp_community",
+       "mvp",
        "generic_notifications",
        "django.contrib.humanize",
    ]
@@ -73,6 +73,10 @@ Install the extra, add four settings and include the URLs.
    ```
 
 Signed in, the bell now appears in the header, and the Account Center has a Notifications entry and a card. The routes are listed under [Pages and routes](#pages-and-routes).
+
+## What django-generic-notifications adds by itself
+
+Installing django-generic-notifications registers an Email channel and a "System Message" notification type. Both appear on the preferences page in every project, and System Message notifications are always sent by email. Email notifications are sent through Django's own email settings, so configure `EMAIL_BACKEND` before sending any.
 
 ## Declare a notification type
 
@@ -154,7 +158,7 @@ Each route has a name in the `mvp_community_notifications` namespace.
 | Name | Address | View | What it does |
 |---|---|---|---|
 | `list` | `notifications/` | `NotificationListView` | The signed-in person's notifications, newest first, 20 to a page. |
-| `open` | `notifications/<int:pk>/` | `OpenNotificationView` | Marks one of their notifications read and redirects to its `url`, or to the list when it has none. Another person's notification is a 404. |
+| `open` | `notifications/<int:pk>/` | `OpenNotificationView` | Marks one of their notifications read and redirects to its `url`, or to the list when it has none or points at another site. Another person's notification is a 404. |
 | `mark_all_read` | `notifications/read/` | `MarkAllReadView` | POST only. Marks every unread notification on the site as read, and redirects to the list. A notification sent only by email stays unread. |
 | `bell` | `notifications/bell/` | `BellView` | The bell alone, for its own refresh. |
 | `preferences` | `account-center/notifications/` | `PreferencesView` | GET shows the grid of types and channels. POST saves it, adds a success message and redirects back. |

@@ -43,3 +43,15 @@ class TestMvpCommunityConfig:
 
     def test_it_leaves_the_notifications_menu_alone_without_the_extra(self) -> None:
         assert menus_imported_with() == "False"
+
+
+class TestTemplateOrder:
+    def test_the_account_center_landing_page_is_this_packages(self) -> None:
+        # The card is drawn by this package's mvp/account/overview.html, which
+        # extends django-mvp's. With mvp_community listed below mvp, Django
+        # finds django-mvp's copy first and the card never appears.
+        from django.template.loader import get_template
+
+        origin = get_template("mvp/account/overview.html").origin.name
+
+        assert "/mvp_community/templates/" in origin
