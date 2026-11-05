@@ -1,0 +1,9 @@
+{# @description The Account Center card that leads to the notification preferences page: a sentence and a button. Replace it by shipping a component of the same name. #}
+{% load i18n %}
+{% url "mvp_community_notifications:preferences" as notification_preferences_url %}
+<c-mvp.card title="{% trans "Notifications" %}" icon="notifications">
+  <c-mvp.text>{% trans "Choose which notifications you receive, and where." %}</c-mvp.text>
+  <c-slot name="footer">
+    <c-button href="{{ notification_preferences_url }}" variant="primary" size="sm">{% trans "Manage notifications" %}</c-button>
+  </c-slot>
+</c-mvp.card>

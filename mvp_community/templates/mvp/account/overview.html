@@ -1,5 +1,4 @@
 {% extends "mvp/account/overview.html" %}
-{% load i18n %}
 {% comment %}
   `url … as` leaves the variable empty instead of raising, so a project that has
   not included the notifications URLs gets no card.
@@ -7,12 +6,5 @@
 {% block account.cards %}
   {{ block.super }}
   {% url "mvp_community_notifications:preferences" as notification_preferences_url %}
-  {% if notification_preferences_url %}
-    <c-mvp.card title="{% trans "Notifications" %}" icon="notifications">
-      <c-mvp.text>{% trans "Choose which notifications you receive, and where." %}</c-mvp.text>
-      <c-slot name="footer">
-        <c-button href="{{ notification_preferences_url }}" variant="primary" size="sm">{% trans "Manage notifications" %}</c-button>
-      </c-slot>
-    </c-mvp.card>
-  {% endif %}
+  {% if notification_preferences_url %}<c-mvp_community.notifications.preferences_card />{% endif %}
 {% endblock account.cards %}
