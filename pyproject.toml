@@ -39,7 +39,9 @@ notifications = [
     "django-generic-notifications>=2.4",
 ]
 mail = []
-activity = []
+activity = [
+    "django-activity-stream>=2.0",
+]
 sharecards = []
 
 [project.urls]

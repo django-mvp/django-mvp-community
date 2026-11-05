@@ -1,0 +1,16 @@
+{% extends "page_view.html" %}
+{% load i18n %}
+{% block page.actions %}
+  {% url "mvp_community_activity:following" as following_url %}
+  <c-button href="{{ following_url }}" ghost square size="sm" icon="activity.following" title="{% trans "Following" %}" aria-label="{% trans "Following" %}" only />
+{% endblock page.actions %}
+{% block page.content %}
+  {% if page_obj.paginator.count %}
+    <c-mvp_community.activity.feed :actions="page_obj" only />
+    <c-mvp.page.list.footer :page_obj="page_obj" size="sm" />
+  {% else %}
+    <c-mvp_community.activity.feed empty_heading="{% trans "Your feed is empty" %}"
+                                   empty_message="{% trans "Follow people and things, and what they do appears here." %}"
+                                   only />
+  {% endif %}
+{% endblock page.content %}

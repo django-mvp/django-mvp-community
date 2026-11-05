@@ -1,0 +1,24 @@
+{# @description The follow control for a person or an object: follow or stop following, with how many people follow it. A signed-out visitor is sent to sign in. A person is never offered to follow themselves. #}
+{# @prop object:text | description:"The person or object to follow." #}
+{# @prop size:select['xs','sm','md'] | default:"sm" | description:"Size of the button." #}
+{% load i18n activity_tags mvp_community_activity %}
+<c-vars object size="sm" />
+{% followers_of object as followers %}
+{% with count=followers|length %}
+  {% if request.user.is_authenticated and object == request.user %}
+    <span class="badge badge-ghost">{% blocktrans count counter=count %}{{ counter }} follower{% plural %}{{ counter }} followers{% endblocktrans %}</span>
+  {% elif request.user.is_authenticated %}
+    {% if request.user|is_following:object %}
+      <form method="post" action="{% follow_all_url object %}?next={{ request.get_full_path|urlencode }}" hx-boost="true" hx-swap="innerHTML show:none">
+        <c-button type="submit" size="{{ size }}" icon="activity.following" aria-pressed="true" only>{% trans "Following" %}<span class="badge badge-sm">{{ count }}</span></c-button>
+      </form>
+    {% else %}
+      <form method="post" action="{% follow_all_url object %}?next={{ request.get_full_path|urlencode }}" hx-boost="true" hx-swap="innerHTML show:none">
+        <c-button type="submit" size="{{ size }}" variant="primary" icon="activity.follow" aria-pressed="false" only>{% trans "Follow" %}<span class="badge badge-sm">{{ count }}</span></c-button>
+      </form>
+    {% endif %}
+  {% else %}
+    {% url "account_login" as login_url %}
+    <c-button href="{{ login_url }}?next={{ request.get_full_path|urlencode }}" size="{{ size }}" variant="primary" icon="activity.follow" only>{% trans "Follow" %}<span class="badge badge-sm">{{ count }}</span></c-button>
+  {% endif %}
+{% endwith %}

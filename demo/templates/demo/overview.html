@@ -36,4 +36,12 @@
       </form>
     </c-mvp.section>
   {% endif %}
+  <c-mvp.section title="What happened on the site" icon="activity">
+    <c-mvp.text>The project feed: the newest public activity across the site.</c-mvp.text>
+    <c-mvp_community.activity.project_feed />
+  </c-mvp.section>
+  <c-mvp.section title="Courses people finished" icon="activity">
+    <c-mvp.text>The same feed, limited to one kind of activity.</c-mvp.text>
+    <c-mvp_community.activity.project_feed verb="finished" />
+  </c-mvp.section>
 {% endblock page.content %}

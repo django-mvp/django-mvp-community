@@ -1,0 +1,6 @@
+{# @description The newest public activity across the site. Place it on any page. #}
+{# @prop verb:text | description:"Show only activity of this kind, such as finished. Empty shows every kind." #}
+{% load activity_tags %}
+<c-vars verb="" />
+{% if verb %}{% activity_stream "public" verb=verb as="project_actions" %}{% else %}{% activity_stream "public" as="project_actions" %}{% endif %}
+{% with recent=project_actions|slice:":10" %}<c-mvp_community.activity.feed :actions="recent" only />{% endwith %}

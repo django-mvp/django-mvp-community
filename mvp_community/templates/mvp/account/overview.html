@@ -1,10 +1,12 @@
 {% extends "mvp/account/overview.html" %}
 {% comment %}
   `url … as` leaves the variable empty instead of raising, so a project that has
-  not included the notifications URLs gets no card.
+  not included an extra's URLs gets no card for it.
 {% endcomment %}
 {% block account.cards %}
   {{ block.super }}
   {% url "mvp_community_notifications:preferences" as notification_preferences_url %}
   {% if notification_preferences_url %}<c-mvp_community.notifications.preferences_card />{% endif %}
+  {% url "mvp_community_activity:following" as following_url %}
+  {% if following_url %}<c-mvp_community.activity.following_card />{% endif %}
 {% endblock account.cards %}

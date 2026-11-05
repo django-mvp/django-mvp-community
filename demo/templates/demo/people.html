@@ -1,0 +1,29 @@
+{% extends "page_view.html" %}
+{% block page.content %}
+  <c-mvp.section title="People" icon="people">
+    <c-mvp.card tight only>
+      <c-list only>
+        {% for person in people %}
+          <c-list.row class="items-center" only>
+            <c-avatar placeholder="{{ person.first_name|make_list|first|upper }}" content_class="w-10 rounded-full bg-neutral text-neutral-content" only />
+            <div class="list-col-grow min-w-0 break-words"><a href="{{ person.get_absolute_url }}" class="link link-hover font-medium">{{ person.get_full_name }}</a></div>
+            <c-mvp_community.activity.follow :object="person" size="xs" />
+          </c-list.row>
+        {% endfor %}
+      </c-list>
+    </c-mvp.card>
+  </c-mvp.section>
+  <c-mvp.section title="Groups" icon="people">
+    <c-mvp.card tight only>
+      <c-list only>
+        {% for group in groups %}
+          <c-list.row class="items-center" only>
+            <c-avatar placeholder="{{ group.name|make_list|first|upper }}" content_class="w-10 rounded-box bg-secondary text-secondary-content" only />
+            <div class="list-col-grow min-w-0 break-words"><a href="{{ group.get_absolute_url }}" class="link link-hover font-medium">{{ group.name }}</a></div>
+            <c-mvp_community.activity.follow :object="group" size="xs" />
+          </c-list.row>
+        {% endfor %}
+      </c-list>
+    </c-mvp.card>
+  </c-mvp.section>
+{% endblock page.content %}
