@@ -661,6 +661,7 @@ notifications = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "django-mvp-community", extra = ["notifications"] },
     { name = "mvp-shared", extra = ["dev", "test"] },
 ]
 
@@ -673,7 +674,10 @@ requires-dist = [
 provides-extras = ["notifications", "mail", "activity", "sharecards"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "mvp-shared", extras = ["dev", "test"], git = "https://github.com/django-mvp/shared.git?tag=v0.6.0" }]
+dev = [
+    { name = "django-mvp-community", extras = ["notifications"] },
+    { name = "mvp-shared", extras = ["dev", "test"], git = "https://github.com/django-mvp/shared.git?tag=v0.6.0" },
+]
 
 [[package]]
 name = "django-mvp-forms"

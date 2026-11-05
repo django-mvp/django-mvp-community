@@ -151,15 +151,17 @@ Replacing one leaves the rest of the feature as it was.
 
 Each route has a name in the `mvp_community_notifications` namespace.
 
-| Name | Address | What it does |
-|---|---|---|
-| `list` | `notifications/` | The signed-in person's notifications, newest first, 20 to a page. |
-| `open` | `notifications/<int:pk>/` | Marks one of their notifications read and redirects to its `url`, or to the list when it has none. Another person's notification is a 404. |
-| `mark_all_read` | `notifications/read/` | POST only. Marks every unread notification on the site as read, and redirects to the list. A notification sent only by email stays unread. |
-| `bell` | `notifications/bell/` | The bell alone, for its own refresh. |
-| `preferences` | `account-center/notifications/` | GET shows the grid of types and channels. POST saves it, adds a success message and redirects back. |
+| Name | Address | View | What it does |
+|---|---|---|---|
+| `list` | `notifications/` | `NotificationListView` | The signed-in person's notifications, newest first, 20 to a page. |
+| `open` | `notifications/<int:pk>/` | `OpenNotificationView` | Marks one of their notifications read and redirects to its `url`, or to the list when it has none. Another person's notification is a 404. |
+| `mark_all_read` | `notifications/read/` | `MarkAllReadView` | POST only. Marks every unread notification on the site as read, and redirects to the list. A notification sent only by email stays unread. |
+| `bell` | `notifications/bell/` | `BellView` | The bell alone, for its own refresh. |
+| `preferences` | `account-center/notifications/` | `PreferencesView` | GET shows the grid of types and channels. POST saves it, adds a success message and redirects back. |
 
-Every route except `bell` redirects a signed-out visitor to your sign-in page.
+The views live in `mvp_community.integrations.notifications.views`. To change one, subclass it and route your subclass at the same address ahead of the include.
+
+Every route except `bell` redirects a signed-out visitor to your sign-in page. `bell` answers a signed-out request with an empty 204 response, so the bell keeps its last count instead of drawing a sign-in page in the header.
 
 ## Template tag
 

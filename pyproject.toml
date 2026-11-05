@@ -72,6 +72,10 @@ include = ["/mvp_community", "/README.md", "/LICENSE"]
 # pytest, pytest-django, pytest-xdist, factory-boy, coverage and django-stubs.
 dev = [
     "mvp-shared[dev,test]",
+    # The demo project and the suite run every extra, so a plain `uv sync`
+    # installs them. The base-install test blocks them again to prove the
+    # package imports without them.
+    "django-mvp-community[notifications]",
 ]
 
 [tool.uv.sources]
