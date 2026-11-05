@@ -24,16 +24,4 @@
       </c-mvp.text>
     </c-mvp_community.example>
   </c-mvp.section>
-  {% if user.is_authenticated %}
-    <c-mvp.section title="Notifications" icon="notifications">
-      <c-mvp.text>
-        Send yourself a notification and watch the bell in the header count it, without
-        reloading the page.
-      </c-mvp.text>
-      <form hx-post="{% url 'send_notification' %}" hx-swap="none">
-        {% csrf_token %}
-        <c-button size="sm" type="submit" only>Send me a notification</c-button>
-      </form>
-    </c-mvp.section>
-  {% endif %}
 {% endblock page.content %}

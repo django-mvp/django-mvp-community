@@ -33,8 +33,7 @@ class DemoConfig(AppConfig):
 
     def ready(self):
         """Register the sidebar entries and the site-naming hook."""
-        from demo import menus, notifications  # noqa: F401
-        from mvp_community.integrations.notifications import menus as notification_menus  # noqa: F401
+        from demo import menus  # noqa: F401
 
         # Hung off the sites app: Django skips post_migrate for an app with no
         # models, and connecting before SiteConfig.ready() means this runs first.

@@ -38,6 +38,8 @@ django-generic-notifications.
 - Q: Which channels does the preferences page list? → A: Every channel the host project has
   installed. With this feature alone that is the site. A channel added later, such as email,
   appears on the same page without this feature changing.
+- Q: Where does the preferences page live? → A: Under `account-center/`, with the Account
+  Center's other pages: `account-center/notifications/`.
 - Q: What does a signed-out visitor see? → A: No bell. A signed-out visit to the notifications
   page or the preferences page is sent to sign in, as for every other Account Center page.
 
@@ -153,8 +155,9 @@ that person a notification of that type, and see that it does not arrive on the 
 
 - **FR-001**: Installing the notifications extra MUST bring the package the feature is built on,
   and installing the package without it MUST import nothing that belongs to it.
-- **FR-002**: A host project MUST be able to switch the feature on by installing the extra and
-  including its URLs, with no further configuration.
+- **FR-002**: A host project MUST be able to switch the feature on by installing the extra,
+  listing its apps, including its URLs and placing the bell in the header, with no settings of
+  the package's own.
 - **FR-003**: The shell MUST show a bell to every signed-in person, with the number of their
   unread notifications on the site, and no count when there are none.
 - **FR-004**: The bell's count MUST be kept current on an open page without a reload, by polling.
@@ -198,7 +201,8 @@ that person a notification of that type, and see that it does not arrive on the 
 ### Measurable Outcomes
 
 - **SC-001**: A developer switches the feature on in an existing django-mvp project by installing
-  the extra and adding one URL include, with no other change.
+  the extra, listing its apps, adding one URL include and naming the bell in the header, with no
+  settings of the package's own.
 - **SC-002**: A notification sent to a person with a page open shows in the bell's count within
   one minute, without a reload.
 - **SC-003**: From any page, a person reaches their newest notification in two actions: the bell,
