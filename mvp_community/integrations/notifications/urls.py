@@ -13,4 +13,5 @@ app_name = "mvp_community_notifications"
 urlpatterns = [
     path("notifications/", views.NotificationListView.as_view(), name="list"),
     path("notifications/read/", views.MarkAllReadView.as_view(), name="mark_all_read"),
+    path("notifications/<int:pk>/", views.OpenNotificationView.as_view(), name="open"),
 ]

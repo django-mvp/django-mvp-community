@@ -5,9 +5,14 @@ from django.db import connection
 from django.shortcuts import resolve_url
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
+from generic_notifications import send_notification
+from generic_notifications.channels import EmailChannel, WebsiteChannel
+
+from demo.notifications import ReplyReceived
 
 SIGN_IN_URL = resolve_url(settings.LOGIN_URL)
 LIST_URL = reverse("mvp_community_notifications:list")
+MARK_ALL_READ_URL = reverse("mvp_community_notifications:mark_all_read")
 
 
 class TestNotificationListView:
@@ -78,3 +83,96 @@ class TestNotificationListView:
             client.get(LIST_URL)
 
         assert len(several) == len(one)
+
+
+class TestOpenNotificationView:
+    def test_signed_out_is_sent_to_sign_in(self, client, notification) -> None:
+        client.logout()
+
+        response = client.get(
+            reverse("mvp_community_notifications:open", args=[notification.pk])
+        )
+
+        assert response.status_code == 302
+        assert response["Location"].startswith(SIGN_IN_URL)
+
+    def test_opening_marks_it_read_and_goes_to_its_url(
+        self, client, signed_in, notification
+    ) -> None:
+        response = client.get(
+            reverse("mvp_community_notifications:open", args=[notification.pk])
+        )
+
+        notification.refresh_from_db()
+        assert notification.read is not None
+        assert response["Location"] == notification.url
+
+    def test_another_persons_is_not_found_and_stays_unread(
+        self, client, signed_in, make_notifications, django_user_model
+    ) -> None:
+        stranger = django_user_model.objects.create_user("stranger", password="x")
+        (theirs,) = make_notifications(1, recipient=stranger)
+
+        response = client.get(
+            reverse("mvp_community_notifications:open", args=[theirs.pk])
+        )
+
+        theirs.refresh_from_db()
+        assert (response.status_code, theirs.read) == (404, None)
+
+    def test_one_with_no_url_goes_to_the_list(
+        self, client, signed_in, make_notifications
+    ) -> None:
+        (bare,) = make_notifications(1)
+
+        response = client.get(
+            reverse("mvp_community_notifications:open", args=[bare.pk])
+        )
+
+        assert response["Location"] == LIST_URL
+
+
+class TestMarkAllReadView:
+    def test_signed_out_is_sent_to_sign_in(self, client, db) -> None:
+        response = client.post(MARK_ALL_READ_URL)
+
+        assert response.status_code == 302
+        assert response["Location"].startswith(SIGN_IN_URL)
+
+    def test_it_leaves_no_site_notification_unread_and_goes_back_to_the_list(
+        self, client, signed_in, make_notifications
+    ) -> None:
+        make_notifications(3)
+
+        response = client.post(MARK_ALL_READ_URL)
+
+        assert response.status_code == 302
+        assert response["Location"] == LIST_URL
+        assert signed_in.notifications.filter(read__isnull=True).count() == 0
+
+    def test_it_leaves_another_persons_notifications_unread(
+        self, client, signed_in, make_notifications, django_user_model
+    ) -> None:
+        stranger = django_user_model.objects.create_user("stranger", password="x")
+        make_notifications(2, recipient=stranger)
+
+        client.post(MARK_ALL_READ_URL)
+
+        assert stranger.notifications.filter(read__isnull=True).count() == 2
+
+    def test_an_unread_one_sent_only_by_email_stays_unread(
+        self, client, signed_in
+    ) -> None:
+        ReplyReceived.enable_channel(signed_in, EmailChannel)
+        ReplyReceived.disable_channel(signed_in, WebsiteChannel)
+        by_email = send_notification(
+            recipient=signed_in, notification_type=ReplyReceived, subject="Email only"
+        )
+
+        client.post(MARK_ALL_READ_URL)
+
+        by_email.refresh_from_db()
+        assert by_email.read is None
+
+    def test_a_get_is_refused(self, client, signed_in) -> None:
+        assert client.get(MARK_ALL_READ_URL).status_code == 405

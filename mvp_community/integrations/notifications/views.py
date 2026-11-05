@@ -1,7 +1,7 @@
 """The notifications page, the bell's refresh and the preferences page."""
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -43,3 +43,21 @@ class MarkAllReadView(LoginRequiredMixin, View):
         """
         get_notifications(request.user, unread_only=True).update(read=timezone.now())
         return redirect("mvp_community_notifications:list")
+
+
+class OpenNotificationView(LoginRequiredMixin, View):
+    """Mark one of the person's notifications read and follow its link."""
+
+    def get(self, request, pk):
+        """Mark it read, then go to where it points.
+
+        Args:
+            request: The GET request.
+            pk: The notification's primary key. Another person's is a 404.
+
+        Returns:
+            A redirect to the notification's url, or to the list when it has none.
+        """
+        notification = get_object_or_404(request.user.notifications, pk=pk)
+        notification.mark_as_read()
+        return redirect(notification.url or "mvp_community_notifications:list")
