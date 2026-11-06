@@ -66,7 +66,7 @@ def notification_type_name(key):
     """
     from generic_notifications.registry import registry
 
-    for notification_type in registry.get_all_types():
-        if notification_type.key == key:
-            return notification_type.name
-    return key
+    try:
+        return registry.get_type(key).name
+    except KeyError:
+        return key

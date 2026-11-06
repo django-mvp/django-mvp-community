@@ -2,6 +2,7 @@
 
 import pytest
 from generic_notifications import send_notification
+from generic_notifications.digest import send_notification_digests
 from generic_notifications.models import (
     Notification,
     NotificationChannel,
@@ -11,7 +12,7 @@ from generic_notifications.models import (
 from generic_notifications.registry import registry
 from post_office.models import STATUS, Email
 
-from demo.notifications import ReplyReceived, SecurityNotice
+from demo.notifications import CourseUpdated, ReplyReceived, SecurityNotice
 from mvp_community.integrations.notifications.channels import NotificationEmailChannel
 
 # The root element every branded email layout draws.
@@ -161,3 +162,72 @@ class TestEmailTemplates:
         email = Email.objects.get()
         assert "project-template" in email.html_message
         assert LAYOUT_ROOT not in email.html_message
+
+
+class TestDigests:
+    # ReplyReceived declares no frequency, so it defaults to the library's daily.
+
+    @pytest.fixture
+    def weekly(self, person):
+        """The person chose to get course updates once a week."""
+        NotificationFrequencyPreference.objects.create(
+            user=person, notification_type=CourseUpdated.key, frequency="weekly"
+        )
+
+    def test_a_person_with_unread_notifications_gets_one_daily_digest(
+        self, person
+    ) -> None:
+        for _ in range(2):
+            send_notification(recipient=person, notification_type=ReplyReceived)
+
+        send_notification_digests(registry.get_frequency("daily"))
+
+        email = Email.objects.get()
+        assert email.to == [person.email]
+        assert LAYOUT_ROOT in email.html_message
+        assert ReplyReceived.name in email.html_message
+
+    def test_a_person_with_nothing_unread_gets_no_digest(self, person) -> None:
+        send_notification_digests(registry.get_frequency("daily"))
+
+        assert Email.objects.count() == 0
+
+    def test_a_read_notification_is_left_out(self, person) -> None:
+        send_notification(
+            recipient=person, notification_type=ReplyReceived
+        ).mark_as_read()
+
+        send_notification_digests(registry.get_frequency("daily"))
+
+        assert Email.objects.count() == 0
+
+    def test_a_digest_is_sent_once(self, person) -> None:
+        send_notification(recipient=person, notification_type=ReplyReceived)
+
+        send_notification_digests(registry.get_frequency("daily"))
+        send_notification_digests(registry.get_frequency("daily"))
+
+        assert Email.objects.count() == 1
+
+    def test_a_weekly_choice_is_in_the_weekly_digest_and_not_the_daily(
+        self, person, weekly
+    ) -> None:
+        send_notification(recipient=person, notification_type=CourseUpdated)
+
+        send_notification_digests(registry.get_frequency("daily"))
+        assert Email.objects.count() == 0
+
+        send_notification_digests(registry.get_frequency("weekly"))
+        assert [email.to for email in Email.objects.all()] == [[person.email]]
+
+    def test_each_digest_holds_only_the_types_chosen_for_its_frequency(
+        self, person, weekly
+    ) -> None:
+        send_notification(recipient=person, notification_type=CourseUpdated)
+        send_notification(recipient=person, notification_type=ReplyReceived)
+
+        send_notification_digests(registry.get_frequency("daily"))
+
+        html = Email.objects.get().html_message
+        assert ReplyReceived.name in html
+        assert CourseUpdated.name not in html
