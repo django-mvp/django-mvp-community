@@ -18,3 +18,15 @@
 **Decision:** CONTEXT.md gains **recent activity**, the newest few activities placed on any page, in the pull request that builds the feature. A **feed** stays the paged list on a page of its own.
 **Why:** Sam, at the sketch gate: a feed dedicated to a page and a few activities dropped into a dashboard are different things and need different words. Without one the second drifts towards "stream" or "widget", which the glossary avoids.
 **ADR:** none — a glossary change.
+
+## D4 — Only django-activity-stream's follow routes are mounted
+
+**Decision:** the package's URLconf carries django-activity-stream's four follow patterns, taken by name from `actstream.urls`, and nothing else of it. A host adds one include.
+**Why:** the design review showed `actstream.urls` also mounts `detail/<id>/`, which shows actions that are not public to anyone, and `following/<user_id>/`, which shows anyone's follows. Mounting only what the feature uses closes both and meets SC-001's one include.
+**ADR:** none — local to this extra's URLconf.
+
+## D5 — The follow control's refresh route stays, signed-in only
+
+**Decision:** `FollowControlView` stays, as agreed at the sketch gate, behind `LoginRequiredMixin`, answering 404 for a model not registered with django-activity-stream. The review's alternative (htmx selecting the control out of a full page) was not adopted.
+**Why:** that alternative re-renders the whole page per click, which is the cost the sketch-gate note set out to remove. Only a signed-in person ever reaches the route, after a follow they made.
+**ADR:** none — local to one route.

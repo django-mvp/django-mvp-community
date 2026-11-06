@@ -24,9 +24,9 @@ Delete the sketch's Python first. `ready()` imports the menus when `actstream` i
 
 - [ ] T002 [US1] Recent activity
 
-**Files**: `mvp_community/templates/cotton/mvp_community/activity/recent.html`, `feed.html`, `action.html`, `name.html`, `tests/test_integrations/test_activity/test_components.py`
+**Files**: `mvp_community/templates/cotton/mvp_community/activity/recent.html`, `feed.html`, `entry.html` (renamed from `action.html`), `name.html`, `tests/test_integrations/test_activity/test_components.py`
 
-Tests (rendered through a template string): the whole site's public activity, newest first, and none that is not public; around one object, only actions where it is actor, target or action object; `following` shows only what the signed-in person follows; `verb` limits to that kind; `limit` caps the rows; the link to `more_url` is present only when given and there is more than `limit`; nothing to show draws the empty state; a name links to `get_absolute_url` where the model has one and is plain otherwise; an action whose target was deleted is not shown; model data is escaped.
+Tests (rendered through a template string): the whole site's public activity, newest first, and none that is not public; around one object, only actions where it is actor, target or action object; `following` shows only what the signed-in person follows, and nothing for a signed-out visitor; `verb` limits to that kind; `limit` caps the rows; the link to `more_url` is present only when given and there is more than `limit`; nothing to show draws the empty state; a name links to `get_absolute_url` where the model has one and is plain otherwise; an action whose target was deleted is not shown; model data is escaped.
 
 ### Group 2
 
@@ -34,13 +34,13 @@ Tests (rendered through a template string): the whole site's public activity, ne
 
 **Files**: `mvp_community/templatetags/mvp_community_activity.py`, `mvp_community/templates/cotton/mvp_community/activity/followers.html`, `tests/test_templatetags/test_mvp_community_activity.py`, `tests/test_integrations/test_activity/test_components.py`
 
-`follower_count` and `followers_of`, importing inside the tag. `followers.html` counts with `follower_count`. Tests: the count is the number of follows of that object; `follower_count` issues one query; the list shows the first eight followers and says how many more; none draws the empty state; `plain` leaves out the heading.
+`followers_of`, importing inside the tag. Tests: the count is the number of follows of that object; counting issues one query; the list shows the first eight followers and says how many more; none draws the empty state; `plain` leaves out the heading.
 
 - [ ] T004 [US1] Any template can be replaced, and the documentation
 
 **Files**: `tests/templates/…`, `tests/test_templates/test_overrides.py`, `docs/developer/activity.md`, `README.md`, `CHANGELOG.md`, `CONTEXT.md`, `mvp_community/locale/en/LC_MESSAGES/django.po`
 
-Tests: overriding one component (`recent`, `follow`, `followers`) or page (`feed.html`, `following.html`) uses the project's template and leaves the rest. Documentation per plan, *Documentation*.
+Tests: overriding each of the nine templates (`recent`, `feed`, `entry`, `name`, `follow`, `followers`, `following_card`, `feed.html`, `following.html`) uses the project's template and leaves the rest. Documentation per plan, *Documentation*.
 
 ---
 
@@ -54,7 +54,7 @@ Issue: #15. Delivers FR-003, FR-004, FR-005, FR-011, FR-012, FR-013.
 
 **Files**: `mvp_community/templates/cotton/mvp_community/activity/follow.html`, `mvp_community/templatetags/mvp_community_activity.py` (read only), `views.py`, `urls.py`, `tests/test_integrations/test_activity/test_views.py`, `tests/test_integrations/test_activity/test_components.py`
 
-The component as plan, *The follow control*, and `FollowControlView` with the `follow_control` route. Tests: not following → the form posts to the follow address and the button is Follow; following → the stop-following address, Unfollow; the count is shown; signed out → a link to sign in carrying `next`; a person's own control has no form; the form carries `hx-post` to the follow address whose `next` is the control route, and the fallback `action` whose `next` is the page; `data-follow-control` on the wrapper; posting to django-activity-stream's follow address with that `next` and following the redirect returns the control showing Unfollow and the count one higher, and the reverse; the control route 404s for an unknown type or object; an off-site `next` is replaced by nothing.
+The component as plan, *The follow control*, and `FollowControlView` with the `follow_control` route. Tests: not following → the form posts to the follow address and the button is Follow; following → the stop-following address, Unfollow; the count is shown; signed out → a link to sign in carrying `next`; a person's own control has no form; the form carries `hx-post` to the follow address whose `next` is the control route, and the fallback `action` whose `next` is the page; `data-follow-control` on the wrapper; posting to django-activity-stream's follow address with that `next` and following the redirect returns the control showing Unfollow and the count one higher, and the reverse; the control route redirects a signed-out request to sign in and 404s for an unknown type, an unknown object or an unregistered model; only the four follow routes of django-activity-stream resolve under `activity/`; an off-site `next` is replaced by nothing.
 
 - [ ] T006 [US2] The feed page
 
@@ -74,4 +74,4 @@ Issue: #16. Delivers FR-010, FR-012, FR-013.
 
 **Files**: `views.py`, `mvp_community/templates/mvp_community/activity/following.html`, `mvp_community/templates/cotton/mvp_community/activity/following_card.html`, `mvp_community/templates/mvp/account/overview.html`, `tests/test_integrations/test_activity/test_views.py`, `tests/test_integrations/test_activity/test_menus.py`
 
-`FollowingView` per plan. Tests: signed out redirects; lists everything the person follows, newest first, each linking to its page where it has one; each row carries a follow control showing Unfollow; following nothing draws the empty state; 20 a page; the Account Center landing page has the following card linking to the page, and a project without the activity URLs gets no card.
+`FollowingView` per plan. Tests: signed out redirects; lists everything the person follows, newest first, each linking to its page where it has one; each row carries a follow control showing Unfollow, and stopping following through it removes the row; following nothing draws the empty state; 20 a page; the Account Center landing page has the following card linking to the page, and a project without the activity URLs gets no card.
