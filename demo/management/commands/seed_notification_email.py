@@ -13,7 +13,7 @@ from generic_notifications.models import (
 )
 from generic_notifications.registry import registry
 
-from mvp_community.templatetags.mvp_community_notifications import UNSUBSCRIBE_SALT
+from mvp_community.integrations.notifications.unsubscribe import UNSUBSCRIBE_SALT
 
 REALTIME = [
     (

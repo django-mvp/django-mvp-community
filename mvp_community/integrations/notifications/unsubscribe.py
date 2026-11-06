@@ -6,7 +6,7 @@ from django.urls import reverse
 from generic_notifications.registry import registry
 from mvp.templatetags.mvp_email import EmailSite
 
-from mvp_community.templatetags.mvp_community_notifications import UNSUBSCRIBE_SALT
+UNSUBSCRIBE_SALT = "mvp_community.notifications.unsubscribe"
 
 
 def _always_emailed(notification_type):

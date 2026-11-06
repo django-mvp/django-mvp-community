@@ -12,8 +12,14 @@ from generic_notifications.models import (
 from generic_notifications.registry import registry
 from post_office.models import STATUS, Email
 
-from demo.notifications import CourseUpdated, ReplyReceived, SecurityNotice
+from demo.notifications import (
+    CourseUpdated,
+    NewFollower,
+    ReplyReceived,
+    SecurityNotice,
+)
 from mvp_community.integrations.notifications.channels import NotificationEmailChannel
+from mvp_community.integrations.notifications.unsubscribe import UnsubscribeLink
 
 # The root element every branded email layout draws.
 LAYOUT_ROOT = "<html lang="
@@ -231,3 +237,48 @@ class TestDigests:
         html = Email.objects.get().html_message
         assert ReplyReceived.name in html
         assert CourseUpdated.name not in html
+
+
+class TestUnsubscribeHeaders:
+    @pytest.fixture
+    def link(self, person):
+        return UnsubscribeLink.for_email(person, [ReplyReceived.key])
+
+    def test_a_notification_carries_the_address_and_the_one_click_header(
+        self, person, realtime, link
+    ) -> None:
+        send_notification(recipient=person, notification_type=ReplyReceived)
+
+        email = Email.objects.get()
+        assert email.headers["List-Unsubscribe"] == f"<{link.url()}>"
+        assert email.headers["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
+
+    def test_the_footer_links_to_the_same_address(self, person, realtime, link) -> None:
+        send_notification(recipient=person, notification_type=ReplyReceived)
+
+        email = Email.objects.get()
+        assert f'href="{link.url()}"' in email.html_message
+        assert link.url() in email.message
+
+    def test_a_digest_carries_an_address_naming_every_type_in_it(self, person) -> None:
+        send_notification(recipient=person, notification_type=ReplyReceived)
+        send_notification(recipient=person, notification_type=NewFollower)
+
+        send_notification_digests(registry.get_frequency("daily"))
+
+        email = Email.objects.get()
+        address = email.headers["List-Unsubscribe"].strip("<>")
+        expected = UnsubscribeLink.for_email(
+            person, [ReplyReceived.key, NewFollower.key]
+        ).url()
+        assert address == expected
+        assert email.headers["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
+
+    def test_an_always_sent_type_carries_no_header_and_no_link(self, person) -> None:
+        send_notification(recipient=person, notification_type=SecurityNotice)
+
+        email = Email.objects.get()
+        assert "List-Unsubscribe" not in email.headers
+        assert "List-Unsubscribe-Post" not in email.headers
+        assert "/notifications/unsubscribe/" not in email.html_message
+        assert "/notifications/unsubscribe/" not in email.message

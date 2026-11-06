@@ -6,6 +6,8 @@ from django.utils import translation
 from generic_notifications.channels import EmailChannel
 from generic_notifications.registry import registry
 
+from mvp_community.integrations.notifications.unsubscribe import UnsubscribeLink
+
 
 class NotificationEmailChannel(EmailChannel):
     """Notification email, written in the recipient's language and queued by the mail extra.
@@ -52,7 +54,9 @@ class NotificationEmailChannel(EmailChannel):
         Args:
             notification: The notification to send.
         """
-        self.unsubscribe_link = None
+        self.unsubscribe_link = UnsubscribeLink.for_email(
+            notification.recipient, [notification.notification_type]
+        )
         with translation.override(self.recipient_language(notification.recipient)):
             super().send_now(notification)
 
@@ -63,10 +67,13 @@ class NotificationEmailChannel(EmailChannel):
             notifications: The notifications to include, all for one person.
             frequency: The digest's frequency class.
         """
-        self.unsubscribe_link = None
         first = notifications.first()
         if first is None:
             return
+        self.unsubscribe_link = UnsubscribeLink.for_email(
+            first.recipient,
+            notifications.values_list("notification_type", flat=True).distinct(),
+        )
         with translation.override(self.recipient_language(first.recipient)):
             super().send_digest(notifications, frequency)
 
@@ -74,9 +81,15 @@ class NotificationEmailChannel(EmailChannel):
         """Give the headers the email being sent carries.
 
         Returns:
-            A dict of header names to values.
+            A dict of header names to values: the unsubscribe address and the
+            one-click request, or nothing when the email carries no link.
         """
-        return {}
+        if self.unsubscribe_link is None:
+            return {}
+        return {
+            "List-Unsubscribe": f"<{self.unsubscribe_link.url()}>",
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        }
 
     def send_email(self, recipient, subject, text_message, html_message=None):
         """Send the email through Django's mail backend.

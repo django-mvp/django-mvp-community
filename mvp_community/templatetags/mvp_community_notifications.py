@@ -30,28 +30,27 @@ def notifications_unread_count(context):
     return get_unread_count(user)
 
 
-UNSUBSCRIBE_SALT = "mvp_community.notifications.unsubscribe"
-
-
 @register.simple_tag
-def notification_unsubscribe_token(recipient, *type_keys):
-    """Sign which person and which notification types an unsubscribe link turns off.
+def notification_unsubscribe_url(recipient, type_keys):
+    """Give the address that turns these notification types' email off.
+
+    The unsubscribe module is imported inside the tag for the reason
+    ``notifications_unread_count`` imports its library there.
 
     Args:
         recipient: The person the email is sent to.
-        *type_keys: The notification type keys, or lists of them.
+        type_keys: A notification type key, or several.
 
     Returns:
-        A signed token for the unsubscribe page's address.
+        An absolute address, or an empty string when every type is one the
+        project always sends by email.
     """
-    from django.core import signing
+    from mvp_community.integrations.notifications.unsubscribe import UnsubscribeLink
 
-    keys = []
-    for item in type_keys:
-        keys.extend([item] if isinstance(item, str) else list(item))
-    return signing.dumps(
-        {"u": recipient.pk, "t": sorted(set(keys))}, salt=UNSUBSCRIBE_SALT
-    )
+    if isinstance(type_keys, str):
+        type_keys = [type_keys]
+    link = UnsubscribeLink.for_email(recipient, type_keys)
+    return link.url() if link else ""
 
 
 @register.simple_tag

@@ -21,9 +21,11 @@ from generic_notifications.types import NotificationType
 from generic_notifications.utils import get_unread_count
 
 from demo.notifications import NewFollower, ReplyReceived, SecurityNotice
-from mvp_community.integrations.notifications.unsubscribe import UnsubscribeLink
+from mvp_community.integrations.notifications.unsubscribe import (
+    UNSUBSCRIBE_SALT,
+    UnsubscribeLink,
+)
 from mvp_community.integrations.notifications.views import PreferencesView
-from mvp_community.templatetags.mvp_community_notifications import UNSUBSCRIBE_SALT
 
 SIGN_IN_URL = resolve_url(settings.LOGIN_URL)
 LIST_URL = reverse("mvp_community_notifications:list")
