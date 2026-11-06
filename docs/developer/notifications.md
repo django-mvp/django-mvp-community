@@ -218,6 +218,8 @@ The link does not expire, and its signed payload holds the person's id and the t
 
 The address opens a page that asks the person to confirm before anything changes, so a mail scanner that opens the link changes nothing. The page works for a signed-out visitor, including in a project that uses `LoginRequiredMiddleware`. A mail app's one-click request (`List-Unsubscribe=One-Click`) is answered with status 200 and no page, or 400 for a link that does not read.
 
+The header reaches mail apps intact when email leaves through a django-anymail provider backend, which hands headers to the provider as they are. Django's own SMTP backend cannot send it intact: the address is longer than one header line, and Python's email package folds a long unbroken value into encoded words, which mail apps do not read as an address. Over SMTP the footer link still works, and the mail app's own button does not appear.
+
 ## Refresh the bell after sending
 
 The bell refreshes itself every 60 seconds. To refresh it sooner, for example after a request your own page makes with htmx, answer that request with the `HX-Trigger` header set to `notifications:changed`:

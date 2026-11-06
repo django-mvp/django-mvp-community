@@ -77,3 +77,9 @@
 **Decision:** every registration in `configure` is forced.
 **Why:** the registry skips a class it has seen before, even after an unregister, so `configure` could not be called twice.
 **ADR:** none — local to one function.
+
+## D14 — The one-click header needs a django-anymail provider backend
+
+**Decision:** the documentation says the `List-Unsubscribe` header reaches mail apps intact only through a django-anymail provider backend. Over Django's SMTP backend the footer link is the way to unsubscribe.
+**Why:** Python's email package folds a header value longer than a line, with no spaces to break at, into RFC 2047 encoded words, and the signed address is always longer than that. django-anymail passes headers to the provider unfolded, checked with its test backend. The mail extra already routes email through django-anymail.
+**ADR:** none — a limit of Django's SMTP path, recorded in the documentation.
