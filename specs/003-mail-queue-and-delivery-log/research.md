@@ -16,7 +16,7 @@ Investigated against django-post-office 3.12.0, django-anymail 15.2, django-cott
 - The admin is django-post-office's own: `Email` (searchable by `to` and `subject`, with its `Log` rows inline), `Log` and `EmailTemplate` (with translations inline when `USE_I18N` is on). Template fields are validated with `validate_template_syntax`, so a stored template that would not render is refused on save. Every admin page requires staff and the model permission.
 - A stored template is sent with `post_office.mail.send(recipients, sender, template="name", language="de", context={...})`. It is rendered when it is queued, from a string, with the active language. A missing translation raises `EmailTemplate.DoesNotExist` before any row is written.
 - Rendering from a string supports `{% extends "mvp/email/base.html" %}`, and the layout's inline styles are applied. Cotton components do not compile in a string (`<c-mvp.email.button>` arrives as raw markup). See `decisions.md`.
-- Sending inside `translation.override(language)` makes the layout's `lang` attribute and footer match the translation.
+- `mail.send(..., language=<code>)` picks the translation (`post_office/mail.py:197-201`). Sending inside `translation.override(<code>)` as well puts the layout's `lang` attribute in that language. django-mvp ships no translation catalogue, so the layout's default footer stays English: a translation writes its own `footer` block.
 
 ## What already exists
 

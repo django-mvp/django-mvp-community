@@ -18,7 +18,7 @@ Issue: #20. Delivers FR-001 to FR-008, FR-012, FR-013.
 
 - [ ] T001 [US1] The extra and the demo's configuration
 
-**Files**: `pyproject.toml`, `uv.lock`, `demo/settings.py`, `tests/test_demo.py`
+**Files**: `pyproject.toml`, `uv.lock`, `demo/settings.py`, `demo/urls.py`, `tests/test_demo.py`
 
 The extra's two packages, `mail` in the development extras, deptry `DEP002`. The demo configured per plan, *The demo*. Tests 1 to 3 of plan, *Tests*.
 
@@ -26,7 +26,7 @@ The extra's two packages, `mail` in the development extras, deptry `DEP002`. The
 
 **Files**: `demo/management/commands/seed_mail.py`, `tests/test_demo.py`
 
-Tests 4 to 6 of plan, *Tests*, then the command.
+Tests 4 and 5 of plan, *Tests*, then the command (no test of its own).
 
 - [ ] T003 [US1] Documentation: installing, the settings, sending the queue, sending a stored template
 
