@@ -28,8 +28,9 @@ _Avoid_: plugin, module, add-on.
 **Integration module**:
 A Python module in this package that imports an extra's packages. A host
 project imports it only when it uses that extra, so the base install never
-imports a package it may not have. Each extra has one, named
-`mvp_community.integrations.<extra>`, as a module or a package. Nothing outside
+imports a package it may not have. Each extra with code of its own has one,
+named `mvp_community.integrations.<extra>`, as a module or a package. The mail
+extra has none: it is settings alone. Nothing outside
 `mvp_community.integrations` imports an extra's packages.
 _Avoid_: adapter, backend.
 

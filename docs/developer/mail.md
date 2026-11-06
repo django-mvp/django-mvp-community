@@ -30,6 +30,8 @@ Install the extra, apply four settings and create the tables.
    EMAIL_BACKEND = "post_office.EmailBackend"
    ```
 
+   Django 6.1 deprecates `EMAIL_BACKEND` in favour of `MAILERS`, and django-post-office reads either. `EMAIL_BACKEND` works on every Django version this package supports, so it is the form shown here.
+
 4. Name the backend django-post-office hands queued email to, in `POST_OFFICE`. This is where django-anymail comes in. Anymail's backend for Mailgun is shown; use your provider's:
 
    ```python
@@ -81,6 +83,41 @@ The log keeps each email's full body, so it grows with every email you send. Del
 ```bash
 python manage.py cleanup_mail --days=30 --delete-attachments
 ```
+
+## Check what was sent
+
+Every email the project sends is listed in the admin under **Post Office → Emails**, newest first.
+
+1. Search for the recipient's address to list only the emails sent to them.
+2. Each row shows the recipients, the subject, when it was last updated and its status: queued, sent or failed.
+3. Open an email to see its logs. A failed email has a log entry with the error the provider or the connection gave.
+
+"Sent" means the provider accepted the email. What happened after that, whether it reached the inbox, bounced or was marked as spam, is not recorded. Your provider's own dashboard has that, and a service built for bulk mail has it per recipient.
+
+The log keeps each email's full body, including one-time links such as password resets and sign-in codes. Give the permissions to view django-post-office's Email, Log and Email template models only to staff you trust with those links, and remove old email with `cleanup_mail` as described above.
+
+## Write a stored template
+
+A stored template is written and translated in the admin, under **Post Office → Email templates**, and changed there whenever its wording needs to change. No code change or deploy is needed.
+
+1. Add an email template. Give it a name, the name your code sends it by, and a subject.
+2. Write the HTML content on django-mvp's email layout, in plain `h1`, `h2`, `p`, `ul`, `li` and `a`, which the layout styles:
+
+   ```django
+   {% extends "mvp/email/base.html" %}
+   {% block preheader %}Your account is ready.{% endblock %}
+   {% block body %}
+     <h1>Welcome, {{ name }}</h1>
+     <p>Your account is ready.</p>
+   {% endblock %}
+   ```
+
+   django-mvp's email components, such as `<c-mvp.email.button>`, do not work in a stored template. django-post-office renders it from the database rather than from a file, and Cotton only compiles templates it loads from files. An email that needs them stays a template file in your project.
+3. Write the plain-text content as well, for mail clients that show no HTML.
+4. Add a translation for each language below the template: its language, subject and content, written the same way. A translation that should not carry the layout's English footer writes its own `footer` block, as shown below.
+5. Save. A template that would not render, such as one with an unclosed tag, is refused with the error, and the saved version keeps being sent.
+
+The next email sent from the template carries the change.
 
 ## Send a stored template
 
