@@ -57,3 +57,11 @@ Issue: #22. Delivers FR-007, FR-009, FR-011.
 **Files**: `docs/developer/mail.md`
 
 Section 5 of plan, *Documentation*. No test: the admin and template validation are django-post-office's.
+
+---
+
+## Review fixes
+
+- [x] T006 [US3] An edit to a translation reaches the next email, and the send example names no language for the template's own wording
+
+**Files**: `tests/test_demo.py`, `docs/developer/mail.md`
