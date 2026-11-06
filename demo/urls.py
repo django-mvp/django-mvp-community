@@ -1,5 +1,6 @@
 """URL routes for the demo project."""
 
+from django.contrib import admin
 from django.urls import include, path
 
 from demo.views import (
@@ -13,6 +14,7 @@ from demo.views import (
 from mvp_community.integrations.activity.views import ActivityFeedView
 
 urlpatterns = [
+    path("admin/", admin.site.urls),
     path("", OverviewView.as_view(), name="overview"),
     path(
         "send-notification/",
