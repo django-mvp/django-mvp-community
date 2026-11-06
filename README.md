@@ -110,8 +110,9 @@ project switches an extra on by installing it and importing from that module.
 
 The `notifications` extra is built and documented in
 [Notifications](https://github.com/django-mvp/django-mvp-community/blob/main/docs/developer/notifications.md):
-a bell in the header, a notifications page, and notification preferences in
-the Account Center.
+a bell in the header, a notifications page, notification preferences in
+the Account Center, and, with the `mail` extra, notifications by email in real
+time or as a daily or weekly digest.
 
 The `activity` extra is built and documented in
 [Activity](https://github.com/django-mvp/django-mvp-community/blob/main/docs/developer/activity.md):

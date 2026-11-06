@@ -74,9 +74,49 @@ Install the extra, add four settings and include the URLs.
 
 Signed in, the bell now appears in the header, and the Account Center has a Notifications entry and a card. The routes are listed under [Pages and routes](#pages-and-routes).
 
-## What django-generic-notifications adds by itself
+## Send notifications by email
 
-Installing django-generic-notifications registers an Email channel and a "System Message" notification type. Both appear on the preferences page in every project, and System Message notifications are always sent by email. Email notifications are sent through Django's own email settings, so configure `EMAIL_BACKEND` before sending any.
+Email is a channel of the preferences page only when the mail extra is installed, because its messages are queued and logged by django-post-office. Without the mail extra the website is the only channel and the preferences page draws no email column.
+
+1. Install the `mail` extra and set it up as described in [Mail](mail.md):
+
+   ```bash
+   pip install "django-mvp-community[notifications,mail]"
+   ```
+
+2. Add `django.contrib.sites` to `INSTALLED_APPS`, set `SITE_ID = 1`, and set the site's domain to the address people reach your site at, such as `example.org`. Every link in an email is built from it, so a domain left as `example.com` sends people to the wrong site. Change it in the admin, or in a data migration.
+
+3. Name the package's email channel, not django-generic-notifications' own, wherever a notification type lists channels:
+
+   ```python
+   from generic_notifications.types import NotificationType, register
+
+   from mvp_community.integrations.notifications.channels import NotificationEmailChannel
+
+
+   @register
+   class SecurityNotice(NotificationType):
+       key = "security_notice"
+       name = "Security notices"
+       description = "Sign-ins from a new device and changes to your account"
+       required_channels = [NotificationEmailChannel]
+   ```
+
+   django-generic-notifications compares channels by identity, so a type that names its own `EmailChannel` stops matching once the package's channel is registered. Django's system check `mvp_community.E001` reports each such type and names the class to use instead.
+
+A notification now reaches a person by email when email is on for its type, they have an address, and the type's frequency is real-time. A type with a required channel is always sent at once, whatever frequency is stored for it. Each email is written on django-mvp's email layout and queued by django-post-office.
+
+## What django-generic-notifications adds by itself, and what this package changes
+
+django-generic-notifications registers an Email channel, a "System Message" notification type and two frequencies, real-time and daily. When the notifications extra starts, `mvp_community.integrations.notifications.setup.configure` changes that:
+
+- It registers a weekly frequency beside the daily one.
+- It removes "System Message", so the preferences page lists only the types your project declares. A project that wants one registers its own type.
+- It replaces django-generic-notifications' Email channel with `NotificationEmailChannel`, when the mail extra is installed. Without the mail extra it removes the Email channel and registers none.
+
+`NotificationEmailChannel` is registered under the key `email`, so stored preferences and the existing channel name keep working. `configure` can be called again with either value, and leaves the same registry each time.
+
+Email notifications are sent through Django's own email settings, so configure `EMAIL_BACKEND` before sending any. With the mail extra that is the django-post-office backend.
 
 ## Declare a notification type
 
@@ -124,6 +164,41 @@ send_notification(
 
 The person sees it on the notifications page and in the bell's count when the website channel is on for that type. A notification with a `url` opens that address and is marked read on the way. One without a `url` is drawn as plain text.
 
+## Send digests
+
+A person who chose a daily or weekly frequency for a type gets that type's notifications in one email, not one email each. The digest holds the person's unread notifications of the types they chose for that frequency, grouped by type. Notifications they have already read, or already been emailed, are left out. A person with none gets no email, and a type with no stored choice follows the frequency the type declares, which is daily unless it says otherwise.
+
+Digests are sent by django-generic-notifications' management command. Run it on a schedule, once for each frequency:
+
+```bash
+python manage.py send_notification_digests --frequency daily
+python manage.py send_notification_digests --frequency weekly
+```
+
+For example, in cron, daily at 07:00 and weekly on Monday at 07:00:
+
+```cron
+0 7 * * * cd /srv/site && python manage.py send_notification_digests --frequency daily
+0 7 * * 1 cd /srv/site && python manage.py send_notification_digests --frequency weekly
+```
+
+`--dry-run` shows what would be sent without sending it. The command logs an unknown frequency and exits 0, so read its log when a digest does not arrive. Weekly digests only exist once `configure` has run, which happens when the extra starts.
+
+## Write email in the person's language
+
+Each email is rendered in the language `NotificationEmailChannel.recipient_language(user)` returns. Django stores no language per person, so the default is the site's `LANGUAGE_CODE`. A project that stores one subclasses the channel, registers the subclass under `email` in place of the package's, and returns it:
+
+```python
+from mvp_community.integrations.notifications.channels import NotificationEmailChannel
+
+
+class ProfileLanguageChannel(NotificationEmailChannel):
+    def recipient_language(self, user):
+        return user.profile.language
+```
+
+Register the subclass from `AppConfig.ready()`, after the notifications extra has started, with `registry.register_channel(ProfileLanguageChannel, force=True)`. Name the subclass, not `NotificationEmailChannel`, in a type's channels, because channels are compared by identity.
+
 ## Refresh the bell after sending
 
 The bell refreshes itself every 60 seconds. To refresh it sooner, for example after a request your own page makes with htmx, answer that request with the `HX-Trigger` header set to `notifications:changed`:
@@ -148,6 +223,10 @@ Any template or component named below can be replaced by putting a file of the s
 | `mvp_community/notifications/preferences.html` | The preferences page |
 | `mvp_community/notifications/bell_partial.html` | What the `bell` route returns |
 | `mvp/account/overview.html` | The Account Center landing page, which places the card |
+| `notifications/email/realtime/message.html`, `message.txt`, `subject.txt` | One notification email: its HTML part, plain text part and subject |
+| `notifications/email/realtime/<type key>.html`, `<type key>.txt`, `<type key>_subject.txt` | The same three for one notification type only, found before the general ones |
+| `notifications/email/digest/message.html`, `message.txt`, `subject.txt` | A daily or weekly digest. The subject switches on `frequency.key` |
+| `notifications/email/unsubscribe_footer.html` | The footer both kinds of email include |
 
 Replacing one leaves the rest of the feature as it was.
 
