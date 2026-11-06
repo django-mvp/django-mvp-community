@@ -4,12 +4,12 @@
 {% load i18n mvp_community_activity %}
 <c-vars object plain />
 {% followers_of object as followers %}
-{% with count=followers|length %}
+{% with count=followers.count people=followers|slice:":8" %}
   {% blocktrans count counter=count asvar heading %}{{ counter }} follower{% plural %}{{ counter }} followers{% endblocktrans %}
   <c-mvp.card title="{% if not plain %}{{ heading }}{% endif %}" tight only>
-    {% if followers %}
+    {% if people %}
       <c-list only>
-        {% for person in followers|slice:":8" %}
+        {% for person in people %}
           {% firstof person.get_full_name person as name %}
           <c-list.row class="items-center" only>
             <c-avatar placeholder="{{ name|make_list|first|upper }}" class="shrink-0" content_class="size-8 rounded-full bg-neutral text-neutral-content" only />

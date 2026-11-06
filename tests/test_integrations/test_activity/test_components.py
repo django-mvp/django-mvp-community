@@ -2,7 +2,9 @@
 
 import pytest
 from django.contrib.auth.models import AnonymousUser, Group
+from django.db import connection
 from django.test import RequestFactory
+from django.test.utils import CaptureQueriesContext
 
 from tests.factories import UserFactory
 
@@ -210,3 +212,80 @@ class TestActivityName:
 
         assert "A place" in markup
         assert "<a " not in markup
+
+
+class TestFollowersList:
+    FOLLOWERS = "c-mvp_community.activity.followers"
+
+    def following(self, group, make_follow, count):
+        people = [
+            UserFactory(first_name=f"Follower{n:02d}", last_name="Fan")
+            for n in range(count)
+        ]
+        for follower in people:
+            make_follow(follower, group)
+        return people
+
+    def drawn(self, markup, people):
+        return [p for p in people if p.first_name in markup]
+
+    def test_it_shows_how_many_follow(self, render, group, make_follow) -> None:
+        self.following(group, make_follow, 3)
+
+        assert "3 followers" in render(
+            f'<{self.FOLLOWERS} :object="group" />', group=group
+        )
+
+    def test_it_lists_the_followers(self, render, group, make_follow) -> None:
+        people = self.following(group, make_follow, 3)
+
+        markup = render(f'<{self.FOLLOWERS} :object="group" />', group=group)
+
+        assert self.drawn(markup, people) == people
+
+    def test_it_lists_eight_and_says_how_many_more(
+        self, render, group, make_follow
+    ) -> None:
+        people = self.following(group, make_follow, 11)
+
+        markup = render(f'<{self.FOLLOWERS} :object="group" />', group=group)
+
+        assert len(self.drawn(markup, people)) == 8
+        assert "3 more" in markup
+
+    def test_one_past_eight_says_one_more(self, render, group, make_follow) -> None:
+        self.following(group, make_follow, 9)
+
+        assert "1 more" in render(f'<{self.FOLLOWERS} :object="group" />', group=group)
+
+    def test_it_says_nothing_more_when_eight_or_fewer_follow(
+        self, render, group, make_follow
+    ) -> None:
+        self.following(group, make_follow, 8)
+
+        markup = render(f'<{self.FOLLOWERS} :object="group" />', group=group)
+
+        assert " more" not in markup
+
+    def test_counting_asks_one_question(self, render, group, make_follow) -> None:
+        self.following(group, make_follow, 11)
+
+        with CaptureQueriesContext(connection) as queries:
+            render(f'<{self.FOLLOWERS} :object="group" />', group=group)
+
+        assert sum("COUNT(" in query["sql"] for query in queries) == 1
+        assert len(queries) == 2
+
+    def test_nobody_following_draws_no_rows(self, render, group) -> None:
+        markup = render(f'<{self.FOLLOWERS} :object="group" />', group=group)
+
+        assert "<li" not in markup
+
+    def test_plain_leaves_out_the_heading(self, render, group, make_follow) -> None:
+        self.following(group, make_follow, 2)
+
+        with_heading = render(f'<{self.FOLLOWERS} :object="group" />', group=group)
+        plain = render(f'<{self.FOLLOWERS} :object="group" plain />', group=group)
+
+        assert "2 followers" in with_heading
+        assert "2 followers" not in plain
