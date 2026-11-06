@@ -9,7 +9,7 @@
     <c-mvp.text muted tight size="sm" class="whitespace-nowrap" only>{% blocktrans count counter=count %}{{ counter }} follower{% plural %}{{ counter }} followers{% endblocktrans %}</c-mvp.text>
     {% if request.user.is_authenticated and object == request.user %}
     {% elif request.user.is_authenticated %}
-      <form method="post" action="{% follow_all_url object %}?next={{ request.get_full_path|urlencode }}" hx-boost="true" hx-swap="innerHTML show:none">
+      <form method="post" action="{% follow_all_url object %}?next={{ request.get_full_path|urlencode }}" hx-boost="true" hx-swap="show:none">
         {% if request.user|is_following:object %}
           <c-button type="submit" size="{{ size }}" outline icon="activity.unfollow" text="{% trans "Unfollow" %}" only />
         {% else %}
