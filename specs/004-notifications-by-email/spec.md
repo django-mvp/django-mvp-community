@@ -137,8 +137,8 @@ first gathered into the next weekly digest.
    opens their preferences, **Then** it offers no choice of how often, and its email always
    arrives as it happens.
 7. **Given** a person who turns email off for a type, **When** they look at that type, **Then** the
-   choice of how often is not shown, and it returns with their earlier choice when they turn email
-   back on.
+   choice of how often cannot be changed, and their earlier choice is kept for when they turn
+   email back on.
 
 ---
 
@@ -210,7 +210,7 @@ email off for every type the digest gathered.
   has no email address.
 - **FR-005**: For each notification type on for email, a person MUST be able to choose one email
   each time, a daily digest or a weekly digest, and the choice MUST apply to notifications of that
-  type from then on. The choice MUST NOT be shown for a type while its email is off.
+  type from then on. The choice MUST NOT be changeable for a type while its email is off, and MUST be kept.
 - **FR-016**: A notification type the host project always sends on some channel MUST always be
   emailed as it happens, and MUST offer no choice of how often.
 - **FR-017**: The preferences page MUST list only the notification types the host project

@@ -28,7 +28,7 @@ approved.
 
 - Types the host project always sends on some channel (system messages, security notices) are
   always emailed as they happen and offer no choice of how often (FR-016).
-- The choice of how often is hidden while email is off for a type (FR-005).
+- The choice of how often is disabled, not hidden, while email is off for a type, and is kept (FR-005).
 - The unsubscribe link opens a confirmation page and changes nothing by itself, because mail
   security scanners open every link in an email. The mail app's header is the one-click route
   (FR-009, FR-012).
