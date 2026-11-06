@@ -1,0 +1,6 @@
+{% load i18n mvp_email mvp_community_notifications %}{% email_site_name as site_name %}{% email_url "/" as site_url %}
+{% notification_unsubscribe_token recipient type_keys as token %}
+{% email_url "mvp_community_notifications:unsubscribe" token as unsubscribe_url %}
+{% email_url "mvp_community_notifications:preferences" as preferences_url %}
+<p>{% blocktrans %}Sent by <a href="{{ site_url }}">{{ site_name }}</a> because you chose to get these notifications by email.{% endblocktrans %}</p>
+<p><a href="{{ unsubscribe_url }}">{% trans "Unsubscribe" %}</a> &middot; <a href="{{ preferences_url }}">{% trans "Notification preferences" %}</a></p>

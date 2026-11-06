@@ -28,3 +28,43 @@ def notifications_unread_count(context):
     from generic_notifications.utils import get_unread_count
 
     return get_unread_count(user)
+
+
+UNSUBSCRIBE_SALT = "mvp_community.notifications.unsubscribe"
+
+
+@register.simple_tag
+def notification_unsubscribe_token(recipient, *type_keys):
+    """Sign which person and which notification types an unsubscribe link turns off.
+
+    Args:
+        recipient: The person the email is sent to.
+        *type_keys: The notification type keys, or lists of them.
+
+    Returns:
+        A signed token for the unsubscribe page's address.
+    """
+    from django.core import signing
+
+    keys = []
+    for item in type_keys:
+        keys.extend([item] if isinstance(item, str) else list(item))
+    return signing.dumps({"u": recipient.pk, "t": sorted(set(keys))}, salt=UNSUBSCRIBE_SALT)
+
+
+@register.simple_tag
+def notification_type_name(key):
+    """Give a notification type's name from its key, or the key when none is registered.
+
+    Args:
+        key: The notification type's key.
+
+    Returns:
+        The type's name.
+    """
+    from generic_notifications.registry import registry
+
+    for notification_type in registry.get_all_types():
+        if notification_type.key == key:
+            return notification_type.name
+    return key

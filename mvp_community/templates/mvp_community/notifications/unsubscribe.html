@@ -1,0 +1,34 @@
+{% extends "page_view.html" %}
+{% load i18n %}
+{% block title %}{% trans "Unsubscribe" %}{% endblock title %}
+{% block page.heading %}
+  {% if outcome == "done" %}{% trans "You're unsubscribed" %}{% elif outcome == "already" %}{% trans "You're already unsubscribed" %}{% else %}{% trans "This link doesn't work" %}{% endif %}
+{% endblock page.heading %}
+{% block page.lead %}
+  {% if outcome == "done" %}
+    {% blocktrans count counter=types|length %}You won't get this notification by email any more.{% plural %}You won't get these notifications by email any more.{% endblocktrans %}
+  {% elif outcome == "already" %}
+    {% trans "You had already turned these emails off. Nothing has changed." %}
+  {% else %}
+    {% trans "The link may have been copied incompletely. Nothing has changed, and you can turn these emails off in your notification preferences." %}
+  {% endif %}
+{% endblock page.lead %}
+{% block page.content %}
+  {% url 'mvp_community_notifications:preferences' as preferences_url %}
+  {% trans "Turned off by email" as card_title %}
+  {% trans "Notifications on the site are unchanged." as still_on_site %}
+  {% if types %}
+    <c-mvp.card title="{{ card_title }}" only>
+      {% for type in types %}
+        <div class="py-2 {% if not forloop.first %}border-t border-base-200{% endif %}">
+          <span class="font-medium">{{ type.name }}</span>
+          {% if type.description %}<c-mvp.text muted tight size="sm" :text="type.description" only />{% endif %}
+        </div>
+      {% endfor %}
+      <c-mvp.text muted size="sm" :text="still_on_site" only />
+    </c-mvp.card>
+  {% endif %}
+  <div class="flex flex-wrap gap-2 pt-4">
+    <c-button href="{{ preferences_url }}" variant="primary" only>{% trans "Notification preferences" %}</c-button>
+  </div>
+{% endblock page.content %}

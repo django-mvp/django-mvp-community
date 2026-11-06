@@ -1,0 +1,9 @@
+{% load i18n mvp_email mvp_community_notifications %}{% autoescape off %}{% include "notifications/email/digest/subject.txt" %}
+{% for n in notifications %}
+- {{ n.get_subject }}{% if n.get_text %}
+  {{ n.get_text }}{% endif %}{% if n.url %}{% email_url n.url as n_url %}
+  {{ n_url }}{% endif %}
+{% endfor %}
+--
+{% notification_unsubscribe_token recipient notifications_by_type.keys as token %}{% email_url "mvp_community_notifications:unsubscribe" token as unsubscribe_url %}{% trans "Stop these emails:" %} {{ unsubscribe_url }}
+{% email_url "mvp_community_notifications:preferences" as preferences_url %}{% trans "All your notification preferences:" %} {{ preferences_url }}{% endautoescape %}

@@ -1,0 +1,9 @@
+{% load i18n mvp_email mvp_community_notifications %}{% autoescape off %}{{ notification.get_subject }}
+{% if notification.get_text %}
+{{ notification.get_text }}
+{% endif %}{% if notification.url %}{% email_url notification.url as open_url %}
+{{ open_url }}
+{% endif %}
+--
+{% notification_unsubscribe_token recipient notification.notification_type as token %}{% email_url "mvp_community_notifications:unsubscribe" token as unsubscribe_url %}{% trans "Stop these emails:" %} {{ unsubscribe_url }}
+{% email_url "mvp_community_notifications:preferences" as preferences_url %}{% trans "All your notification preferences:" %} {{ preferences_url }}{% endautoescape %}

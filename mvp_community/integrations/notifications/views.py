@@ -1,14 +1,18 @@
 """The notifications page, the bell's refresh and the preferences page."""
 
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core import signing
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
+from django.utils.decorators import method_decorator
 from django.views import View
-from generic_notifications.models import Notification
+from django.views.decorators.csrf import csrf_exempt
+from generic_notifications.models import Notification, NotificationTypeChannelPreference
 from generic_notifications.preferences import (
     get_notification_preferences,
     save_notification_preferences,
@@ -16,6 +20,14 @@ from generic_notifications.preferences import (
 from generic_notifications.registry import registry
 from generic_notifications.utils import get_notifications
 from mvp.views import MVPListView, MVPTemplateView
+
+from mvp_community.templatetags.mvp_community_notifications import UNSUBSCRIBE_SALT
+
+FREQUENCY_LABELS = {
+    "realtime": _("As it happens"),
+    "daily": _("Daily digest"),
+    "weekly": _("Weekly digest"),
+}
 
 
 class NotificationListView(LoginRequiredMixin, MVPListView):
@@ -113,6 +125,10 @@ class PreferencesView(LoginRequiredMixin, MVPTemplateView):
         context = super().get_context_data(**kwargs)
         context["preferences"] = get_notification_preferences(self.request.user)
         context["channels"] = registry.get_all_channels()
+        context["frequencies"] = [
+            (frequency.key, FREQUENCY_LABELS.get(frequency.key, frequency.name))
+            for frequency in registry.get_all_frequencies()
+        ]
         return context
 
     def post(self, request):
@@ -128,3 +144,56 @@ class PreferencesView(LoginRequiredMixin, MVPTemplateView):
         save_notification_preferences(request.user, request.POST)
         messages.success(request, _("Your notification preferences are saved."))
         return redirect("mvp_community_notifications:preferences")
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class UnsubscribeView(MVPTemplateView):
+    """Turn off the email an unsubscribe link was sent with, signed in or not.
+
+    A POST is what a mail app sends from the email's unsubscribe header.
+    """
+
+    template_name = "mvp_community/notifications/unsubscribe.html"
+    page_title = _("Unsubscribe")
+
+    def unsubscribe(self, token):
+        """Read the token and turn email off for its types.
+
+        Args:
+            token: The signed token from the link.
+
+        Returns:
+            The outcome (``done``, ``already`` or ``invalid``) and the types.
+        """
+        try:
+            data = signing.loads(token, salt=UNSUBSCRIBE_SALT)
+            user = get_user_model().objects.get(pk=data["u"])
+        except (signing.BadSignature, KeyError, TypeError, get_user_model().DoesNotExist):
+            return "invalid", []
+        types = [t for t in registry.get_all_types() if t.key in data.get("t", [])]
+        if not types:
+            return "invalid", []
+        changed = False
+        for notification_type in types:
+            enabled = "email" in [c.key for c in notification_type.get_enabled_channels(user)]
+            if enabled:
+                NotificationTypeChannelPreference.objects.update_or_create(
+                    user=user,
+                    notification_type=notification_type.key,
+                    channel="email",
+                    defaults={"enabled": False},
+                )
+                changed = True
+        return ("done" if changed else "already"), types
+
+    def get(self, request, token):
+        """Unsubscribe and say what was turned off."""
+        outcome, types = self.unsubscribe(token)
+        return self.render_to_response(
+            self.get_context_data(outcome=outcome, types=types)
+        )
+
+    def post(self, request, token):
+        """Unsubscribe without a page, as a mail app's one-click button asks."""
+        outcome, _types = self.unsubscribe(token)
+        return HttpResponse(status=400 if outcome == "invalid" else 200)

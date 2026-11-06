@@ -28,6 +28,17 @@
                       {% if row.notification_type.description %}
                         <c-mvp.text muted tight size="sm" :text="row.notification_type.description" only />
                       {% endif %}
+                      {% if frequencies|length > 1 %}
+                        {% blocktrans asvar frequency_label with type=row.notification_type.name %}How often {{ type }} arrive by email{% endblocktrans %}
+                        <label class="mt-2 flex flex-wrap items-center gap-2 font-normal text-sm">
+                          <span class="text-base-content/70">{% trans "By email" %}</span>
+                          <c-form.select name="{{ row.notification_type.key }}__frequency" size="xs" class="w-auto" aria-label="{{ frequency_label }}" only>
+                            {% for key, label in frequencies %}
+                              <option value="{{ key }}"{% if key == row.notification_frequency %} selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                          </c-form.select>
+                        </label>
+                      {% endif %}
                     </th>
                     {% for key, choice in row.channels.items %}
                       <td class="text-center">
