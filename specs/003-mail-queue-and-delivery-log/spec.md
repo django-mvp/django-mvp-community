@@ -42,7 +42,8 @@ still chooses the provider. Digests and unsubscribing come later, with notificat
   rejected) is not recorded. A project that needs per-recipient bounce figures uses a dedicated
   email marketing service (Sam, 2026-11-06).
 - Q: In which language is a stored email sent? → A: The one the sending code names, normally the
-  recipient's. A language with no translation of that email falls back to the email's own wording.
+  recipient's. Sending in a language the stored template has no translation for is refused with an
+  error, and nothing is queued. The sending code sends in the template's own wording instead.
 - Q: Which layout does a stored email use? → A: django-mvp's email layout, the same as every other
   email the project sends, so a stored email and a file template look alike.
 - Q: Does this change how django-mvp, django-mvp-accounts or any other package sends email? → A:
@@ -80,7 +81,7 @@ queue, and find both logged as sent.
    developer's code sends that template by name in that language, **Then** the email is written in
    that translation and laid out in django-mvp's email layout.
 5. **Given** a stored template with no translation for the language asked for, **When** it is sent
-   in that language, **Then** the email is written in the template's own wording.
+   in that language, **Then** sending fails with an error and nothing is queued.
 6. **Given** a provider that refuses an email or cannot be reached, **When** the queue is sent,
    **Then** the log records the failure and its reason, and the email is tried again as the
    project's settings allow.
@@ -165,8 +166,9 @@ the German subject in the admin, send the template in German, and receive the ne
   provider accepted it and, when it failed, why.
 - **FR-006**: The feature MUST NOT record what happens to an email after the provider accepts it.
 - **FR-007**: A host project MUST be able to send an email from a stored template by name, in a
-  language it names, and the email MUST be written in that language's translation, or the
-  template's own wording where it has none.
+  language it names, and the email MUST be written in that language's translation, with the
+  layout's own words in that language too. Sending in a language the template has no translation
+  for MUST be refused.
 - **FR-008**: An email sent from a stored template MUST be laid out in django-mvp's email layout.
 - **FR-009**: Staff MUST be able to change a stored template's subject and wording, and its
   translation for each language, in the admin, and the change MUST apply to the next email sent from
