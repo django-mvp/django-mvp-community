@@ -56,7 +56,7 @@
 
 ## What was ruled by eye
 
-- The frequency choice sits under each type's name and description, labelled "By email", rather
+- The frequency choice sits under each type's name and description, labelled "Email" as a joined text and select, rather
   than in a column of its own: a fourth column did not fit at phone width.
 - The frequency choice is hidden while email is off for a type, and comes back with the person's
   earlier choice when email is turned back on (Sam).
