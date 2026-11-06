@@ -81,3 +81,13 @@ Issue: #16. Delivers FR-010, FR-012, FR-013.
 **Files**: `views.py`, `mvp_community/templates/mvp_community/activity/following.html`, `mvp_community/templates/cotton/mvp_community/activity/following_card.html`, `mvp_community/templates/mvp/account/overview.html`, `tests/test_integrations/test_activity/test_views.py`, `tests/test_integrations/test_activity/test_menus.py`
 
 `FollowingView` per plan. Tests: signed out redirects; lists everything the person follows, newest first, each linking to its page where it has one; each row carries a follow control showing Unfollow, and stopping following through it removes the row; following nothing draws the empty state; 20 a page; the Account Center landing page has the following card linking to the page, and a project without the activity URLs gets no card.
+
+---
+
+## Review fixes
+
+- [x] T008 [US1] Recent activity of what a person follows leaves out their own actions, as the feed view does
+- [x] T009 [US1] The demo's overview links to its mounted feed
+- [x] T010 [US1] Flagged follows are documented
+- [x] T011 [US2] The follow form sends its CSRF token
+- [x] T012 [US2] The test of the control's default return address uses a page other than the fallback
