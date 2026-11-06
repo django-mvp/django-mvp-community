@@ -18,6 +18,11 @@ AppMenu.extend(
             extra_context={"label": "People and groups", "icon": "people"},
         ),
         MenuItem(
+            name="feed",
+            view_name="feed",
+            extra_context={"label": "Your feed", "icon": "activity"},
+        ),
+        MenuItem(
             name="site_activity",
             view_name="site_activity",
             extra_context={"label": "Site activity", "icon": "activity"},

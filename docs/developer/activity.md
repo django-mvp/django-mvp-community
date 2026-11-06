@@ -106,17 +106,20 @@ A feed is a view you mount at an address of your choosing. `ActivityFeedView` li
 
 | Setting | What it does |
 |---|---|
-| `stream` | `"site"` for the public activity of the whole site, or `"object"` for the public activity around one object. |
+| `stream` | `"following"` (the default) for the public activity of what the signed-in person follows, `"site"` for the public activity of the whole site, or `"object"` for the public activity around one object. |
 | `verb` | When set, limits the feed to activity of that kind, such as `"finished"`. |
 | `get_stream_object()` | A method that returns the object an `"object"` feed is about. The default raises `ImproperlyConfigured`. |
 
-Mount a feed of the whole site, and a feed of one kind of activity:
+A following feed never lists the person's own activity, which includes the "started following" activity that following someone records. A signed-out visitor is sent to sign in. The other two streams are open to everyone.
+
+Mount the feed of what a person follows, a feed of the whole site, and a feed of one kind of activity:
 
 ```python
 from mvp_community.integrations.activity.views import ActivityFeedView
 
 urlpatterns = [
-    path("activity/", ActivityFeedView.as_view(stream="site"), name="activity"),
+    path("activity/", ActivityFeedView.as_view(), name="activity"),
+    path("activity/site/", ActivityFeedView.as_view(stream="site"), name="site_activity"),
     path(
         "activity/finished/",
         ActivityFeedView.as_view(stream="site", verb="finished"),

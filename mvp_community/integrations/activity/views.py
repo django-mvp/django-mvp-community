@@ -3,6 +3,7 @@
 from actstream.models import Action, Follow
 from actstream.registry import registry
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import redirect_to_login
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
 from django.http import Http404
@@ -18,6 +19,8 @@ class ActivityFeedView(MVPListView):
 
     Set ``stream`` as a class attribute or as an ``as_view()`` argument:
 
+    - ``"following"`` (the default): the public activity of what the signed-in
+      person follows, never their own. A signed-out visitor is sent to sign in.
     - ``"site"``: the public activity of the whole site.
     - ``"object"``: the public activity around the object ``get_stream_object``
       returns.
@@ -29,8 +32,23 @@ class ActivityFeedView(MVPListView):
     template_name = "mvp_community/activity/feed.html"
     paginate_by = 20
     page_title = _("Activity")
-    stream = None
+    stream = "following"
     verb = ""
+
+    def dispatch(self, request, *args, **kwargs):
+        """Send a signed-out visitor to sign in when the feed is a person's own.
+
+        Args:
+            request: The request.
+            *args: Positional arguments from the URL.
+            **kwargs: Keyword arguments from the URL.
+
+        Returns:
+            The feed, or a redirect to the sign-in page.
+        """
+        if self.stream == "following" and not request.user.is_authenticated:
+            return redirect_to_login(request.get_full_path())
+        return super().dispatch(request, *args, **kwargs)
 
     def get_stream_object(self):
         """Return the object an ``"object"`` feed is about.
@@ -56,6 +74,14 @@ class ActivityFeedView(MVPListView):
             ImproperlyConfigured: When ``stream`` is not one of the three.
         """
         arguments = {"verb": self.verb} if self.verb else {}
+        if self.stream == "following":
+            user = self.request.user
+            # The stream also holds the person's own actions where they act on
+            # something they follow, and the "started following" each follow records.
+            return Action.objects.user(user, **arguments).exclude(
+                actor_content_type=ContentType.objects.get_for_model(user),
+                actor_object_id=str(user.pk),
+            )
         if self.stream == "site":
             # Unlike the other streams, public() does not fetch each action's
             # actor, target and action object in bulk.
@@ -63,7 +89,7 @@ class ActivityFeedView(MVPListView):
         if self.stream == "object":
             return Action.objects.any(self.get_stream_object(), **arguments)
         raise ImproperlyConfigured(
-            f"{type(self).__name__}.stream must be 'site' or 'object', not {self.stream!r}."
+            f"{type(self).__name__}.stream must be 'following', 'site' or 'object', not {self.stream!r}."
         )
 
 

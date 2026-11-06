@@ -22,7 +22,17 @@ urlpatterns = [
     path("people/", PeopleView.as_view(), name="people"),
     path("people/<int:pk>/", PersonView.as_view(), name="person"),
     path("groups/<int:pk>/", GroupView.as_view(), name="group"),
-    # A feed is a view the host project mounts: the whole site's, and one group's.
+    # A feed is a view the host project mounts: what the signed-in person
+    # follows, the whole site's, and one group's.
+    path(
+        "activity/",
+        ActivityFeedView.as_view(
+            page_title="Your feed",
+            page_lead="What the people and things you follow have been doing.",
+            breadcrumbs=[{"text": "Your feed"}],
+        ),
+        name="feed",
+    ),
     path(
         "activity/site/",
         ActivityFeedView.as_view(
