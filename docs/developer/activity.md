@@ -233,7 +233,7 @@ The following page is in the `mvp_community_activity` namespace. django-activity
 
 | Name | Address | What it does |
 |---|---|---|
-| `mvp_community_activity:following` | `account-center/following/` | The signed-in person's follows, newest first, 20 to a page. A signed-out visitor is sent to sign in. |
+| `mvp_community_activity:following` | `account-center/following/` | `FollowingView`: the signed-in person's follows, newest first, 20 to a page. A signed-out visitor is sent to sign in. |
 | `actstream_follow` | `activity/follow/<content_type_id>/<object_id>/` | Follows the object, recording what it does. |
 | `actstream_follow_all` | `activity/follow_all/<content_type_id>/<object_id>/` | Follows the object, recording what it does and what happens to it. |
 | `actstream_unfollow` | `activity/unfollow/<content_type_id>/<object_id>/` | Stops following the object. |

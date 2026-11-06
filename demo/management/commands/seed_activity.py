@@ -15,7 +15,7 @@ PEOPLE = [
     ("ben@example.com", "Ben", "Okafor"),
     ("chloe@example.com", "Chloé", "Martin"),
     ("dmitri@example.com", "Dmitri", "Volkov"),
-    ("esra@example.com", "Esra", "Yılmaz"),
+    ("esra@example.com", "Esra", "Demir"),
     # A name long enough to wrap, so the rows can be judged with one.
     ("max@example.com", "Maximiliane Alexandra", "von Hohenstein-Liebenfels"),
 ]
@@ -52,8 +52,15 @@ class Command(BaseCommand):
         samples = [
             (4, anna, "finished", None, a1, True, ""),
             (25, ben, "joined", None, club, True, ""),
-            (70, chloe, "posted in", None, club, True,
-             "“Has anyone read Der Vorleser? I'd like to start it next week.”"),
+            (
+                70,
+                chloe,
+                "posted in",
+                None,
+                club,
+                True,
+                "“Has anyone read Der Vorleser? I'd like to start it next week.”",
+            ),
             (180, dmitri, "finished", None, clinic, True, ""),
             (300, esra, "started", None, b2, True, ""),
             (400, maxi, "joined", None, a1, True, ""),
@@ -65,14 +72,29 @@ class Command(BaseCommand):
         for n in range(1, 40):
             actor = [anna, ben, chloe][n % 3]
             group = [a1, club, clinic, b2][n % 4]
-            samples.append((2000 + n * 600, actor, ["finished", "joined", "posted in"][n % 3],
-                            None, group, True, ""))
+            samples.append(
+                (
+                    2000 + n * 600,
+                    actor,
+                    ["finished", "joined", "posted in"][n % 3],
+                    None,
+                    group,
+                    True,
+                    "",
+                )
+            )
         for minutes, actor, verb, obj, target, public, description in samples:
             action = Action.objects.create(
-                actor=actor, verb=verb, action_object=obj, target=target,
-                public=public, description=description,
+                actor=actor,
+                verb=verb,
+                action_object=obj,
+                target=target,
+                public=public,
+                description=description,
             )
-            Action.objects.filter(pk=action.pk).update(timestamp=now - timedelta(minutes=minutes))
+            Action.objects.filter(pk=action.pk).update(
+                timestamp=now - timedelta(minutes=minutes)
+            )
 
         regular = user_model.objects.get(email="regular.user@example.com")
         staff = user_model.objects.get(email="staff.user@example.com")
@@ -84,7 +106,9 @@ class Command(BaseCommand):
         for thing in list(people.values()) + list(groups.values()):
             follow(staff, thing, actor_only=False, send_action=False)
         # super.user follows nothing, so the empty feed and following page can be seen.
-        self.stdout.write(self.style.SUCCESS(
-            "regular.user follows Anna, Ben and the Reading club. staff.user follows "
-            "everyone. super.user follows nothing."
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                "regular.user follows Anna, Ben and the Reading club. staff.user follows "
+                "everyone. super.user follows nothing."
+            )
+        )
