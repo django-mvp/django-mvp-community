@@ -14,6 +14,7 @@ from generic_notifications import send_notification
 from mvp.views import MVPTemplateView
 
 from demo.notifications import ReplyReceived
+from mvp_community.integrations.activity.views import ActivityFeedView
 
 
 class OverviewView(MVPTemplateView):
@@ -53,7 +54,9 @@ class PeopleView(MVPTemplateView):
     def get_context_data(self, **kwargs):
         """Add the people and the groups."""
         context = super().get_context_data(**kwargs)
-        context["people"] = get_user_model().objects.exclude(first_name="").order_by("first_name")
+        context["people"] = (
+            get_user_model().objects.exclude(first_name="").order_by("first_name")
+        )
         context["groups"] = Group.objects.order_by("name")
         return context
 
@@ -94,3 +97,18 @@ class GroupView(MVPTemplateView):
     def get_page_title(self):
         """Name the page after the group."""
         return get_object_or_404(Group, pk=self.kwargs["pk"]).name
+
+
+class GroupActivityView(ActivityFeedView):
+    """The public activity around one group."""
+
+    stream = "object"
+    page_lead = "Everything that happened in this group."
+
+    def get_stream_object(self):
+        """Return the group named in the address."""
+        return get_object_or_404(Group, pk=self.kwargs["pk"])
+
+    def get_page_title(self):
+        """Name the page after the group."""
+        return f"Activity in {self.get_stream_object().name}"

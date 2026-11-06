@@ -17,5 +17,10 @@ AppMenu.extend(
             view_name="people",
             extra_context={"label": "People and groups", "icon": "people"},
         ),
+        MenuItem(
+            name="site_activity",
+            view_name="site_activity",
+            extra_context={"label": "Site activity", "icon": "activity"},
+        ),
     ]
 )
