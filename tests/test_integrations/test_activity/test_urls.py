@@ -41,14 +41,16 @@ class TestFollowRoutes:
         with pytest.raises(NoReverseMatch):
             reverse("mvp_community_activity:feed")
 
-    def test_only_the_follow_routes_and_the_following_page_are_mounted(self) -> None:
+    def test_only_the_follow_routes_and_the_package_s_own_pages_are_mounted(
+        self,
+    ) -> None:
         # actstream.urls also mounts a detail page that shows actions which are
         # not public and a page that lists anyone's follows to anyone.
         names = set()
         for pattern in activity_urls.urlpatterns:
             names |= {getattr(inner, "name", None) for inner in _flatten(pattern)}
 
-        assert names - {None} == {*FOLLOW_ROUTES, "following"}
+        assert names - {None} == {*FOLLOW_ROUTES, "following", "follow_control"}
 
     def test_an_action_that_is_not_public_has_no_page(
         self, client, signed_in, person, make_action

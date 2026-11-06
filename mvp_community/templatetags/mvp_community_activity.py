@@ -1,6 +1,10 @@
-"""The one thing django-activity-stream's own tags do not give a template."""
+"""What django-activity-stream's own tags do not give a template."""
+
+from urllib.parse import urlencode
 
 from django import template
+from django.contrib.contenttypes.models import ContentType
+from django.urls import reverse
 
 register = template.Library()
 
@@ -21,3 +25,21 @@ def followers_of(obj):
     from actstream.models import followers
 
     return followers(obj)
+
+
+@register.simple_tag
+def follow_control_url(obj, page=""):
+    """Return the address that draws ``obj``'s follow control on its own.
+
+    Args:
+        obj: The person or object the control belongs to.
+        page: The page the control sits on, which its plain form returns to.
+
+    Returns:
+        The address of the follow control route, carrying ``page`` as ``next`` when given.
+    """
+    address = reverse(
+        "mvp_community_activity:follow_control",
+        args=[ContentType.objects.get_for_model(obj).pk, obj.pk],
+    )
+    return f"{address}?{urlencode({'next': page})}" if page else address

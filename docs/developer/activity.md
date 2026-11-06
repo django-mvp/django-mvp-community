@@ -194,7 +194,18 @@ The follow control shows how many people follow a person or an object beside a F
 ```django
 <c-mvp_community.activity.follow :object="lesson" />
 <c-mvp_community.activity.follow :object="lesson" size="md" />
+<c-mvp_community.activity.follow :object="lesson" next="/lessons/" />
 ```
+
+| Prop | Meaning |
+|---|---|
+| `object` | The person or object to follow. It must be registered with django-activity-stream. |
+| `size` | `xs`, `sm` or `md`: the button's size. |
+| `next` | The page the control sits on. A plain form post and signing in return to it. It defaults to the current page. |
+
+Clicking posts to django-activity-stream's follow address with htmx, and only the control is redrawn: the button changes between Follow and Unfollow and the count changes with it. The control is the element marked `data-follow-control`. Without htmx the form posts normally and returns to `next`.
+
+The control needs htmx on the page, which django-mvp's base template loads.
 
 `size` is `xs`, `sm` or `md`, and sets the button's size.
 
@@ -221,6 +232,7 @@ Any template or component named below can be replaced by putting a file of the s
 | `cotton/mvp_community/activity/follow.html` | The follow control, `<c-mvp_community.activity.follow />` |
 | `cotton/mvp_community/activity/followers.html` | The followers list, `<c-mvp_community.activity.followers />` |
 | `cotton/mvp_community/activity/following_card.html` | The Account Center card, `<c-mvp_community.activity.following_card />` |
+| `mvp_community/activity/follow_control.html` | The follow control on its own, which htmx fetches after a click |
 | `mvp_community/activity/feed.html` | The page `ActivityFeedView` draws |
 | `mvp_community/activity/following.html` | The following page |
 | `mvp/account/overview.html` | The Account Center landing page, which places the card |
@@ -234,6 +246,7 @@ The following page is in the `mvp_community_activity` namespace. django-activity
 | Name | Address | What it does |
 |---|---|---|
 | `mvp_community_activity:following` | `account-center/following/` | `FollowingView`: the signed-in person's follows, newest first, 20 to a page. A signed-out visitor is sent to sign in. |
+| `mvp_community_activity:follow_control` | `activity/control/<content_type_id>/<object_id>/` | `FollowControlView`: draws one object's follow control alone. A signed-out visitor is sent to sign in, and a model not registered with django-activity-stream is not found. Its `next` parameter is used when it is an address on your site. |
 | `actstream_follow` | `activity/follow/<content_type_id>/<object_id>/` | Follows the object, recording what it does. |
 | `actstream_follow_all` | `activity/follow_all/<content_type_id>/<object_id>/` | Follows the object, recording what it does and what happens to it. |
 | `actstream_unfollow` | `activity/unfollow/<content_type_id>/<object_id>/` | Stops following the object. |

@@ -1,10 +1,16 @@
 """The activity components, rendered through a template string as a project places them."""
 
+import html
+import re
+from urllib.parse import parse_qs, urlsplit
+
 import pytest
 from django.contrib.auth.models import AnonymousUser, Group
+from django.contrib.contenttypes.models import ContentType
 from django.db import connection
 from django.test import RequestFactory
 from django.test.utils import CaptureQueriesContext
+from django.urls import reverse
 
 from tests.factories import UserFactory
 
@@ -289,3 +295,130 @@ class TestFollowersList:
 
         assert "2 followers" in with_heading
         assert "2 followers" not in plain
+
+
+class TestFollowControl:
+    FOLLOW = "c-mvp_community.activity.follow"
+
+    @pytest.fixture
+    def draw(self, render, person):
+        def draw_control(attributes="", user=None, **context):
+            who = person if user is None else user
+            context.setdefault("request", request_for(who))
+            context.setdefault("user", who)
+            return render(f"<{self.FOLLOW} {attributes} />", **context)
+
+        return draw_control
+
+    def address(self, name, obj, query=""):
+        return (
+            reverse(name, args=[ContentType.objects.get_for_model(obj).pk, obj.pk])
+            + query
+        )
+
+    def attribute(self, markup, name):
+        return html.unescape(re.search(rf'{name}="([^"]*)"', markup).group(1))
+
+    def test_it_posts_to_the_follow_address_when_not_following(
+        self, draw, group
+    ) -> None:
+        markup = draw(':object="group"', group=group)
+
+        assert self.attribute(markup, "action").startswith(
+            self.address("actstream_follow_all", group)
+        )
+
+    def test_it_posts_to_the_stop_following_address_when_following(
+        self, draw, person, group, make_follow
+    ) -> None:
+        make_follow(person, group)
+
+        markup = draw(':object="group"', group=group)
+
+        assert self.attribute(markup, "action").startswith(
+            self.address("actstream_unfollow", group)
+        )
+
+    def test_it_shows_how_many_follow(self, draw, group, make_follow) -> None:
+        make_follow(UserFactory(), group)
+        make_follow(UserFactory(), group)
+
+        words = re.sub(r"<[^>]+>", " ", draw(':object="group"', group=group)).split()
+
+        assert "2" in words
+
+    def test_a_signed_out_visitor_gets_a_link_to_sign_in_carrying_next(
+        self, draw, group
+    ) -> None:
+        markup = draw(
+            ':object="group" next="/lessons/3/"', user=AnonymousUser(), group=group
+        )
+
+        assert "<form" not in markup
+        assert f'href="{reverse("account_login")}?next=/lessons/3/"' in markup
+
+    def test_a_person_s_own_control_has_the_count_and_no_form(self, draw, person):
+        markup = draw(':object="person"', person=person)
+
+        assert "<form" not in markup
+        assert "data-follow-control" in markup
+
+    def test_the_wrapper_is_the_one_element_htmx_replaces(self, draw, group) -> None:
+        markup = draw(':object="group"', group=group)
+
+        assert len(re.findall(r"<div[^>]*data-follow-control", markup)) == 1
+        assert self.attribute(markup, "hx-swap") == "outerHTML"
+        assert "hx-boost" not in markup
+
+    def test_htmx_posts_to_the_follow_address_and_asks_for_the_control_back(
+        self, draw, group
+    ) -> None:
+        markup = draw(':object="group" next="/lessons/3/"', group=group)
+
+        posted = urlsplit(self.attribute(markup, "hx-post"))
+        refresh = urlsplit(parse_qs(posted.query)["next"][0])
+
+        assert posted.path == self.address("actstream_follow_all", group)
+        assert refresh.path == self.address(
+            "mvp_community_activity:follow_control", group
+        )
+        assert parse_qs(refresh.query)["next"] == ["/lessons/3/"]
+
+    def test_the_plain_form_returns_to_the_page(self, draw, group) -> None:
+        markup = draw(':object="group" next="/lessons/3/"', group=group)
+
+        action = urlsplit(self.attribute(markup, "action"))
+
+        assert parse_qs(action.query)["next"] == ["/lessons/3/"]
+
+    def test_next_defaults_to_the_current_page(self, draw, group) -> None:
+        markup = draw(':object="group"', group=group)
+
+        action = urlsplit(self.attribute(markup, "action"))
+
+        assert parse_qs(action.query)["next"] == ["/"]
+
+    def test_following_through_the_follow_address_and_the_control_route(
+        self, client, signed_in, group, make_follow
+    ) -> None:
+        make_follow(UserFactory(), group)
+        follow = self.address(
+            "actstream_follow_all",
+            group,
+            "?next=" + self.address("mvp_community_activity:follow_control", group),
+        )
+
+        followed = client.post(follow, follow=True)
+        stopped = client.post(
+            self.address(
+                "actstream_unfollow",
+                group,
+                "?next=" + self.address("mvp_community_activity:follow_control", group),
+            ),
+            follow=True,
+        )
+
+        assert self.address("actstream_unfollow", group) in followed.content.decode()
+        assert "2" in re.sub(r"<[^>]+>", " ", followed.content.decode()).split()
+        assert self.address("actstream_follow_all", group) in stopped.content.decode()
+        assert "1" in re.sub(r"<[^>]+>", " ", stopped.content.decode()).split()

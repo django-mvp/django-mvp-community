@@ -27,6 +27,11 @@ pages = [
         views.FollowingView.as_view(),
         name="following",
     ),
+    path(
+        "activity/control/<int:content_type_id>/<str:object_id>/",
+        views.FollowControlView.as_view(),
+        name="follow_control",
+    ),
 ]
 
 follow_routes = [

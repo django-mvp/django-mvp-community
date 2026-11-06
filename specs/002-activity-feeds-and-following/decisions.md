@@ -50,3 +50,10 @@
 **Why:** django-activity-stream's `follow_url` and `follow_all_url` tags reverse `actstream_follow` and its siblings without a namespace. An `app_name` on the module would put those four names behind it and the tags would fail to resolve. The host still adds one include.
 **Revisit if:** django-activity-stream's tags learn to reverse a namespaced route.
 **ADR:** none — local to this extra's URLconf.
+
+## D9 — A tag builds the follow control's refresh address
+
+**Decision:** `follow_control_url obj next` joins `followers_of` in `mvp_community_activity`. It returns the address of the `follow_control` route for an object, carrying `next`. The route is drawn through a small page template, `mvp_community/activity/follow_control.html`, that places the `follow` component.
+**Why:** the control's htmx post needs the content type's number to name the refresh route, and a template has no way to get it. Rendering a Cotton component directly would replace the variables the view passes with the component's defaults, so the view renders a template that places it.
+**Revisit if:** django-activity-stream's tags learn to give a content type's number.
+**ADR:** none — local to this extra.

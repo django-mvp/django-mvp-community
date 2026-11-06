@@ -98,3 +98,103 @@ class TestActivityFeedViewMisconfigured:
     ) -> None:
         with pytest.raises(ImproperlyConfigured):
             client.get(reverse("unknown_stream_activity"))
+
+
+class TestFollowControlView:
+    def address(self, obj, query=None):
+        from django.contrib.contenttypes.models import ContentType
+
+        address = reverse(
+            "mvp_community_activity:follow_control",
+            args=[ContentType.objects.get_for_model(obj).pk, obj.pk],
+        )
+        return f"{address}?{query}" if query else address
+
+    def test_a_signed_out_request_is_sent_to_sign_in(self, client, group) -> None:
+        response = client.get(self.address(group))
+
+        assert response.status_code == 302
+        assert response["Location"].startswith(reverse("account_login"))
+
+    def test_it_draws_the_control_alone(self, client, signed_in, group) -> None:
+        response = client.get(self.address(group))
+
+        content = response.content.decode()
+        assert response.status_code == 200
+        assert "data-follow-control" in content
+        assert "<html" not in content
+
+    def test_it_shows_unfollow_once_followed(
+        self, client, signed_in, group, make_follow
+    ) -> None:
+        make_follow(signed_in, group)
+
+        content = client.get(self.address(group)).content.decode()
+
+        assert (
+            reverse(
+                "actstream_unfollow",
+                args=[_content_type_id(group), group.pk],
+            )
+            in content
+        )
+
+    def test_it_is_get_only(self, client, signed_in, group) -> None:
+        assert client.post(self.address(group)).status_code == 405
+
+    def test_an_unknown_type_is_not_found(self, client, signed_in) -> None:
+        address = reverse("mvp_community_activity:follow_control", args=[999999, "1"])
+
+        assert client.get(address).status_code == 404
+
+    def test_an_unknown_object_is_not_found(self, client, signed_in, group) -> None:
+        address = reverse(
+            "mvp_community_activity:follow_control",
+            args=[_content_type_id(group), "999999"],
+        )
+
+        assert client.get(address).status_code == 404
+
+    def test_an_object_that_is_not_a_number_is_not_found(
+        self, client, signed_in, group
+    ) -> None:
+        address = reverse(
+            "mvp_community_activity:follow_control",
+            args=[_content_type_id(group), "not-a-number"],
+        )
+
+        assert client.get(address).status_code == 404
+
+    def test_a_model_not_registered_with_django_activity_stream_is_not_found(
+        self, client, signed_in
+    ) -> None:
+        from django.contrib.auth.models import Permission
+
+        permission = Permission.objects.first()
+
+        assert client.get(self.address(permission)).status_code == 404
+
+    def test_a_local_next_is_where_the_plain_form_returns_to(
+        self, client, signed_in, group
+    ) -> None:
+        content = client.get(self.address(group, "next=/lessons/3/")).content.decode()
+
+        assert "next=/lessons/3/" in content
+
+    @pytest.mark.parametrize(
+        "next_address", ["https://evil.example/steal", "//evil.example/steal"]
+    )
+    def test_an_off_site_next_is_replaced_by_nothing(
+        self, client, signed_in, group, next_address
+    ) -> None:
+        content = client.get(
+            self.address(group, f"next={next_address}")
+        ).content.decode()
+
+        assert "evil.example" not in content
+
+
+def _content_type_id(obj) -> int:
+    from django.contrib.contenttypes.models import ContentType
+
+    return ContentType.objects.get_for_model(obj).pk
