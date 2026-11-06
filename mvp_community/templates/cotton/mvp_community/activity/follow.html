@@ -1,24 +1,24 @@
-{# @description The follow control for a person or an object: follow or stop following, with how many people follow it. A signed-out visitor is sent to sign in. A person is never offered to follow themselves. #}
+{# @description The follow control for a person or an object: a Follow button, or Unfollow once followed, beside how many people follow it. A signed-out visitor is sent to sign in. A person is never offered to follow themselves. #}
 {# @prop object:text | description:"The person or object to follow." #}
 {# @prop size:select['xs','sm','md'] | default:"sm" | description:"Size of the button." #}
 {% load i18n activity_tags mvp_community_activity %}
 <c-vars object size="sm" />
 {% followers_of object as followers %}
 {% with count=followers|length %}
-  {% if request.user.is_authenticated and object == request.user %}
-    <c-badge ghost>{% blocktrans count counter=count %}{{ counter }} follower{% plural %}{{ counter }} followers{% endblocktrans %}</c-badge>
-  {% elif request.user.is_authenticated %}
-    {% with following=request.user|is_following:object %}
-      <form method="post" action="{% follow_all_url object %}?next={{ request.get_full_path|urlencode }}" hx-boost="true" hx-swap="innerHTML show:none" class="shrink-0">
-        {% if following %}
-          <c-button type="submit" size="{{ size }}" icon="activity.following" aria-pressed="true" only>{% trans "Following" %}<c-badge size="sm" :text="count" only /></c-button>
+  <div class="flex items-center gap-3 shrink-0">
+    <c-mvp.text muted tight size="sm" class="whitespace-nowrap" only>{% blocktrans count counter=count %}{{ counter }} follower{% plural %}{{ counter }} followers{% endblocktrans %}</c-mvp.text>
+    {% if request.user.is_authenticated and object == request.user %}
+    {% elif request.user.is_authenticated %}
+      <form method="post" action="{% follow_all_url object %}?next={{ request.get_full_path|urlencode }}" hx-boost="true" hx-swap="innerHTML show:none">
+        {% if request.user|is_following:object %}
+          <c-button type="submit" size="{{ size }}" outline icon="activity.unfollow" text="{% trans "Unfollow" %}" only />
         {% else %}
-          <c-button type="submit" size="{{ size }}" variant="primary" icon="activity.follow" aria-pressed="false" only>{% trans "Follow" %}<c-badge size="sm" :text="count" only /></c-button>
+          <c-button type="submit" size="{{ size }}" variant="primary" icon="activity.follow" text="{% trans "Follow" %}" only />
         {% endif %}
       </form>
-    {% endwith %}
-  {% else %}
-    {% url "account_login" as login_url %}
-    <c-button href="{{ login_url }}?next={{ request.get_full_path|urlencode }}" size="{{ size }}" variant="primary" icon="activity.follow" class="shrink-0" only>{% trans "Follow" %}<c-badge size="sm" :text="count" only /></c-button>
-  {% endif %}
+    {% else %}
+      {% url "account_login" as login_url %}
+      <c-button href="{{ login_url }}?next={{ request.get_full_path|urlencode }}" size="{{ size }}" variant="primary" icon="activity.follow" text="{% trans "Follow" %}" only />
+    {% endif %}
+  </div>
 {% endwith %}

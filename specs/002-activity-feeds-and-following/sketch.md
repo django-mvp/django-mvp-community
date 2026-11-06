@@ -17,7 +17,7 @@
 - The follow control posts to django-activity-stream's own follow and stop-following addresses, so a host project includes its URLs.
 - Every name in a row links through `get_absolute_url`, so a person or object without one shows as plain text.
 - Every model that acts, is acted on or is followed is registered with django-activity-stream's registry.
-- The project feed and the object feed components show the newest ten. They are not paged, because paging them needs a view of their own.
+- Recent activity needs the stream's total, to decide whether to show the link to the full list.
 
 ## What the sketch faked
 
@@ -26,12 +26,12 @@
 - django-activity-stream's URLs are included by the demo at `activity/`, after this package's feed page.
 - The icons `activity`, `activity.follow`, `activity.following` and `people` are registered in the demo's settings.
 - Avatars show initials. Nothing resolves a photo.
-- The overview page's two feeds and the "People and groups" page exist only to show the components.
+- The overview page's three recent-activity cards and the "People and groups" page exist only to show the components. The icon `activity.unfollow` is registered in the demo's settings.
 
 ## What was ruled by eye
 
 - Every page is built from django-mvp and daisy-cotton components and the classes django-mvp's stylesheet already ships, with no styles of its own.
-- The follow control is one button with the follower count inside it, primary while not following and plain once following. On a person's own page it is the count alone.
+- The follow control is the follower count as plain text beside one button that names what it does: Follow (primary) or Unfollow (outline). Sam, round 1: a count inside a button labelled Following read as a menu of followers, and clicking it unfollowed him. On a person's own page it is the count alone.
 - An activity row is the actor's avatar, one sentence with each name linked, the description under it when there is one, and how long ago.
 - On a person's or an object's page the follow control sits in the title row, and the followers list is a column beside the object feed, showing the first eight and how many more.
 - Following an object follows everything around it: what it does, what is done to it and what happens in it.
@@ -39,3 +39,4 @@
 - Names in a row are bold and linked, and the verb between them is plain, so a sentence reads as who did what to what.
 - Avatars are the stylesheet's `size-10` (`size-8` in the followers list). `w-10` and `h-10` are not in django-mvp's stylesheet.
 - The followers list carries no heading of its own beside a page that already names it (`plain`).
+- Recent activity is one component for the whole site, one object or what a person follows. The developer chooses how many it shows (default ten) and may give the full list's address, linked at its foot as "View all activity" when there is more. It is never paged. Sam, round 1.

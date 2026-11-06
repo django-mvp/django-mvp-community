@@ -34,7 +34,7 @@ those of django-activity-stream.
 - Q: Which activity does a feed show? → A: Only activity the host project recorded as public.
   Keeping activity about an object from people who may not see that object stays with the host
   project, which decides what it records as public.
-- Q: What does a signed-out visitor see? → A: A project feed or an object feed the host project
+- Q: What does a signed-out visitor see? → A: Recent activity the host project
   placed on a public page, and the follow control with its count. Using the follow control sends
   them to sign in. The feed page and the following page send them to sign in, as every other
   Account Center page does.
@@ -52,8 +52,7 @@ A developer building a site on django-mvp installs the activity extra and includ
 then on a signed-in person has a feed page and a following page in the Account Center, with no
 further configuration. The developer records activity where their site decides something happened,
 and places the feature's components on their own pages: a follow control next to a person or an
-object, a project feed showing everything that happened on the site, an object feed showing what
-happened around one object, and a list of the people following a person or an object. Any feed can
+object, recent activity from the whole site, around one object or from what a person follows, and a list of the people following a person or an object. Any feed can
 be limited to some kinds of activity. Where the developer wants a page or a component to look or
 read differently, they override that one template.
 
@@ -61,7 +60,7 @@ read differently, they override that one template.
 it on and place it.
 
 **Independent Test**: Install the extra in a project, include its URLs, record some activity, place
-a project feed, an object feed, a follow control and a followers list on pages of the project, and
+recent activity, a follow control and a followers list on pages of the project, and
 find each of them, the feed page and the following page.
 
 **Acceptance Scenarios**:
@@ -72,11 +71,15 @@ find each of them, the feed page and the following page.
 2. **Given** a project that has not installed the activity extra, **When** any page renders,
    **Then** there is no feed page, no following page and no entry for either, and nothing that
    belongs to the extra is imported.
-3. **Given** a project feed placed on a page, **When** the page renders, **Then** it lists the
-   public activity recorded across the site, newest first.
-4. **Given** an object feed placed for one object, **When** the page renders, **Then** it lists the
-   public activity in which that object is the one who acted, the one acted on or the one it
-   happened in, and no other activity.
+3. **Given** recent activity placed on a page for the whole site, **When** the page renders,
+   **Then** it shows the newest public activity recorded across the site, as many as the developer
+   chose.
+4. **Given** recent activity placed for one object, **When** the page renders, **Then** it shows
+   only public activity in which that object is the one who acted, the one acted on or the one it
+   happened in.
+4a. **Given** recent activity given the address of the full list and more activity than it shows,
+   **When** the page renders, **Then** it ends with a link to the full list, and without the
+   address, or with nothing more to show, it has no link.
 5. **Given** a feed limited to some kinds of activity, **When** it renders, **Then** it lists
    activity of those kinds only.
 6. **Given** a follow control placed for a person or an object, **When** the page renders, **Then**
@@ -158,7 +161,7 @@ following one person, and see them gone from the list and their new activity gon
 - Activity about an object that has since been deleted stays out of every feed rather than showing
   a broken entry.
 - Activity the host project recorded as not public appears in no feed.
-- A project feed or an object feed with no activity says there is nothing yet.
+- Recent activity with nothing to show says there is nothing yet.
 - Two people following the same object at once both end up following it, and its count includes
   both.
 
@@ -171,15 +174,18 @@ following one person, and see them gone from the list and their new activity gon
 - **FR-002**: A host project MUST be able to switch the feature on by installing the extra, listing
   its apps and including its URLs, with no settings of the package's own.
 - **FR-003**: The feature MUST provide a follow control for any person or object, which a
-  signed-in person uses to follow or stop following it and which shows how many people follow it.
+  signed-in person uses to follow or stop following it, which says plainly which of the two it
+  will do, and which shows how many people follow it.
 - **FR-004**: The follow control MUST send a signed-out visitor to sign in, and MUST NOT offer a
   person to follow themselves.
 - **FR-005**: The feature MUST provide a feed page listing the public activity of the people and
   objects the signed-in person follows, newest first.
-- **FR-006**: The feature MUST provide a project feed component listing the public activity
-  recorded across the site, newest first.
-- **FR-007**: The feature MUST provide an object feed component listing the public activity in
-  which one given object acted, was acted on, or was where it happened, newest first.
+- **FR-006**: The feature MUST provide a recent activity component showing the newest public
+  activity, newest first, either across the whole site, around one given object (where it acted,
+  was acted on, or was where it happened), or from what the signed-in person follows.
+- **FR-007**: A host project MUST be able to choose how many activities recent activity shows,
+  and give it the address of the full list, which it then links to whenever there is more than it
+  shows.
 - **FR-008**: A host project MUST be able to limit any feed to some kinds of activity.
 - **FR-009**: The feature MUST provide a followers list component listing the people who follow a
   given person or object.
@@ -187,7 +193,9 @@ following one person, and see them gone from the list and their new activity gon
   everything the signed-in person follows and lets them stop following each one.
 - **FR-011**: Feeds MUST NOT show activity that is not public, or activity about an object that no
   longer exists.
-- **FR-012**: Every feed and list MUST be split into pages when it holds more than one page.
+- **FR-012**: The feed page, the following page and the followers list MUST be split into pages,
+  or say how many more there are, when they hold more than one page. Recent activity is never
+  split into pages.
 - **FR-013**: The feed page and the following page MUST require a signed-in person.
 - **FR-014**: Every page and component of the feature MUST be replaceable by overriding one
   template.
@@ -208,8 +216,8 @@ following one person, and see them gone from the list and their new activity gon
 - **Follow**: a person's choice to see activity about another person or an object. Owned by
   django-activity-stream.
 - **Feed**: the list of activity a person sees, drawn from what they follow.
-- **Project feed**: the list of all public activity recorded across the site.
-- **Object feed**: the list of public activity around one object.
+- **Recent activity**: the newest few activities shown on any page, such as a dashboard, with a
+  link to the full list where there is one. Unlike a feed, it is never split into pages.
 
 ## Success Criteria *(mandatory)*
 
@@ -217,7 +225,7 @@ following one person, and see them gone from the list and their new activity gon
 
 - **SC-001**: A developer switches the feature on in an existing django-mvp project by installing
   the extra, listing its apps and adding one URL include, with no settings of the package's own.
-- **SC-002**: A developer places a follow control, a project feed, an object feed or a followers
+- **SC-002**: A developer places a follow control, recent activity or a followers
   list on a page with one component tag each.
 - **SC-003**: A person follows or stops following something in one action, and sees the change on
   the control without leaving the page.

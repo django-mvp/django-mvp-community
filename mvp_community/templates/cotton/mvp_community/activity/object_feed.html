@@ -1,7 +1,0 @@
-{# @description The newest public activity around one object: what it did, what was done to it, and what happened in it. #}
-{# @prop object:text | description:"The person or object whose activity to show." #}
-{# @prop verb:text | description:"Show only activity of this kind. Empty shows every kind." #}
-{% load activity_tags i18n %}
-<c-vars object verb="" />
-{% if verb %}{% activity_stream "any" object verb=verb as="object_actions" %}{% else %}{% activity_stream "any" object as="object_actions" %}{% endif %}
-{% with recent=object_actions|slice:":10" %}<c-mvp_community.activity.feed :actions="recent" only />{% endwith %}

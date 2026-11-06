@@ -133,6 +133,7 @@ EASY_ICONS = {
             "activity": "bi bi-activity",
             "activity.follow": "bi bi-plus-lg",
             "activity.following": "bi bi-check2",
+            "activity.unfollow": "bi bi-x-lg",
             "people": "bi bi-people",
         },
     },

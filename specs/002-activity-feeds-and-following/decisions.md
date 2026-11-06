@@ -13,8 +13,8 @@
 **Revisit if:** a host project needs feeds filtered by object permissions.
 **ADR:** none — follows the package's scope.
 
-## D3 — Project feed and object feed join the glossary
+## D3 — Recent activity joins the glossary
 
-**Decision:** CONTEXT.md gains **project feed** and **object feed** in the pull request that builds the feature.
-**Why:** the spec names both, and without a defined word they drift towards "stream" and "timeline", which the glossary already avoids.
+**Decision:** CONTEXT.md gains **recent activity**, the newest few activities placed on any page, in the pull request that builds the feature. A **feed** stays the paged list on a page of its own.
+**Why:** Sam, at the sketch gate: a feed dedicated to a page and a few activities dropped into a dashboard are different things and need different words. Without one the second drifts towards "stream" or "widget", which the glossary avoids.
 **ADR:** none — a glossary change.

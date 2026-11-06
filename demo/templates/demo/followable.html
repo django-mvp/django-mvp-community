@@ -9,5 +9,5 @@
   </c-mvp.page.side>
 {% endblock page.side %}
 {% block page.content %}
-  <c-mvp_community.activity.object_feed :object="object" />
+  <c-mvp_community.activity.recent :object="object" limit="20" />
 {% endblock page.content %}
