@@ -1,23 +1,25 @@
-{# @description The people who follow a person or an object, in a card with their count. #}
+{# @description The people who follow a person or an object, in a card headed with their count. #}
 {# @prop object:text | description:"The person or object whose followers to list." #}
+{# @prop plain:boolean | description:"Leave out the card's heading, where the page already names the list." #}
 {% load i18n mvp_community_activity %}
-<c-vars object />
+<c-vars object plain />
 {% followers_of object as followers %}
 {% with count=followers|length %}
-  <c-mvp.card title="{% blocktrans count counter=count %}{{ counter }} follower{% plural %}{{ counter }} followers{% endblocktrans %}" icon="activity.following" tight only>
+  {% blocktrans count counter=count asvar heading %}{{ counter }} follower{% plural %}{{ counter }} followers{% endblocktrans %}
+  <c-mvp.card title="{% if not plain %}{{ heading }}{% endif %}" tight only>
     {% if followers %}
       <c-list only>
         {% for person in followers|slice:":8" %}
           {% firstof person.get_full_name person as name %}
           <c-list.row class="items-center" only>
-            <c-avatar placeholder="{{ name|make_list|first|upper }}" content_class="w-8 rounded-full bg-neutral text-neutral-content" only />
-            <div class="list-col-grow min-w-0 truncate">{% if person.get_absolute_url %}<a href="{{ person.get_absolute_url }}" class="link link-hover">{{ name }}</a>{% else %}{{ name }}{% endif %}</div>
+            <c-avatar placeholder="{{ name|make_list|first|upper }}" class="shrink-0" content_class="size-8 rounded-full bg-neutral text-neutral-content" only />
+            <div class="list-col-grow min-w-0 truncate"><c-mvp_community.activity.name :object="person" only /></div>
           </c-list.row>
         {% endfor %}
       </c-list>
-      {% if count > 8 %}<p class="px-4 pb-3 text-sm text-base-content/60">{% blocktrans with more=count|add:"-8" %}and {{ more }} more{% endblocktrans %}</p>{% endif %}
+      {% if count > 8 %}<c-mvp.text muted size="sm" class="px-4 pb-3" only>{% blocktrans with more=count|add:"-8" %}and {{ more }} more{% endblocktrans %}</c-mvp.text>{% endif %}
     {% else %}
-      <p class="px-4 pb-4 text-sm text-base-content/60">{% trans "Nobody follows this yet." %}</p>
+      <c-mvp.text muted size="sm" class="px-4 py-3" only>{% trans "Nobody follows this yet." %}</c-mvp.text>
     {% endif %}
   </c-mvp.card>
 {% endwith %}

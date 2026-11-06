@@ -2,7 +2,7 @@
 {% load i18n %}
 {% block page.actions %}
   {% url "mvp_community_activity:following" as following_url %}
-  <c-button href="{{ following_url }}" ghost square size="sm" icon="activity.following" title="{% trans "Following" %}" aria-label="{% trans "Following" %}" only />
+  <c-button href="{{ following_url }}" ghost size="sm" icon="activity.following" text="{% trans "Following" %}" only />
 {% endblock page.actions %}
 {% block page.content %}
   {% if page_obj.paginator.count %}

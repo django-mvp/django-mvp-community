@@ -4,22 +4,14 @@
 <c-vars action />
 <c-list.row only>
   {% firstof action.actor.get_full_name action.actor as actor_name %}
-  <c-avatar placeholder="{{ actor_name|make_list|first|upper }}" content_class="w-10 rounded-full bg-neutral text-neutral-content" only />
+  <c-avatar placeholder="{{ actor_name|make_list|first|upper }}" class="self-start shrink-0" content_class="size-10 rounded-full bg-neutral text-neutral-content" only />
   <div class="list-col-grow min-w-0">
-    <p class="break-words">
-      {% if action.actor.get_absolute_url %}<a href="{{ action.actor.get_absolute_url }}" class="link link-hover font-medium">{{ actor_name }}</a>{% else %}<span class="font-medium">{{ actor_name }}</span>{% endif %}
-      {{ action.verb }}
-      {% if action.action_object %}
-        {% if action.action_object.get_absolute_url %}<a href="{{ action.action_object.get_absolute_url }}" class="link link-hover font-medium">{{ action.action_object }}</a>{% else %}<span class="font-medium">{{ action.action_object }}</span>{% endif %}
-      {% endif %}
-      {% if action.target %}
-        {% if action.action_object %}{% trans "in" %}{% endif %}
-        {% if action.target.get_absolute_url %}<a href="{{ action.target.get_absolute_url }}" class="link link-hover font-medium">{{ action.target }}</a>{% else %}<span class="font-medium">{{ action.target }}</span>{% endif %}
-      {% endif %}
-    </p>
+    <c-mvp.text tight class="break-words" only>
+      <c-mvp_community.activity.name :object="action.actor" only /> {{ action.verb }}
+      {% if action.action_object %}<c-mvp_community.activity.name :object="action.action_object" only />{% endif %}
+      {% if action.target %}{% if action.action_object %}{% trans "in" %} {% endif %}<c-mvp_community.activity.name :object="action.target" only />{% endif %}
+    </c-mvp.text>
     {% if action.description %}<c-mvp.text muted tight size="sm" class="break-words" :text="action.description" only />{% endif %}
-    <time class="text-xs text-base-content/60"
-          datetime="{{ action.timestamp|date:"c" }}"
-          title="{{ action.timestamp|date:"DATETIME_FORMAT" }}">{{ action.timestamp|naturaltime }}</time>
+    <c-mvp.text muted tight size="xs" only><time datetime="{{ action.timestamp|date:"c" }}" title="{{ action.timestamp|date:"DATETIME_FORMAT" }}">{{ action.timestamp|naturaltime }}</time></c-mvp.text>
   </div>
 </c-list.row>

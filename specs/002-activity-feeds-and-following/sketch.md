@@ -6,7 +6,7 @@
 - **What the package already does.** Its manager gives the public actions, the actions around one object (`any`), the actions of what a person follows (`user`), and filters any of them by keyword, such as `verb`. It has queries for an object's followers and for what a person follows. Its URLs follow and stop following by POST, return to `next`, and require a signed-in person. Its template tags put any stream into the context (`activity_stream`), say whether a person follows something (`is_following`) and give the follow or stop-following address (`follow_url`, `follow_all_url`).
 - **What it lacks.** Its own pages are bare and unpaginated, and it has no tag for an object's followers.
 - **The shell.** The feed page is a list page in the application shell with an entry in the sidebar. The following page is an Account Center page with an entry in `AccountCenterMenu` and a card in `account.cards`, the way the notification preferences page is added. htmx is bundled, so the follow control posts without leaving the page.
-- **Components.** daisy-cotton's `list`, `list.row`, `avatar` and `button`, and django-mvp's `card`, `page.side`, `page.list.empty`, `page.list.footer`, `section` and Account Center page.
+- **Components.** daisy-cotton's `list`, `list.row`, `avatar`, `badge`, `link` and `button`, and django-mvp's `card`, `page.side`, `page.list.empty`, `page.list.footer`, `section` and Account Center page.
 - **Planning notes.** Both are applied. The feature depends on django-activity-stream alone, which installs and runs on Django 6.1. Its own views, URLs, queries and template tags are used wherever they exist, and the one template tag written here, `followers_of`, gives templates a query the package has no tag for.
 
 ## What the screens need from the code
@@ -35,4 +35,7 @@
 - An activity row is the actor's avatar, one sentence with each name linked, the description under it when there is one, and how long ago.
 - On a person's or an object's page the follow control sits in the title row, and the followers list is a column beside the object feed, showing the first eight and how many more.
 - Following an object follows everything around it: what it does, what is done to it and what happens in it.
-- The feed page's title row has a shortcut to the following page.
+- The feed page's title row has a labelled button to the following page.
+- Names in a row are bold and linked, and the verb between them is plain, so a sentence reads as who did what to what.
+- Avatars are the stylesheet's `size-10` (`size-8` in the followers list). `w-10` and `h-10` are not in django-mvp's stylesheet.
+- The followers list carries no heading of its own beside a page that already names it (`plain`).

@@ -1,0 +1,5 @@
+{# @description The name of a person or an object, linked to its page where it has one. A person shows their full name, falling back to how the project names them. #}
+{# @prop object:text | description:"The person or object to name." #}
+<c-vars object />
+{% firstof object.get_full_name object as name %}
+{% if object.get_absolute_url %}<c-link href="{{ object.get_absolute_url }}" hover class="font-semibold" only>{{ name }}</c-link>{% else %}<span class="font-semibold">{{ name }}</span>{% endif %}

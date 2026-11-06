@@ -47,7 +47,7 @@ class PeopleView(MVPTemplateView):
 
     template_name = "demo/people.html"
     page_title = "People and groups"
-    page_subtitle = "Follow someone or something to see what they do in your feed"
+    page_lead = "Follow someone or something to see what they do in your feed."
     breadcrumbs = [{"text": "People and groups"}]
 
     def get_context_data(self, **kwargs):
