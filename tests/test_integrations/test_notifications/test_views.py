@@ -5,20 +5,25 @@ import re
 import pytest
 from django.conf import settings
 from django.contrib.messages import SUCCESS, get_messages
+from django.core import signing
 from django.db import connection
 from django.shortcuts import resolve_url
+from django.test import Client
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from generic_notifications import send_notification
 from generic_notifications.channels import EmailChannel, WebsiteChannel
 from generic_notifications.frequencies import DailyFrequency
+from generic_notifications.models import NotificationTypeChannelPreference
 from generic_notifications.preferences import get_notification_preferences
 from generic_notifications.registry import registry
 from generic_notifications.types import NotificationType
 from generic_notifications.utils import get_unread_count
 
 from demo.notifications import NewFollower, ReplyReceived, SecurityNotice
+from mvp_community.integrations.notifications.unsubscribe import UnsubscribeLink
 from mvp_community.integrations.notifications.views import PreferencesView
+from mvp_community.templatetags.mvp_community_notifications import UNSUBSCRIBE_SALT
 
 SIGN_IN_URL = resolve_url(settings.LOGIN_URL)
 LIST_URL = reverse("mvp_community_notifications:list")
@@ -485,3 +490,135 @@ class TestPreferencesViewFrequency:
         assert 'x-bind:disabled="email"' in hidden
         assert 'x-bind:value="frequency"' in hidden
         assert 'x-bind:disabled="!email"' in frequency_select(page, "reply_received")
+
+
+def unsubscribe_url(person, *notification_types):
+    """The page address a link for these types leads to."""
+    keys = [t.key for t in notification_types]
+    return UnsubscribeLink.for_email(person, keys).path
+
+
+def email_is_off(person, notification_type):
+    return not any(
+        c.key == "email" for c in notification_type.get_enabled_channels(person)
+    )
+
+
+ONE_CLICK = {"List-Unsubscribe": "One-Click"}
+
+
+class TestUnsubscribeView:
+    def test_a_visit_changes_nothing_and_asks_to_confirm(self, client, person) -> None:
+        response = client.get(unsubscribe_url(person, ReplyReceived, NewFollower))
+
+        assert response.context["outcome"] == "confirm"
+        assert not email_is_off(person, ReplyReceived)
+        assert not email_is_off(person, NewFollower)
+
+    def test_the_page_turns_off_exactly_the_named_types(self, client, person) -> None:
+        response = client.post(unsubscribe_url(person, ReplyReceived))
+
+        assert response.context["outcome"] == "done"
+        assert email_is_off(person, ReplyReceived)
+        assert not email_is_off(person, NewFollower)
+        assert any(
+            c.key == "website" for c in ReplyReceived.get_enabled_channels(person)
+        )
+
+    def test_a_second_post_says_it_was_already_off(self, client, person) -> None:
+        url = unsubscribe_url(person, ReplyReceived)
+        client.post(url)
+
+        assert client.post(url).context["outcome"] == "already"
+        assert client.get(url).context["outcome"] == "already"
+
+    def test_an_altered_link_is_invalid_for_a_visit_and_a_post(
+        self, client, db
+    ) -> None:
+        url = "/notifications/unsubscribe/not-a-token/"
+
+        assert client.get(url).context["outcome"] == "invalid"
+        assert client.post(url).context["outcome"] == "invalid"
+
+    def test_every_state_links_to_the_preferences_page(self, client, person) -> None:
+        url = unsubscribe_url(person, ReplyReceived)
+        pages = [
+            client.get(url),
+            client.post(url),
+            client.post(url),
+            client.get("/notifications/unsubscribe/not-a-token/"),
+        ]
+
+        assert [p.context["outcome"] for p in pages] == [
+            "confirm",
+            "done",
+            "already",
+            "invalid",
+        ]
+        for page in pages:
+            assert f'href="{PREFERENCES_URL}"' in page.content.decode()
+
+    def test_a_type_since_made_always_sent_is_left_on(self, client, person) -> None:
+        token = signing.dumps(
+            {"u": person.pk, "t": [ReplyReceived.key, SecurityNotice.key]},
+            salt=UNSUBSCRIBE_SALT,
+        )
+        url = reverse("mvp_community_notifications:unsubscribe", args=[token])
+
+        client.post(url)
+
+        assert email_is_off(person, ReplyReceived)
+        assert not email_is_off(person, SecurityNotice)
+        assert not NotificationTypeChannelPreference.objects.filter(
+            user=person, notification_type=SecurityNotice.key
+        ).exists()
+
+
+class TestOneClickUnsubscribe:
+    def test_it_answers_200_with_no_page_and_turns_email_off(
+        self, client, person
+    ) -> None:
+        response = client.post(unsubscribe_url(person, ReplyReceived), ONE_CLICK)
+
+        assert (response.status_code, response.content) == (200, b"")
+        assert email_is_off(person, ReplyReceived)
+
+    def test_an_invalid_link_answers_400(self, client, db) -> None:
+        response = client.post("/notifications/unsubscribe/not-a-token/", ONE_CLICK)
+
+        assert response.status_code == 400
+
+    def test_a_link_with_only_always_sent_types_answers_400(
+        self, client, person
+    ) -> None:
+        token = signing.dumps(
+            {"u": person.pk, "t": [SecurityNotice.key]}, salt=UNSUBSCRIBE_SALT
+        )
+        url = reverse("mvp_community_notifications:unsubscribe", args=[token])
+
+        assert client.post(url, ONE_CLICK).status_code == 400
+
+
+class TestUnsubscribeIsOpen:
+    def test_a_signed_out_visitor_can_visit_and_post_without_a_csrf_token(
+        self, person
+    ) -> None:
+        strict = Client(enforce_csrf_checks=True)
+        url = unsubscribe_url(person, ReplyReceived)
+
+        assert strict.get(url).status_code == 200
+        assert strict.post(url).status_code == 200
+        assert email_is_off(person, ReplyReceived)
+
+    def test_it_stays_open_when_every_page_needs_sign_in(
+        self, settings, client, person
+    ) -> None:
+        settings.MIDDLEWARE = [
+            *settings.MIDDLEWARE,
+            "django.contrib.auth.middleware.LoginRequiredMiddleware",
+        ]
+        url = unsubscribe_url(person, ReplyReceived)
+
+        assert client.get(url).status_code == 200
+        assert client.post(url).status_code == 200
+        assert client.get(LIST_URL).status_code == 302
