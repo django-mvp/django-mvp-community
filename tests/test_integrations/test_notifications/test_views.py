@@ -265,7 +265,7 @@ class TestPreferencesViewGet:
     ) -> None:
         page = client.get(PREFERENCES_URL).content.decode()
 
-        required = toggle(page, f"{SecurityNotice.key}__{WebsiteChannel.key}")
+        required = toggle(page, f"{SecurityNotice.key}__{EmailChannel.key}")
         assert "checked" in required
         assert "disabled" in required
 

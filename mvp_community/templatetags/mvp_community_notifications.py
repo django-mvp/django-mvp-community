@@ -49,7 +49,9 @@ def notification_unsubscribe_token(recipient, *type_keys):
     keys = []
     for item in type_keys:
         keys.extend([item] if isinstance(item, str) else list(item))
-    return signing.dumps({"u": recipient.pk, "t": sorted(set(keys))}, salt=UNSUBSCRIBE_SALT)
+    return signing.dumps(
+        {"u": recipient.pk, "t": sorted(set(keys))}, salt=UNSUBSCRIBE_SALT
+    )
 
 
 @register.simple_tag

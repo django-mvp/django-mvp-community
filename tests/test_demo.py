@@ -79,11 +79,11 @@ class TestDemoNotificationTypes:
 
         assert registry.get_type(key).key == key
 
-    def test_a_security_notice_is_always_sent_on_the_site(self) -> None:
-        from generic_notifications.channels import WebsiteChannel
+    def test_a_security_notice_is_always_sent_by_email(self) -> None:
         from generic_notifications.registry import registry
 
-        assert WebsiteChannel in registry.get_type("security_notice").required_channels
+        required = registry.get_type("security_notice").required_channels
+        assert [channel.key for channel in required] == ["email"]
 
 
 class TestBellInTheShell:

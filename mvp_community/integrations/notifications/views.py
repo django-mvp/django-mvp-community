@@ -7,9 +7,9 @@ from django.core import signing
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
-from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from generic_notifications.models import Notification, NotificationTypeChannelPreference
@@ -174,7 +174,12 @@ class UnsubscribeView(MVPTemplateView):
         try:
             data = signing.loads(token, salt=UNSUBSCRIBE_SALT)
             user = get_user_model().objects.get(pk=data["u"])
-        except (signing.BadSignature, KeyError, TypeError, get_user_model().DoesNotExist):
+        except (
+            signing.BadSignature,
+            KeyError,
+            TypeError,
+            get_user_model().DoesNotExist,
+        ):
             return None, []
         types = [t for t in registry.get_all_types() if t.key in data.get("t", [])]
         return (user, types) if types else (None, [])
