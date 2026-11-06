@@ -38,8 +38,8 @@
                             {% endfor %}
                           </c-form.select>
                         </c-join>
-                        {# A disabled select is not sent, so the choice rides here while email is off. #}
-                        <input type="hidden" name="{{ row.notification_type.key }}__frequency" x-bind:disabled="email" x-bind:value="frequency">
+                        {# A disabled select is not sent, so the choice rides here while email is off. The server writes both attributes, so the form works without script too. #}
+                        <input type="hidden" name="{{ row.notification_type.key }}__frequency" value="{{ row.notification_frequency }}"{% if row.channels.email.enabled %} disabled{% endif %} x-bind:disabled="email" x-bind:value="frequency">
                       {% endif %}
                     </th>
                     {% for key, choice in row.channels.items %}

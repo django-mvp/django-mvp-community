@@ -493,6 +493,28 @@ class TestPreferencesViewFrequency:
         assert 'x-bind:value="frequency"' in hidden
         assert 'x-bind:disabled="!email"' in frequency_select(page, "reply_received")
 
+    @pytest.mark.parametrize("email_on", [True, False])
+    def test_without_script_the_form_posts_the_stored_choice_once(
+        self, client, signed_in, email_on
+    ) -> None:
+        # Without script the bindings never run, so what is posted is decided by
+        # the attributes the server writes: the select while email is on, the
+        # hidden input carrying the stored choice while it is off.
+        email = registry.get_channel("email")
+        ReplyReceived.set_frequency(signed_in, DailyFrequency)
+        if email_on:
+            ReplyReceived.enable_channel(signed_in, email)
+        else:
+            ReplyReceived.disable_channel(signed_in, email)
+
+        page = client.get(PREFERENCES_URL).content.decode()
+        hidden = re.search(
+            r'<input type="hidden" name="reply_received__frequency"[^>]*>', page
+        ).group(0)
+
+        assert 'value="daily"' in hidden
+        assert (re.search(r"\sdisabled(\s|>|$)", hidden) is not None) is email_on
+
 
 def unsubscribe_url(person, *notification_types):
     """The page address a link for these types leads to."""
