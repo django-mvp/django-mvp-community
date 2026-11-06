@@ -1,0 +1,16 @@
+{% extends "mvp/email/base.html" %}
+{% load i18n mvp_email mvp_community_notifications %}
+{% block subject %}{{ notification.get_subject }}{% endblock %}
+{% block preheader %}{{ notification.get_text|truncatechars:120 }}{% endblock %}
+{% block body %}
+  <c-mvp.email.text size="lg" mb="sm" only><strong>{{ notification.get_subject }}</strong></c-mvp.email.text>
+  {% if notification.get_text %}<c-mvp.email.text only>{{ notification.get_text }}</c-mvp.email.text>{% endif %}
+  {% if notification.url %}
+    {% email_url notification.url as open_url %}
+    {% trans "Open" as open_text %}
+    <c-mvp.email.button href="{{ open_url }}" text="{{ open_text }}" only />
+  {% endif %}
+{% endblock %}
+{% block footer %}
+  {% include "notifications/email/unsubscribe_footer.html" with type_keys=notification.notification_type %}
+{% endblock %}

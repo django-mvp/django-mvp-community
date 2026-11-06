@@ -5,6 +5,7 @@
 
 import pytest
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.management import call_command
 from django.shortcuts import resolve_url
@@ -79,11 +80,11 @@ class TestDemoNotificationTypes:
 
         assert registry.get_type(key).key == key
 
-    def test_a_security_notice_is_always_sent_on_the_site(self) -> None:
-        from generic_notifications.channels import WebsiteChannel
+    def test_a_security_notice_is_always_sent_by_email(self) -> None:
         from generic_notifications.registry import registry
 
-        assert WebsiteChannel in registry.get_type("security_notice").required_channels
+        required = registry.get_type("security_notice").required_channels
+        assert [channel.key for channel in required] == ["email"]
 
 
 class TestBellInTheShell:
@@ -280,3 +281,57 @@ class TestStoredTemplate:
         german.save()
 
         assert send_in_german().subject == "Herzlich willkommen"
+
+
+@pytest.mark.django_db
+class TestSeedDemo:
+    @pytest.fixture(autouse=True)
+    def debug_on(self, settings):
+        settings.DEBUG = True
+
+    def test_the_site_domain_is_the_one_in_the_environment(self, monkeypatch) -> None:
+        monkeypatch.setenv("DEMO_SITE_DOMAIN", "devserver:8123")
+
+        call_command("seed_demo", verbosity=0)
+
+        assert Site.objects.get_current().domain == "devserver:8123"
+
+    def test_the_site_domain_defaults_to_the_local_server(self, monkeypatch) -> None:
+        monkeypatch.delenv("DEMO_SITE_DOMAIN", raising=False)
+        Site.objects.filter(pk=settings.SITE_ID).update(domain="example.com")
+
+        call_command("seed_demo", verbosity=0)
+
+        assert Site.objects.get_current().domain == "localhost:8000"
+
+
+@pytest.mark.django_db
+class TestSeedNotificationEmail:
+    @pytest.fixture(autouse=True)
+    def seeded(self, settings, django_user_model):
+        settings.DEBUG = True
+        # pytest-django swaps the mail backend for an in-memory one, which skips the queue.
+        settings.EMAIL_BACKEND = "post_office.EmailBackend"
+        settings.POST_OFFICE = {**settings.POST_OFFICE, "DEFAULT_PRIORITY": "medium"}
+        django_user_model.objects.create_user(
+            username="regular.user@example.com",
+            email="regular.user@example.com",
+            password="password",
+        )
+
+    def test_it_queues_a_notice_a_notification_and_both_digests_to_the_regular_user(
+        self,
+    ) -> None:
+        call_command("seed_notification_email", verbosity=0)
+
+        emails = Email.objects.all()
+        assert emails.count() == 4
+        assert {tuple(email.to) for email in emails} == {("regular.user@example.com",)}
+
+    def test_running_it_again_sends_the_same_four(self) -> None:
+        call_command("seed_notification_email", verbosity=0)
+        Email.objects.all().delete()
+
+        call_command("seed_notification_email", verbosity=0)
+
+        assert Email.objects.count() == 4

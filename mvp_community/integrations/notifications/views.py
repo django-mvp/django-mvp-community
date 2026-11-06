@@ -1,13 +1,16 @@
 """The notifications page, the bell's refresh and the preferences page."""
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 from generic_notifications.models import Notification
 from generic_notifications.preferences import (
     get_notification_preferences,
@@ -16,6 +19,14 @@ from generic_notifications.preferences import (
 from generic_notifications.registry import registry
 from generic_notifications.utils import get_notifications
 from mvp.views import MVPListView, MVPTemplateView
+
+from .unsubscribe import UnsubscribeLink
+
+FREQUENCY_LABELS = {
+    "realtime": _("As it happens"),
+    "daily": _("Daily digest"),
+    "weekly": _("Weekly digest"),
+}
 
 
 class NotificationListView(LoginRequiredMixin, MVPListView):
@@ -111,8 +122,20 @@ class PreferencesView(LoginRequiredMixin, MVPTemplateView):
     def get_context_data(self, **kwargs):
         """Add the types, the channels and the person's current choices."""
         context = super().get_context_data(**kwargs)
-        context["preferences"] = get_notification_preferences(self.request.user)
+        preferences = get_notification_preferences(self.request.user)
+        for row in preferences:
+            # A type the project always sends on a channel is too important to
+            # wait for a digest: its email always arrives as it happens.
+            row["offers_frequency"] = not row["notification_type"].required_channels
+        context["preferences"] = preferences
         context["channels"] = registry.get_all_channels()
+        # How often an email comes means nothing without the email channel.
+        email_registered = any(c.key == "email" for c in context["channels"])
+        context["frequencies"] = [
+            (frequency.key, FREQUENCY_LABELS.get(frequency.key, frequency.name))
+            for frequency in registry.get_all_frequencies()
+            if email_registered
+        ]
         return context
 
     def post(self, request):
@@ -128,3 +151,68 @@ class PreferencesView(LoginRequiredMixin, MVPTemplateView):
         save_notification_preferences(request.user, request.POST)
         messages.success(request, _("Your notification preferences are saved."))
         return redirect("mvp_community_notifications:preferences")
+
+
+@method_decorator([csrf_exempt, login_not_required], name="dispatch")
+class UnsubscribeView(MVPTemplateView):
+    """Turn off the email an unsubscribe link was sent with, signed in or not.
+
+    A POST is what a mail app sends from the email's unsubscribe header.
+    """
+
+    template_name = "mvp_community/notifications/unsubscribe.html"
+    page_title = _("Unsubscribe")
+
+    def outcome_page(self, outcome, link):
+        """Render the page for one of its states.
+
+        Args:
+            outcome: ``confirm``, ``done``, ``already`` or ``invalid``.
+            link: The unsubscribe link, or None when it was not valid.
+
+        Returns:
+            The rendered page.
+        """
+        types = link.types if link else []
+        return self.render_to_response(
+            self.get_context_data(outcome=outcome, types=types)
+        )
+
+    def get(self, request, token):
+        """Ask the person to confirm, so a mail scanner opening the link changes nothing.
+
+        Args:
+            request: The GET request.
+            token: The signed token from the address.
+
+        Returns:
+            The confirm, already or invalid page.
+        """
+        link = UnsubscribeLink.read(token)
+        if link is None:
+            return self.outcome_page("invalid", None)
+        return self.outcome_page("confirm" if link.emailed() else "already", link)
+
+    def post(self, request, token):
+        """Turn the email off, from the page's button or a mail app's one-click header.
+
+        A mail app posts ``List-Unsubscribe=One-Click`` and is answered with no page.
+
+        Args:
+            request: The POST request.
+            token: The signed token from the address.
+
+        Returns:
+            Status 200 or 400 with no body for a one-click request, otherwise
+            the done, already or invalid page.
+        """
+        link = UnsubscribeLink.read(token)
+        one_click = request.POST.get("List-Unsubscribe") == "One-Click"
+        if link is None:
+            if one_click:
+                return HttpResponse(status=400)
+            return self.outcome_page("invalid", None)
+        changed = link.turn_off()
+        if one_click:
+            return HttpResponse(status=200)
+        return self.outcome_page("done" if changed else "already", link)
