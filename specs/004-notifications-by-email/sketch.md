@@ -57,8 +57,8 @@
 
 ## What was ruled by eye
 
-- The frequency choice sits under each type's name and description, labelled "Email" as a joined text and select, rather
-  than in a column of its own: a fourth column did not fit at phone width.
+- The frequency choice sits under each type's name and description, labelled "Email" as a joined text and select,
+  rather than in a column of its own: a fourth column did not fit at phone width.
 - The frequency choice is disabled while email is off for a type, not hidden, so the page does not
   shift. The person's earlier choice is kept and applies when email is turned back on (Sam).
 - Types the site always sends on some channel have no frequency choice (Sam). In the demo that is
@@ -73,3 +73,5 @@
 - The digest's subject says "Today" or "Your week" with the count.
 - The email footer says why the email was sent, then "Unsubscribe" and "Notification
   preferences" as two links.
+
+The screens were approved on 2026-11-06.
