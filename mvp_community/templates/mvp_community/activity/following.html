@@ -13,13 +13,13 @@
           {% for follow in page_obj %}
             {% with followed=follow.follow_object %}
               {% firstof followed.get_full_name followed as name %}
-              <c-list.row class="items-center" only>
+              <c-list.row class="items-center" data-follow-row only>
                 <c-avatar placeholder="{{ name|make_list|first|upper }}" class="shrink-0" content_class="size-10 rounded-full bg-neutral text-neutral-content" only />
                 <div class="list-col-grow min-w-0">
                   <c-mvp.text tight class="break-words" only><c-mvp_community.activity.name :object="followed" only /></c-mvp.text>
                   <c-mvp.text muted tight size="sm" only>{{ follow.content_type.name|capfirst }}</c-mvp.text>
                 </div>
-                <c-mvp_community.activity.follow :object="followed" />
+                <c-mvp_community.activity.follow :object="followed" replace_row />
               </c-list.row>
             {% endwith %}
           {% endfor %}

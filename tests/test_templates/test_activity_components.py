@@ -384,6 +384,14 @@ class TestFollowControl:
         )
         assert parse_qs(refresh.query)["next"] == ["/lessons/3/"]
 
+    def test_replace_row_makes_the_row_the_target_and_removes_it(
+        self, draw, group
+    ) -> None:
+        markup = draw(':object="group" replace_row', group=group)
+
+        assert self.attribute(markup, "hx-target") == "closest [data-follow-row]"
+        assert self.attribute(markup, "hx-swap") == "delete"
+
     def test_the_plain_form_returns_to_the_page(self, draw, group) -> None:
         markup = draw(':object="group" next="/lessons/3/"', group=group)
 

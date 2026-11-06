@@ -205,6 +205,7 @@ The follow control shows how many people follow a person or an object beside a F
 | `object` | The person or object to follow. It must be registered with django-activity-stream. |
 | `size` | `xs`, `sm` or `md`: the button's size. |
 | `next` | The page the control sits on. A plain form post and signing in return to it. It defaults to the current page. |
+| `replace_row` | Set it when the control sits in a list row that carries `data-follow-row`. Stopping following then removes that row instead of redrawing the control. The following page uses it. |
 
 Clicking posts to django-activity-stream's follow address with htmx, and only the control is redrawn: the button changes between Follow and Unfollow and the count changes with it. The control is the element marked `data-follow-control`. Without htmx the form posts normally and returns to `next`.
 

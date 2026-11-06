@@ -1,14 +1,18 @@
 """The activity extra's views, asserted as rendered through the demo."""
 
+import re
+from datetime import timedelta
+
 import pytest
 from actstream.actions import unfollow
-from actstream.models import Action
+from actstream.models import Action, Follow
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ImproperlyConfigured
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
+from django.utils import timezone
 
 from tests.factories import GroupFactory, UserFactory
 
@@ -301,6 +305,92 @@ class TestFollowControlView:
         ).content.decode()
 
         assert "evil.example" not in content
+
+
+class TestFollowingView:
+    URL = reverse("mvp_community_activity:following")
+
+    def test_a_signed_out_visitor_is_sent_to_sign_in(self, client, db) -> None:
+        response = client.get(self.URL)
+
+        assert response.status_code == 302
+        assert response["Location"].startswith(reverse("account_login"))
+
+    def test_it_lists_everything_the_person_follows_newest_first(
+        self, client, signed_in, group, make_follow
+    ) -> None:
+        other = UserFactory()
+        older = make_follow(signed_in, group)
+        newer = make_follow(signed_in, other)
+        Follow.objects.filter(pk=older.pk).update(
+            started=timezone.now() - timedelta(days=1)
+        )
+
+        assert listed(client.get(self.URL)) == [newer, older]
+
+    def test_it_leaves_out_what_other_people_follow(
+        self, client, signed_in, group, make_follow
+    ) -> None:
+        make_follow(UserFactory(), group)
+
+        assert listed(client.get(self.URL)) == []
+
+    def test_each_row_links_to_the_page_of_what_is_followed(
+        self, client, signed_in, group, make_follow
+    ) -> None:
+        make_follow(signed_in, group)
+
+        content = client.get(self.URL).content.decode()
+
+        assert f'href="{reverse("group", args=[group.pk])}"' in content
+
+    def test_each_row_has_a_control_offering_to_stop_following(
+        self, client, signed_in, group, make_follow
+    ) -> None:
+        make_follow(signed_in, group)
+
+        content = client.get(self.URL).content.decode()
+
+        assert (
+            reverse("actstream_unfollow", args=[_content_type_id(group), group.pk])
+            in content
+        )
+
+    def test_stopping_following_through_the_control_removes_the_row(
+        self, client, signed_in, group, make_follow
+    ) -> None:
+        make_follow(signed_in, group)
+        content = client.get(self.URL).content.decode()
+        row = re.search(r"<li[^>]*data-follow-row[^>]*>", content)
+        control = re.search(r"<form[^>]*hx-post[^>]*>", content).group(0)
+        assert row is not None
+        assert 'hx-target="closest [data-follow-row]"' in control
+        assert 'hx-swap="delete"' in control
+
+        client.post(
+            reverse("actstream_unfollow", args=[_content_type_id(group), group.pk]),
+            follow=True,
+        )
+
+        assert listed(client.get(self.URL)) == []
+
+    def test_following_nothing_draws_the_empty_state(self, client, signed_in) -> None:
+        response = client.get(self.URL)
+
+        assert response.status_code == 200
+        assert response.context["page_obj"].paginator.count == 0
+        assert "data-follow-row" not in response.content.decode()
+
+    def test_twenty_to_a_page_and_the_rest_on_page_two(
+        self, client, signed_in, make_follow
+    ) -> None:
+        for _ in range(25):
+            make_follow(signed_in, GroupFactory())
+
+        first = client.get(self.URL)
+        second = client.get(self.URL, {"page": 2})
+
+        assert (len(listed(first)), len(listed(second))) == (20, 5)
 
 
 def _content_type_id(obj) -> int:
