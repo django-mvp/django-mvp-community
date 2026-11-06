@@ -57,6 +57,10 @@ Push and reminders are not part of this.
   with a button that turns it off and a link to the full notification preferences. Once turned off,
   the page says what was turned off. It works for a person who is not signed in.
 - Q: In which language are notification and digest emails written? → A: The recipient's.
+- Q: Does a person see notification types the host project never declared? → A: No.
+  django-generic-notifications registers a "System Message" type of its own, in English only, with
+  email always on. The notifications extra removes it, so the preferences page lists only the
+  types the host project declares (Sam, 2026-11-06).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -209,6 +213,8 @@ email off for every type the digest gathered.
   type from then on. The choice MUST NOT be shown for a type while its email is off.
 - **FR-016**: A notification type the host project always sends on some channel MUST always be
   emailed as it happens, and MUST offer no choice of how often.
+- **FR-017**: The preferences page MUST list only the notification types the host project
+  declares, and none that a package registers on its own.
 - **FR-006**: A person who has not chosen MUST receive each type at the frequency the host project
   declared as its default.
 - **FR-007**: When the host project sends the digests that are due, each person MUST receive at most
@@ -238,7 +244,7 @@ email off for every type the digest gathered.
 
 | Story | Requirements |
 |---|---|
-| US1 | FR-001, FR-002, FR-003, FR-004, FR-006, FR-007, FR-008, FR-013, FR-014, FR-015 |
+| US1 | FR-001, FR-002, FR-003, FR-004, FR-006, FR-007, FR-008, FR-013, FR-014, FR-015, FR-017 |
 | US2 | FR-005, FR-006, FR-007, FR-015, FR-016 |
 | US3 | FR-009, FR-010, FR-011, FR-012, FR-013, FR-015 |
 

@@ -48,6 +48,7 @@
 - Types the host project always sends by email still get an unsubscribe link in their emails.
 - "Always as it happens" for always-sent types rests only on their default frequency. A stored
   digest choice from before would still apply.
+- The library's System Message type is removed when the extra's package is first imported.
 - The email column is shown with the notifications extra alone, as before this feature.
 - The demo's site domain was changed in the demo database by hand.
 - `seed_notification_email` creates notifications and calls the channel's send methods directly,
@@ -60,8 +61,9 @@
   than in a column of its own: a fourth column did not fit at phone width.
 - The frequency choice is hidden while email is off for a type, and comes back with the person's
   earlier choice when email is turned back on (Sam).
-- Types the site always sends on some channel, such as system messages and security notices, have
-  no frequency choice (Sam).
+- Types the site always sends on some channel have no frequency choice (Sam). In the demo that is
+  security notices, which are now always sent by email rather than on the site (Sam).
+- The library's own System Message type is not shown (Sam).
 - The unsubscribe link opens a page with "Turn off these emails" and a link to the preferences.
   Nothing changes until the button is pressed (Sam).
 - Real-time is labelled "As it happens".

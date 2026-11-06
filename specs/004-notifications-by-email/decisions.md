@@ -32,3 +32,8 @@ approved.
 - The unsubscribe link opens a confirmation page and changes nothing by itself, because mail
   security scanners open every link in an email. The mail app's header is the one-click route
   (FR-009, FR-012).
+- django-generic-notifications' built-in System Message type is removed by the notifications
+  extra (FR-017). Nothing in the library depends on it and its documentation gives no reason for
+  registering it by default. It is English only and would appear in every host project.
+- The demo's security notices are always sent by email instead of on the site: email is where a
+  new-sign-in warning reaches someone who is not on the site.
