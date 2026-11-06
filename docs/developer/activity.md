@@ -223,6 +223,16 @@ The control needs htmx on the page, which django-mvp's base template loads.
 {{ people.count }}
 ```
 
+## Read the feed of what someone follows in your own template
+
+`followed_activity` returns the same activity a feed set to `following` shows: the public activity of what a person follows, newest first, without their own actions. Give it a kind to limit it:
+
+```django
+{% load mvp_community_activity %}
+{% followed_activity request.user "finished" as actions %}
+{% for action in actions|slice:":5" %}{{ action }}{% endfor %}
+```
+
 ## Replace a template or component
 
 Any template or component named below can be replaced by putting a file of the same name in your project's templates, as described in the README's section on overriding a template.
