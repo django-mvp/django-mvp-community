@@ -123,7 +123,12 @@ class PreferencesView(LoginRequiredMixin, MVPTemplateView):
     def get_context_data(self, **kwargs):
         """Add the types, the channels and the person's current choices."""
         context = super().get_context_data(**kwargs)
-        context["preferences"] = get_notification_preferences(self.request.user)
+        preferences = get_notification_preferences(self.request.user)
+        for row in preferences:
+            # A type the project always sends on a channel is too important to
+            # wait for a digest: its email always arrives as it happens.
+            row["offers_frequency"] = not row["notification_type"].required_channels
+        context["preferences"] = preferences
         context["channels"] = registry.get_all_channels()
         context["frequencies"] = [
             (frequency.key, FREQUENCY_LABELS.get(frequency.key, frequency.name))
@@ -156,44 +161,67 @@ class UnsubscribeView(MVPTemplateView):
     template_name = "mvp_community/notifications/unsubscribe.html"
     page_title = _("Unsubscribe")
 
-    def unsubscribe(self, token):
-        """Read the token and turn email off for its types.
+    def read(self, token):
+        """Read the token.
 
         Args:
             token: The signed token from the link.
 
         Returns:
-            The outcome (``done``, ``already`` or ``invalid``) and the types.
+            The person and the notification types it names, or ``(None, [])`` when the
+            token is not valid.
         """
         try:
             data = signing.loads(token, salt=UNSUBSCRIBE_SALT)
             user = get_user_model().objects.get(pk=data["u"])
         except (signing.BadSignature, KeyError, TypeError, get_user_model().DoesNotExist):
-            return "invalid", []
+            return None, []
         types = [t for t in registry.get_all_types() if t.key in data.get("t", [])]
-        if not types:
-            return "invalid", []
-        changed = False
-        for notification_type in types:
-            enabled = "email" in [c.key for c in notification_type.get_enabled_channels(user)]
-            if enabled:
+        return (user, types) if types else (None, [])
+
+    @staticmethod
+    def emailed(user, types):
+        """Give the types among these that still reach the person by email."""
+        return [
+            t for t in types if "email" in [c.key for c in t.get_enabled_channels(user)]
+        ]
+
+    def get(self, request, token):
+        """Ask the person to confirm, so a mail scanner opening the link changes nothing."""
+        user, types = self.read(token)
+        if user is None:
+            outcome = "invalid"
+        elif self.emailed(user, types):
+            outcome = "confirm"
+        else:
+            outcome = "already"
+        return self.render_to_response(
+            self.get_context_data(outcome=outcome, types=types)
+        )
+
+    def post(self, request, token):
+        """Turn the email off, from the page's button or a mail app's one-click header.
+
+        A mail app posts ``List-Unsubscribe=One-Click`` and is answered with no page.
+        """
+        user, types = self.read(token)
+        one_click = request.POST.get("List-Unsubscribe") == "One-Click"
+        if user is None:
+            if one_click:
+                return HttpResponse(status=400)
+            outcome = "invalid"
+        else:
+            emailed = self.emailed(user, types)
+            for notification_type in emailed:
                 NotificationTypeChannelPreference.objects.update_or_create(
                     user=user,
                     notification_type=notification_type.key,
                     channel="email",
                     defaults={"enabled": False},
                 )
-                changed = True
-        return ("done" if changed else "already"), types
-
-    def get(self, request, token):
-        """Unsubscribe and say what was turned off."""
-        outcome, types = self.unsubscribe(token)
+            if one_click:
+                return HttpResponse(status=200)
+            outcome = "done" if emailed else "already"
         return self.render_to_response(
             self.get_context_data(outcome=outcome, types=types)
         )
-
-    def post(self, request, token):
-        """Unsubscribe without a page, as a mail app's one-click button asks."""
-        outcome, _types = self.unsubscribe(token)
-        return HttpResponse(status=400 if outcome == "invalid" else 200)

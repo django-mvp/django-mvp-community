@@ -37,9 +37,14 @@ Push and reminders are not part of this.
   email.
 - Q: What does an unsubscribe in a digest turn off? → A: Email for every notification type that
   digest gathered. The site channel is never changed by an unsubscribe.
-- Q: What does one-click mean? → A: Both a link in the email that works without signing in, and
-  the standard unsubscribe header that mail apps show as an "Unsubscribe" button beside the sender,
-  which unsubscribes without the person opening any page.
+- Q: What does one-click mean? → A: The standard unsubscribe header that mail apps show as an
+  "Unsubscribe" button beside the sender, which unsubscribes without the person opening any page.
+  The link in the email opens a page with one button that turns the email off, signed in or not.
+  Following the link alone changes nothing, because mail security scanners open every link in an
+  email before the person sees it (Sam, 2026-11-06).
+- Q: Can every notification type be gathered into a digest? → A: No. A type the host project
+  always sends on some channel, such as system messages and security notices, is always emailed
+  as it happens, and the preferences page offers no choice of how often for it (Sam, 2026-11-06).
 - Q: Does the package send digests on a schedule? → A: No. The package sends the digests that are
   due when it is asked to. The documentation explains how a host project runs that daily and
   weekly, as it does for sending the mail queue.
@@ -48,8 +53,9 @@ Push and reminders are not part of this.
 - Q: What does a digest contain? → A: The notifications of the types the person chose for that
   digest that arrived since their last digest and that they have not already read on the site. A
   digest with nothing in it is not sent.
-- Q: Where does the unsubscribe link lead? → A: To a page that says what was turned off and links
-  to the full notification preferences. It works for a person who is not signed in.
+- Q: Where does the unsubscribe link lead? → A: To a page that names the email it will turn off,
+  with a button that turns it off and a link to the full notification preferences. Once turned off,
+  the page says what was turned off. It works for a person who is not signed in.
 - Q: In which language are notification and digest emails written? → A: The recipient's.
 
 ## User Scenarios & Testing *(mandatory)*
@@ -98,7 +104,8 @@ layout. Install only the notifications extra and find the preferences page and s
 
 A person who gets too much email opens their notification preferences in the Account Center. For
 each notification type they have on for email, they choose whether it comes as one email each time,
-in a daily digest, or in a weekly digest, and save. From then on that type reaches their inbox the
+in a daily digest, or in a weekly digest, and save. Types the site always sends, such as security
+notices, always arrive as they happen. From then on that type reaches their inbox the
 way they chose, and their choices for the site are unchanged.
 
 **Why this priority**: Without it, a person's only choice is an email for every notification or
@@ -122,41 +129,49 @@ first gathered into the next weekly digest.
    digest is sent, **Then** that notification is left out of it.
 5. **Given** a person who has not chosen how often, **When** notifications arrive, **Then** each
    type follows the default the host project declared for it.
+6. **Given** a notification type the host project always sends on some channel, **When** a person
+   opens their preferences, **Then** it offers no choice of how often, and its email always
+   arrives as it happens.
+7. **Given** a person who turns email off for a type, **When** they look at that type, **Then** the
+   choice of how often is not shown, and it returns with their earlier choice when they turn email
+   back on.
 
 ---
 
 ### User Story 3 - A person unsubscribes from notification email in one click (Priority: P2)
 
-A person reads a notification or a digest email they no longer want. They use the unsubscribe link
-at the bottom of the email, or the unsubscribe button their mail app shows beside the sender. The
-email it came from stops, without them signing in, and the page the link opens says what was
-turned off and how to change their other choices.
+A person reads a notification or a digest email they no longer want. They use the unsubscribe
+button their mail app shows beside the sender, or follow the unsubscribe link at the bottom of the
+email and press the one button on the page it opens. The email it came from stops, without them
+signing in, and the page says what was turned off and how to change their other choices.
 
 **Why this priority**: People can already turn notification email off in their preferences, so
 this is the faster way out rather than the only one. It is also what mail providers expect of
 email sent in bulk.
 
 **Independent Test**: Receive a notification email while signed out, follow its unsubscribe link,
-and find email off for that type alone on the preferences page. Do the same from a digest and find
+press the button, and find email off for that type alone on the preferences page. Do the same from a digest and find
 email off for every type the digest gathered.
 
 **Acceptance Scenarios**:
 
 1. **Given** a notification email, **When** the person follows its unsubscribe link, signed in or
-   not, **Then** email for that notification type is turned off for them and the page says so, with
-   a link to their notification preferences.
-2. **Given** a digest email, **When** the person follows its unsubscribe link, **Then** email for
-   every notification type that digest gathered is turned off for them.
-3. **Given** a notification or digest email, **When** the person's mail app unsubscribes through
+   not, **Then** the page names the email it will turn off and nothing is changed yet.
+2. **Given** that page, **When** the person presses its button, **Then** email for that
+   notification type is turned off for them and the page says so, with a link to their
+   notification preferences.
+3. **Given** a digest email, **When** the person confirms on the page its unsubscribe link opens,
+   **Then** email for every notification type that digest gathered is turned off for them.
+4. **Given** a notification or digest email, **When** the person's mail app unsubscribes through
    the email's unsubscribe header, **Then** the same email is turned off without the person opening
    any page.
-4. **Given** an unsubscribe, **When** the person later receives notifications, **Then** their site
+5. **Given** an unsubscribe, **When** the person later receives notifications, **Then** their site
    notifications and their email for other types are unchanged.
-5. **Given** an unsubscribe link that has been altered, or one belonging to another person,
+6. **Given** an unsubscribe link that has been altered, or one belonging to another person,
    **When** it is followed, **Then** nothing is changed and the page says the link is not valid.
-6. **Given** a person who already unsubscribed, **When** they follow the same link again, **Then**
+7. **Given** a person who already unsubscribed, **When** they follow the same link again, **Then**
    nothing fails and the page says that email is already off.
-7. **Given** a person who unsubscribed, **When** they turn email back on in their preferences,
+8. **Given** a person who unsubscribed, **When** they turn email back on in their preferences,
    **Then** the email resumes.
 
 ---
@@ -191,7 +206,9 @@ email off for every type the digest gathered.
   has no email address.
 - **FR-005**: For each notification type on for email, a person MUST be able to choose one email
   each time, a daily digest or a weekly digest, and the choice MUST apply to notifications of that
-  type from then on.
+  type from then on. The choice MUST NOT be shown for a type while its email is off.
+- **FR-016**: A notification type the host project always sends on some channel MUST always be
+  emailed as it happens, and MUST offer no choice of how often.
 - **FR-006**: A person who has not chosen MUST receive each type at the frequency the host project
   declared as its default.
 - **FR-007**: When the host project sends the digests that are due, each person MUST receive at most
@@ -201,14 +218,16 @@ email off for every type the digest gathered.
   MUST be able to send them daily and weekly as the documentation describes.
 - **FR-009**: Every notification and digest email whose types a person can turn off MUST carry an
   unsubscribe link that works without signing in, and the standard unsubscribe header that lets a
-  mail app unsubscribe in one click.
+  mail app unsubscribe in one click. Following the link MUST change nothing until the person
+  confirms on the page it opens.
 - **FR-010**: Unsubscribing from a notification email MUST turn off email for that notification
   type, and unsubscribing from a digest MUST turn off email for every type it gathered. Neither MUST
   change any other preference.
 - **FR-011**: An unsubscribe link MUST change only the preferences of the person it was sent to,
   and MUST change nothing when it has been altered.
-- **FR-012**: Following an unsubscribe link MUST open a page saying what was turned off, or that it
-  was already off, or that the link is not valid, with a link to the notification preferences.
+- **FR-012**: Following an unsubscribe link MUST open a page naming the email it will turn off with
+  a button to confirm, or saying it was already off, or that the link is not valid, and after
+  confirming MUST say what was turned off. Every state MUST link to the notification preferences.
 - **FR-013**: Every notification email, digest email and page this feature adds MUST be replaceable
   by overriding one template.
 - **FR-014**: The documentation MUST cover installing the two extras together, the settings
@@ -220,7 +239,7 @@ email off for every type the digest gathered.
 | Story | Requirements |
 |---|---|
 | US1 | FR-001, FR-002, FR-003, FR-004, FR-006, FR-007, FR-008, FR-013, FR-014, FR-015 |
-| US2 | FR-005, FR-006, FR-007, FR-015 |
+| US2 | FR-005, FR-006, FR-007, FR-015, FR-016 |
 | US3 | FR-009, FR-010, FR-011, FR-012, FR-013, FR-015 |
 
 ### Key Entities
@@ -243,8 +262,8 @@ email off for every type the digest gathered.
   code that sends notifications.
 - **SC-002**: A person who chooses a digest for every notification type receives at most one
   notification email a day, or a week.
-- **SC-003**: A person stops a notification email from the email itself in one action, without
-  signing in.
+- **SC-003**: A person stops a notification email from their mail app in one action, or from the
+  email's link in two, without signing in.
 - **SC-004**: No unsubscribe changes a preference the email it came from did not cover.
 
 ## Assumptions

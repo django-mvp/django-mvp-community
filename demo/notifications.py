@@ -1,6 +1,7 @@
 """The demo project's notification types, so every state of the pages can be seen."""
 
 from generic_notifications.channels import WebsiteChannel
+from generic_notifications.frequencies import RealtimeFrequency
 from generic_notifications.types import NotificationType, register
 
 
@@ -39,3 +40,4 @@ class SecurityNotice(NotificationType):
     name = "Security notices"
     description = "Sign-ins from a new device and changes to your account"
     required_channels = [WebsiteChannel]
+    default_frequency = RealtimeFrequency

@@ -23,3 +23,12 @@ feature, not features of their own.
 
 CONTEXT.md is changed with the build, since this branch carries only the specification until it is
 approved.
+
+## Rulings at the sketch review (2026-11-06)
+
+- Types the host project always sends on some channel (system messages, security notices) are
+  always emailed as they happen and offer no choice of how often (FR-016).
+- The choice of how often is hidden while email is off for a type (FR-005).
+- The unsubscribe link opens a confirmation page and changes nothing by itself, because mail
+  security scanners open every link in an email. The mail app's header is the one-click route
+  (FR-009, FR-012).

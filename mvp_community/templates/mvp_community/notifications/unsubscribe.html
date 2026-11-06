@@ -2,10 +2,12 @@
 {% load i18n %}
 {% block title %}{% trans "Unsubscribe" %}{% endblock title %}
 {% block page.heading %}
-  {% if outcome == "done" %}{% trans "You're unsubscribed" %}{% elif outcome == "already" %}{% trans "You're already unsubscribed" %}{% else %}{% trans "This link doesn't work" %}{% endif %}
+  {% if outcome == "confirm" %}{% trans "Turn off notification email?" %}{% elif outcome == "done" %}{% trans "You're unsubscribed" %}{% elif outcome == "already" %}{% trans "You're already unsubscribed" %}{% else %}{% trans "This link doesn't work" %}{% endif %}
 {% endblock page.heading %}
 {% block page.lead %}
-  {% if outcome == "done" %}
+  {% if outcome == "confirm" %}
+    {% blocktrans count counter=types|length %}You'll stop getting this notification by email.{% plural %}You'll stop getting these notifications by email.{% endblocktrans %}
+  {% elif outcome == "done" %}
     {% blocktrans count counter=types|length %}You won't get this notification by email any more.{% plural %}You won't get these notifications by email any more.{% endblocktrans %}
   {% elif outcome == "already" %}
     {% trans "You had already turned these emails off. Nothing has changed." %}
@@ -15,8 +17,8 @@
 {% endblock page.lead %}
 {% block page.content %}
   {% url 'mvp_community_notifications:preferences' as preferences_url %}
-  {% trans "Turned off by email" as card_title %}
-  {% trans "Notifications on the site are unchanged." as still_on_site %}
+  {% if outcome == "confirm" %}{% trans "Email to turn off" as card_title %}{% else %}{% trans "Turned off by email" as card_title %}{% endif %}
+  {% trans "Notifications on the site stay as they are." as still_on_site %}
   {% if types %}
     <c-mvp.card title="{{ card_title }}" only>
       {% for type in types %}
@@ -28,7 +30,14 @@
       <c-mvp.text muted size="sm" :text="still_on_site" only />
     </c-mvp.card>
   {% endif %}
-  <div class="flex flex-wrap gap-2 pt-4">
-    <c-button href="{{ preferences_url }}" variant="primary" only>{% trans "Notification preferences" %}</c-button>
-  </div>
+  {% if outcome == "confirm" %}
+    <form method="post" class="flex flex-wrap gap-2 pt-4">
+      <c-button type="submit" variant="primary" only>{% trans "Turn off these emails" %}</c-button>
+      <c-button href="{{ preferences_url }}" ghost only>{% trans "Notification preferences" %}</c-button>
+    </form>
+  {% else %}
+    <div class="flex flex-wrap gap-2 pt-4">
+      <c-button href="{{ preferences_url }}" variant="primary" only>{% trans "Notification preferences" %}</c-button>
+    </div>
+  {% endif %}
 {% endblock page.content %}
