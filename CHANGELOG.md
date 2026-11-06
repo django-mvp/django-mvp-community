@@ -36,6 +36,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and a weekly digest beside the daily one. Name `NotificationEmailChannel` in
   a type's channels instead of django-generic-notifications' `EmailChannel`;
   system check `mvp_community.E001` reports any type that does not.
+- Unsubscribing from notification email: every notification email and digest
+  carries a link, and the `List-Unsubscribe` one-click header, that opens a page
+  to turn email off for the types in that email. It works without signing in
+  and does not expire. Types the project always sends by email carry no link.
 - The `activity` extra, built on django-activity-stream: `ActivityFeedView`,
   a feed of the whole site or of one object that you mount at an address of
   your choosing, a following page in the Account Center, and components for

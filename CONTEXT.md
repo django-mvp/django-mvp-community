@@ -53,6 +53,12 @@ Several notifications gathered into one email, sent daily or weekly instead of
 one email each.
 _Avoid_: summary, newsletter.
 
+**Unsubscribe link**:
+The signed address in a notification email that turns email off for the types
+that email carries, for the person it was sent to. It does not expire. An email
+of only always-sent types has none.
+_Avoid_: opt-out link, cancel link.
+
 **Notification preferences**:
 A person's choice of notification types, channels and digest frequency, set in
 the Account Center.

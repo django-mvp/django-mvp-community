@@ -212,6 +212,10 @@ link.url()  # "https://example.com/notifications/unsubscribe/<token>/"
 
 `for_email` leaves out any type the project always sends by email, and returns `None` when none are left. `url()` is absolute through the current `Site`, so it needs `django.contrib.sites` and the `Site`'s domain set. Reading a link drops the types that have become always-sent since it was made, so an old link never turns off a required type.
 
+Every notification email and digest carries the link: as an "Unsubscribe" link in the footer and as the `List-Unsubscribe` header with `List-Unsubscribe-Post: List-Unsubscribe=One-Click`, which lets a mail app offer its own unsubscribe button. A digest's link names every type in the digest. An email whose types are all always sent by email carries neither the header nor the footer link, and the footer shows only the link to the person's notification preferences.
+
+The link does not expire, and its signed payload holds the person's id and the type keys. Anyone who holds an email can read both, though no one can change them without the signature.
+
 The address opens a page that asks the person to confirm before anything changes, so a mail scanner that opens the link changes nothing. The page works for a signed-out visitor, including in a project that uses `LoginRequiredMiddleware`. A mail app's one-click request (`List-Unsubscribe=One-Click`) is answered with status 200 and no page, or 400 for a link that does not read.
 
 ## Refresh the bell after sending
