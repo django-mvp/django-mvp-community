@@ -128,8 +128,9 @@ def make_action():
 @pytest.fixture
 def make_follow():
     # actor_only=False, as the follow control sends it: the person follows what
-    # happens to the object as well as what it does.
+    # happens to the object as well as what it does. No "started following"
+    # activity is recorded, so a test's feed holds only the activity it made.
     def make(follower, followed):
-        return actstream_follow(follower, followed, actor_only=False)
+        return actstream_follow(follower, followed, actor_only=False, send_action=False)
 
     return make

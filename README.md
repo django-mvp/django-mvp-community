@@ -111,8 +111,14 @@ project switches an extra on by installing it and importing from that module.
 The `notifications` extra is built and documented in
 [Notifications](https://github.com/django-mvp/django-mvp-community/blob/main/docs/developer/notifications.md):
 a bell in the header, a notifications page, and notification preferences in
-the Account Center. The other extras are empty for now: installing one adds no
-packages, and there is no integration module to import.
+the Account Center.
+
+The `activity` extra is built and documented in
+[Activity](https://github.com/django-mvp/django-mvp-community/blob/main/docs/developer/activity.md):
+a feed view you mount where you like, a following page in the Account Center,
+and components for recent activity, a follow control and a followers list. The
+other extras are empty for now: installing one adds no packages, and there is
+no integration module to import.
 
 ## Overriding a template
 

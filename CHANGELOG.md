@@ -30,3 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   notification preferences page in the Account Center, all built on
   django-generic-notifications. Install it with
   `pip install "django-mvp-community[notifications]"`.
+- The `activity` extra, built on django-activity-stream: `ActivityFeedView`,
+  a feed of the whole site or of one object that you mount at an address of
+  your choosing, a following page in the Account Center, and components for
+  recent activity, a follow control and a followers list. Install it with
+  `pip install "django-mvp-community[activity]"`.

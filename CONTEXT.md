@@ -80,6 +80,12 @@ _Avoid_: subscribe (that word belongs to push subscriptions and to payments).
 The list of activity a person sees, drawn from what they follow.
 _Avoid_: stream, timeline.
 
+**Recent activity**:
+The newest few activities placed on any page, such as a dashboard, with a link
+to the full list when there is more. A feed is the paged list on a page of its
+own.
+_Avoid_: stream, widget, ticker.
+
 **Share card**:
 The preview image shown when a link to a page is shared.
 _Avoid_: thumbnail, OG image, social image.

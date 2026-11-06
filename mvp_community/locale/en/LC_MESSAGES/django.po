@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: django-mvp-community\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-05 09:02-0600\n"
+"POT-Creation-Date: 2026-11-06 05:37-0600\n"
 "PO-Revision-Date: 2026-11-05 00:00+0000\n"
 "Last-Translator: Samuel Jennings <samuel.scott.jennings@gmail.com>\n"
 "Language-Team: English\n"
@@ -18,6 +18,18 @@ msgstr ""
 msgid "Community"
 msgstr ""
 
+msgid "Following"
+msgstr ""
+
+msgid "Activity"
+msgstr ""
+
+msgid "The people and things whose activity reaches your feed."
+msgstr ""
+
+msgid "Account Center"
+msgstr ""
+
 msgid "Notifications"
 msgstr ""
 
@@ -27,10 +39,41 @@ msgstr ""
 msgid "Choose which notifications you receive, and where."
 msgstr ""
 
-msgid "Account Center"
+msgid "Your notification preferences are saved."
 msgstr ""
 
-msgid "Your notification preferences are saved."
+msgid "in"
+msgstr ""
+
+msgid "Nothing has happened yet"
+msgstr ""
+
+#, python-format
+msgid "%(counter)s follower"
+msgid_plural "%(counter)s followers"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Unfollow"
+msgstr ""
+
+msgid "Follow"
+msgstr ""
+
+#, python-format
+msgid "and %(more)s more"
+msgstr ""
+
+msgid "Nobody follows this yet."
+msgstr ""
+
+msgid "See everyone and everything you follow, and stop following any of it."
+msgstr ""
+
+msgid "Manage following"
+msgstr ""
+
+msgid "View all activity"
 msgstr ""
 
 #, python-format
@@ -43,6 +86,19 @@ msgid "Unread:"
 msgstr ""
 
 msgid "Manage notifications"
+msgstr ""
+
+msgid "Your feed is empty"
+msgstr ""
+
+msgid "Follow people and things, and what they do appears here."
+msgstr ""
+
+msgid "You follow nothing yet"
+msgstr ""
+
+msgid ""
+"Use Follow next to a person or a thing to see what they do in your feed."
 msgstr ""
 
 msgid "Mark all read"
