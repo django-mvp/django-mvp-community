@@ -27,7 +27,7 @@ Against `main` of 2026-11-06, with django-activity-stream 2.0.0 installed in the
 
 - **Following an object follows everything around it.** `follow_all_url` posts to `follow_all`, which follows with `actor_only=False`, so the stream includes activity where the object is the target or the action object. That is what the spec's "activity about an object" means.
 - **Deleted objects.** django-activity-stream deletes a deleted object's follows on `pre_delete`, and every registered model gains generic relations that cascade its actions. Nothing is written for FR-011's "no longer exists" half. Only public actions are read, which is the other half.
-- **django-activity-stream's follow view is `csrf_exempt`**, upstream. A page on another site could make a signed-in person follow or stop following something. The control still sends the CSRF token. This is recorded as a known limitation in the documentation and not worked around.
+- **django-activity-stream's follow view is `csrf_exempt`**, upstream. A page on another site could make a signed-in person follow or stop following something. The control sends the CSRF token, so the forms stay correct if the upstream check is ever added. This is recorded as a known limitation in the documentation and not worked around.
 - **Query cost in lists.** Each follow control costs a `COUNT` and an `exists()`, and `follow_all_url` runs `is_following` again internally: three queries per control. The following page therefore grows by three queries a row. Measured in the sketch: 128 queries for 40 rows on the demo's people page before the `COUNT` change.
 
 ## What already exists

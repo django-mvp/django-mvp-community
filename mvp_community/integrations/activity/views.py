@@ -13,6 +13,8 @@ from django.utils.translation import gettext_lazy as _
 from django.views import View
 from mvp.views import MVPListView
 
+from .streams import followed_activity
+
 
 class ActivityFeedView(MVPListView):
     """A feed of public activity, which a host project mounts where it likes.
@@ -75,13 +77,7 @@ class ActivityFeedView(MVPListView):
         """
         arguments = {"verb": self.verb} if self.verb else {}
         if self.stream == "following":
-            user = self.request.user
-            # The stream also holds the person's own actions where they act on
-            # something they follow, and the "started following" each follow records.
-            return Action.objects.user(user, **arguments).exclude(
-                actor_content_type=ContentType.objects.get_for_model(user),
-                actor_object_id=str(user.pk),
-            )
+            return followed_activity(self.request.user, **arguments)
         if self.stream == "site":
             # Unlike the other streams, public() does not fetch each action's
             # actor, target and action object in bulk.

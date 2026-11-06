@@ -28,6 +28,24 @@ def followers_of(obj):
 
 
 @register.simple_tag
+def followed_activity(user, verb=""):
+    """Return the feed of what ``user`` follows, as the feed view shows it.
+
+    Args:
+        user: The signed-in person.
+        verb: When given, only activity of this kind.
+
+    Returns:
+        The public activity of what they follow, without their own actions.
+    """
+    from mvp_community.integrations.activity.streams import (
+        followed_activity as stream,
+    )
+
+    return stream(user, **({"verb": verb} if verb else {}))
+
+
+@register.simple_tag
 def follow_control_url(obj, page=""):
     """Return the address that draws ``obj``'s follow control on its own.
 

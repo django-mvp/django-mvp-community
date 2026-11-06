@@ -13,6 +13,7 @@
   {% elif request.user.is_authenticated %}
     {% follow_control_url object page as refresh %}
     <form method="post" action="{% follow_all_url object %}?next={{ page|urlencode }}" hx-post="{% follow_all_url object %}?next={{ refresh|urlencode:"" }}" {% if replace_row %}hx-target="closest [data-follow-row]" hx-swap="delete"{% else %}hx-target="closest [data-follow-control]" hx-swap="outerHTML"{% endif %}>
+      {% csrf_token %}
       {% if request.user|is_following:object %}
         <c-button type="submit" size="{{ size }}" outline icon="activity.unfollow" text="{% trans "Unfollow" %}" only />
       {% else %}

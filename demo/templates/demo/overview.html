@@ -39,7 +39,7 @@
   {% if user.is_authenticated %}
     <c-mvp.section title="From people you follow" icon="activity">
       <c-mvp.text>Recent activity from what you follow, five at a time, with a link to your full feed.</c-mvp.text>
-      {% url "mvp_community_activity:feed" as feed_url %}
+      {% url "feed" as feed_url %}
       <c-mvp_community.activity.recent following limit="5" more_url="{{ feed_url }}" more_text="View your full feed" />
     </c-mvp.section>
   {% endif %}

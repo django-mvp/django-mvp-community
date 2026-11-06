@@ -17,8 +17,8 @@ from tests.factories import UserFactory
 RECENT = "c-mvp_community.activity.recent"
 
 
-def request_for(user):
-    request = RequestFactory().get("/")
+def request_for(user, path="/"):
+    request = RequestFactory().get(path)
     request.user = user
     return request
 
@@ -121,6 +121,14 @@ class TestRecentActivityOfWhatAPersonFollows:
 
         assert "finished" in markup
         assert "stumbled" not in markup
+
+    def test_it_leaves_out_the_persons_own_actions(
+        self, render_recent, person, place_of_work, make_action, make_follow
+    ) -> None:
+        make_follow(person, place_of_work)
+        make_action(person, verb="stumbled", target=place_of_work)
+
+        assert "stumbled" not in render_recent("following")
 
     def test_it_shows_nothing_to_a_signed_out_visitor(
         self, render_recent, person, place_of_work, make_action
@@ -399,12 +407,19 @@ class TestFollowControl:
 
         assert parse_qs(action.query)["next"] == ["/lessons/3/"]
 
-    def test_next_defaults_to_the_current_page(self, draw, group) -> None:
-        markup = draw(':object="group"', group=group)
+    def test_next_defaults_to_the_current_page(self, draw, person, group) -> None:
+        markup = draw(
+            ':object="group"', group=group, request=request_for(person, "/lessons/3/")
+        )
 
         action = urlsplit(self.attribute(markup, "action"))
 
-        assert parse_qs(action.query)["next"] == ["/"]
+        assert parse_qs(action.query)["next"] == ["/lessons/3/"]
+
+    def test_the_form_carries_the_csrf_token(self, draw, group) -> None:
+        markup = draw(':object="group"', group=group, csrf_token="a-token")
+
+        assert 'name="csrfmiddlewaretoken"' in markup
 
     def test_following_through_the_follow_address_and_the_control_route(
         self, client, signed_in, group, make_follow

@@ -270,9 +270,11 @@ django-activity-stream's own URLconf also mounts a page showing any activity by 
 
 The follow routes are django-activity-stream's own views, and this package does not change their behaviour:
 
-- They do not check a CSRF token.
+- They do not check a CSRF token. The follow control sends one anyway.
 - They follow on a plain GET request as well as a POST.
 - They redirect to any `next` address without checking it.
 - Following records a public "started following" activity.
+
+django-activity-stream can also tag a follow with a flag, such as `liking` or `watching`. This package draws no flags: a flagged follow counts as an ordinary follow in every count and list, and Unfollow removes it.
 
 A page with many follow controls asks the database a few questions for each one.
