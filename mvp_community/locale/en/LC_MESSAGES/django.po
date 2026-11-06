@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: django-mvp-community\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-06 05:37-0600\n"
+"POT-Creation-Date: 2026-11-06 06:02-0600\n"
 "PO-Revision-Date: 2026-11-05 00:00+0000\n"
 "Last-Translator: Samuel Jennings <samuel.scott.jennings@gmail.com>\n"
 "Language-Team: English\n"
@@ -15,119 +15,171 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: mvp_community/apps.py:18
 msgid "Community"
 msgstr ""
 
+#: mvp_community/integrations/activity/menus.py:11
+#: mvp_community/integrations/activity/views.py:102
+#: mvp_community/integrations/activity/views.py:104
+#: mvp_community/templates/cotton/mvp_community/activity/following_card.html:4
+#: mvp_community/templates/mvp_community/activity/feed.html:5
 msgid "Following"
 msgstr ""
 
+#: mvp_community/integrations/activity/views.py:34
 msgid "Activity"
 msgstr ""
 
+#: mvp_community/integrations/activity/views.py:103
 msgid "The people and things whose activity reaches your feed."
 msgstr ""
 
+#: mvp_community/integrations/activity/views.py:104
+#: mvp_community/integrations/notifications/views.py:109
 msgid "Account Center"
 msgstr ""
 
+#: mvp_community/integrations/notifications/menus.py:11
+#: mvp_community/integrations/notifications/views.py:27
+#: mvp_community/integrations/notifications/views.py:28
+#: mvp_community/integrations/notifications/views.py:109
+#: mvp_community/templates/cotton/mvp_community/notifications/bell.html:10
+#: mvp_community/templates/cotton/mvp_community/notifications/bell.html:23
+#: mvp_community/templates/cotton/mvp_community/notifications/preferences_card.html:4
 msgid "Notifications"
 msgstr ""
 
+#: mvp_community/integrations/notifications/views.py:107
+#: mvp_community/templates/mvp_community/notifications/list.html:11
+#: mvp_community/templates/mvp_community/notifications/preferences.html:14
 msgid "Notification preferences"
 msgstr ""
 
+#: mvp_community/integrations/notifications/views.py:108
+#: mvp_community/templates/cotton/mvp_community/notifications/preferences_card.html:5
 msgid "Choose which notifications you receive, and where."
 msgstr ""
 
+#: mvp_community/integrations/notifications/views.py:129
 msgid "Your notification preferences are saved."
 msgstr ""
 
+#: mvp_community/templates/cotton/mvp_community/activity/entry.html:12
 msgid "in"
 msgstr ""
 
+#: mvp_community/templates/cotton/mvp_community/activity/feed.html:18
 msgid "Nothing has happened yet"
 msgstr ""
 
+#: mvp_community/templates/cotton/mvp_community/activity/follow.html:11
+#: mvp_community/templates/cotton/mvp_community/activity/followers.html:8
 #, python-format
 msgid "%(counter)s follower"
 msgid_plural "%(counter)s followers"
 msgstr[0] ""
 msgstr[1] ""
 
+#: mvp_community/templates/cotton/mvp_community/activity/follow.html:17
 msgid "Unfollow"
 msgstr ""
 
+#: mvp_community/templates/cotton/mvp_community/activity/follow.html:19
+#: mvp_community/templates/cotton/mvp_community/activity/follow.html:24
 msgid "Follow"
 msgstr ""
 
+#: mvp_community/templates/cotton/mvp_community/activity/followers.html:20
 #, python-format
 msgid "and %(more)s more"
 msgstr ""
 
+#: mvp_community/templates/cotton/mvp_community/activity/followers.html:22
 msgid "Nobody follows this yet."
 msgstr ""
 
+#: mvp_community/templates/cotton/mvp_community/activity/following_card.html:5
 msgid "See everyone and everything you follow, and stop following any of it."
 msgstr ""
 
+#: mvp_community/templates/cotton/mvp_community/activity/following_card.html:7
 msgid "Manage following"
 msgstr ""
 
+#: mvp_community/templates/cotton/mvp_community/activity/recent.html:26
 msgid "View all activity"
 msgstr ""
 
+#: mvp_community/templates/cotton/mvp_community/notifications/bell.html:20
 #, python-format
 msgid "Notifications, %(counter)s unread"
 msgid_plural "Notifications, %(counter)s unread"
 msgstr[0] ""
 msgstr[1] ""
 
+#: mvp_community/templates/cotton/mvp_community/notifications/item.html:9
 msgid "Unread:"
 msgstr ""
 
+#: mvp_community/templates/cotton/mvp_community/notifications/preferences_card.html:7
 msgid "Manage notifications"
 msgstr ""
 
+#: mvp_community/templates/mvp_community/activity/feed.html:12
 msgid "Your feed is empty"
 msgstr ""
 
+#: mvp_community/templates/mvp_community/activity/feed.html:13
 msgid "Follow people and things, and what they do appears here."
 msgstr ""
 
+#: mvp_community/templates/mvp_community/activity/following.html:32
 msgid "You follow nothing yet"
 msgstr ""
 
+#: mvp_community/templates/mvp_community/activity/following.html:33
 msgid ""
 "Use Follow next to a person or a thing to see what they do in your feed."
 msgstr ""
 
+#: mvp_community/templates/mvp_community/notifications/list.html:7
 msgid "Mark all read"
 msgstr ""
 
+#: mvp_community/templates/mvp_community/notifications/list.html:26
 msgid "No notifications yet"
 msgstr ""
 
+#: mvp_community/templates/mvp_community/notifications/list.html:27
 msgid "When something happens that concerns you, it appears here."
 msgstr ""
 
+#: mvp_community/templates/mvp_community/notifications/preferences.html:17
 msgid "Notification"
 msgstr ""
 
+#: mvp_community/templates/mvp_community/notifications/preferences.html:35
 msgid "Not available"
 msgstr ""
 
+#: mvp_community/templates/mvp_community/notifications/preferences.html:37
 #, python-format
 msgid "%(type)s by %(channel)s"
 msgstr ""
 
+#: mvp_community/templates/mvp_community/notifications/preferences.html:39
 msgid "Always sent"
 msgstr ""
 
+#: mvp_community/templates/mvp_community/notifications/preferences.html:54
 msgid "Save"
 msgstr ""
 
+#: mvp_community/templates/mvp_community/notifications/preferences.html:59
 msgid "Nothing to choose"
 msgstr ""
 
+#: mvp_community/templates/mvp_community/notifications/preferences.html:59
 msgid "This site sends no notifications you can turn on or off."
 msgstr ""

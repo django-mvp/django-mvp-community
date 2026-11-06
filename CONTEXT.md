@@ -77,7 +77,8 @@ A person's choice to see activity about another person or an object.
 _Avoid_: subscribe (that word belongs to push subscriptions and to payments).
 
 **Feed**:
-The list of activity a person sees, drawn from what they follow.
+A page of activity split into pages, mounted by the host project: what the signed-in person
+follows, the whole site, or one object. The package ships the view, not the page.
 _Avoid_: stream, timeline.
 
 **Recent activity**:

@@ -1,9 +1,9 @@
 # Decisions: Activity feeds and following
 
-## D1 — The feed page is the feature's own
+## D1 — The following page shows no activity
 
-**Decision:** a person's feed is a page in the application shell, reached from the menu. The following page in the Account Center manages follows and shows no activity.
-**Why:** Sam confirmed the reading at intake: the feature ships a feed page of its own, and the components let a host project put feeds elsewhere too.
+**Decision:** the following page in the Account Center manages what a person follows and shows no activity. Activity is shown by a feed the host project mounts (D7) and by recent activity.
+**Why:** Sam confirmed the reading at intake: managing follows and reading activity are separate jobs.
 **ADR:** none — recorded in the spec.
 
 ## D2 — Only public activity reaches a feed
@@ -42,7 +42,7 @@
 **Decision:** the package provides `ActivityFeedView`, an `MVPListView` configured with `stream` (`following`, `site`, `object`), `verb` and `get_stream_object()`, and mounts no feed page or menu entry. The following page stays built in, in the Account Center.
 **Why:** Sam, 2026-11-06: a host project decides where a feed lives and what it shows, so the package should not choose for it. The Account Center pages have no configuration a host would change, so they stay built in. This also settles FR-008 for the feed page.
 **Revisit if:** most host projects end up mounting the same following feed at the same address.
-**ADR:** docs/adr/ candidate at S5 — the split between configurable views and built-in Account Center pages applies to every extra.
+**ADR:** docs/adr/0001-extras-ship-configurable-views-and-built-in-account-center-pages.md
 
 ## D8 — The URLconf carries no app namespace of its own
 
