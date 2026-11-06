@@ -5,10 +5,9 @@ from django.contrib.auth import get_user_model
 from django.core import signing
 from django.core.management.base import BaseCommand, CommandError
 from django.urls import reverse
-from generic_notifications.channels import EmailChannel
+from generic_notifications import send_notification
+from generic_notifications.digest import send_notification_digests
 from generic_notifications.models import (
-    Notification,
-    NotificationChannel,
     NotificationFrequencyPreference,
     NotificationTypeChannelPreference,
 )
@@ -35,6 +34,8 @@ WEEKLY = [
         "The past tense with haben and sein, and a review of irregular verbs.",
     ),
     ("course_updated", "B1 Grammar was updated", ""),
+]
+ALWAYS = [
     (
         "security_notice",
         "New sign-in from Firefox on Linux",
@@ -44,7 +45,7 @@ WEEKLY = [
 
 
 class Command(BaseCommand):
-    """Email the regular user one notification, a daily digest and a weekly digest."""
+    """Email the regular user a notification, a security notice, a daily digest and a weekly digest."""
 
     help = __doc__
 
@@ -67,26 +68,25 @@ class Command(BaseCommand):
             NotificationFrequencyPreference.objects.create(
                 user=user, notification_type=key, frequency=frequency
             )
-        channel = EmailChannel()
 
-        def make(rows):
-            created = []
+        def send(rows):
             for kind, subject, text in rows:
-                n = Notification.objects.create(
+                send_notification(
                     recipient=user,
-                    notification_type=kind,
+                    notification_type=registry.get_type(kind),
                     subject=subject,
                     text=text,
                     url="/notifications/",
                 )
-                NotificationChannel.objects.create(notification=n, channel="email")
-                created.append(n)
-            return Notification.objects.filter(pk__in=[n.pk for n in created])
 
-        for n in make(REALTIME):
-            channel.send_now(n)
-        channel.send_digest(make(DAILY), registry.get_frequency("daily"))
-        channel.send_digest(make(WEEKLY), registry.get_frequency("weekly"))
+        # Real-time types are emailed as they are sent. The others are held for
+        # their digest, which the commands below send.
+        send(REALTIME)
+        send(DAILY)
+        send(WEEKLY)
+        send(ALWAYS)
+        send_notification_digests(registry.get_frequency("daily"))
+        send_notification_digests(registry.get_frequency("weekly"))
 
         def link(keys):
             token = signing.dumps(
@@ -95,7 +95,7 @@ class Command(BaseCommand):
             return reverse("mvp_community_notifications:unsubscribe", args=[token])
 
         self.stdout.write(
-            "Sent: one notification email, a daily digest and a weekly digest."
+            "Sent: a notification, a security notice, a daily digest and a weekly digest."
         )
         self.stdout.write(f"  one type:      {link(['reply_received'])}")
         self.stdout.write(

@@ -1,10 +1,14 @@
 """Management command that creates the demo project's sign-in accounts."""
 
+import os
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand, CommandError
 
 PASSWORD = "password"
+DEFAULT_SITE_DOMAIN = "localhost:8000"
 
 ACCOUNTS = [
     ("regular.user@example.com", {"is_staff": False, "is_superuser": False}),
@@ -14,12 +18,12 @@ ACCOUNTS = [
 
 
 class Command(BaseCommand):
-    """Create one regular, one staff and one superuser account, all idempotently."""
+    """Create the sign-in accounts and give the site the address emails link to."""
 
     help = "Create the demo sign-in accounts."
 
     def handle(self, *args, **options):
-        """Refuse unless DEBUG is on, then create or reset each account."""
+        """Refuse unless DEBUG is on, then set the site's domain and create or reset each account."""
         # Known passwords: refusing to run without DEBUG is what keeps them off a
         # deployed site.
         if not settings.DEBUG:
@@ -27,6 +31,12 @@ class Command(BaseCommand):
                 "seed_demo creates accounts with a known password and only "
                 "runs with DEBUG on."
             )
+
+        # The address every link in an email is built from. It is the one the
+        # person reading the email reaches the demo at.
+        Site.objects.filter(pk=settings.SITE_ID).update(
+            domain=os.environ.get("DEMO_SITE_DOMAIN", DEFAULT_SITE_DOMAIN)
+        )
 
         user_model = get_user_model()
         # The address is the identifier whichever field the project made its
