@@ -30,3 +30,9 @@
 **Decision:** `FollowControlView` stays, as agreed at the sketch gate, behind `LoginRequiredMixin`, answering 404 for a model not registered with django-activity-stream. The review's alternative (htmx selecting the control out of a full page) was not adopted.
 **Why:** that alternative re-renders the whole page per click, which is the cost the sketch-gate note set out to remove. Only a signed-in person ever reaches the route, after a follow they made.
 **ADR:** none — local to one route.
+
+## D6 — Following records "started following"
+
+**Decision:** django-activity-stream's follow view is used as it is, so following records a public "started following" activity. The feed page leaves out the person's own actions.
+**Why:** Sam, 2026-11-06, approving the spec change: stopping the activity would mean a follow view of our own. Excluding a person's own actions keeps their feed to what others did.
+**ADR:** none — recorded in the spec.

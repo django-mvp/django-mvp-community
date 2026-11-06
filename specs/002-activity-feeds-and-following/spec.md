@@ -39,7 +39,10 @@ those of django-activity-stream.
   them to sign in. The feed page and the following page send them to sign in, as every other
   Account Center page does.
 - Q: Can a person follow themselves? → A: No. The follow control is not offered to a person on
-  themselves, and their own activity is not added to their feed by following.
+  themselves, and a person's own activity never appears on their feed page.
+- Q: Does following someone show up as activity? → A: Yes. Following records a public "started
+  following" activity, as django-activity-stream does, which reaches the feeds of people who follow
+  either side. The follower does not see it on their own feed page.
 - Q: What does a follower count count? → A: The people following that person or object. A
   person's own follow is included, and the count changes as soon as they follow or stop
   following.
@@ -238,8 +241,8 @@ following one person, and see them gone from the list and their new activity gon
 
 - django-activity-stream provides activity, follows and the queries behind every feed, and this
   package adds no models of its own.
-- The host project records activity and decides what is public. Nothing in this feature records
-  activity on its own.
+- The host project records activity and decides what is public. The one activity this feature
+  records is django-activity-stream's own "started following", when someone follows.
 - The Account Center, its menu and its card block are django-mvp's own, and this feature adds to
   them the way the notifications feature does.
 - Telling people about new activity in their notifications, by email or by push is not part of this

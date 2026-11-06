@@ -60,7 +60,7 @@ The component as plan, *The follow control*, and `FollowControlView` with the `f
 
 **Files**: `views.py`, `mvp_community/templates/mvp_community/activity/feed.html`, `tests/test_integrations/test_activity/test_views.py`
 
-`FeedView` per plan. Tests: signed out redirects to sign-in; lists public activity of what the person follows, newest first, and nothing else; after unfollowing, new activity of that person does not appear; following nothing draws the empty state; 20 a page and page 2 holds the rest; the same number of queries for one action and for several.
+`FeedView` per plan. Tests: signed out redirects to sign-in; lists public activity of what the person follows, newest first, and nothing else; after unfollowing, new activity of that person does not appear; following someone records a public "started following" action, and the follower's own feed page does not show it; following nothing draws the empty state; 20 a page and page 2 holds the rest; the same number of queries for one action and for several.
 
 ---
 
