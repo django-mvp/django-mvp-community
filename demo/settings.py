@@ -1,5 +1,6 @@
 """Settings for the demo project, a demonstration target that is never deployed."""
 
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,6 +46,8 @@ INSTALLED_APPS = [
     "mvp_forms",
     "flex_menu",
     "django_cotton",
+    # The mail extra: the queue, the delivery log and the stored templates.
+    "post_office",
     # Reloads the browser on a change to a template, a stylesheet or Python. It
     # arrives with the shared development bundle rather than a pin of its own,
     # and its middleware removes itself from the chain unless DEBUG is on.
@@ -168,9 +171,28 @@ LANGUAGE_CODE = "en-us"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Notifications also go out by email. The demo prints them to the console
-# instead of reaching for a mail server it does not have.
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# The mail extra: every email is queued and logged, then handed to the backend
+# below. SMTP when DEMO_EMAIL_HOST is set (a Mailpit inbox, for instance), the
+# console otherwise, so the demo needs no mail server.
+EMAIL_BACKEND = "post_office.EmailBackend"
+
+# django-post-office clears a different cache key than the one it reads when a
+# translation is saved, so a cached template would ignore a staff edit.
+POST_OFFICE_TEMPLATE_CACHE = False
+
+POST_OFFICE = {
+    # Sent during the call, so the demo needs no queue runner.
+    "DEFAULT_PRIORITY": "now",
+    "BACKENDS": {
+        "default": (
+            "django.core.mail.backends.smtp.EmailBackend"
+            if os.environ.get("DEMO_EMAIL_HOST")
+            else "django.core.mail.backends.console.EmailBackend"
+        ),
+    },
+}
+EMAIL_HOST = os.environ.get("DEMO_EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.environ.get("DEMO_EMAIL_PORT", "1025"))
 
 # django-activity-stream links each actor and object through get_absolute_url.
 # The demo's people and groups are Django's own models, so their pages are

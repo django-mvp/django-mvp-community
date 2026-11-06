@@ -116,8 +116,14 @@ the Account Center.
 The `activity` extra is built and documented in
 [Activity](https://github.com/django-mvp/django-mvp-community/blob/main/docs/developer/activity.md):
 a feed view you mount where you like, a following page in the Account Center,
-and components for recent activity, a follow control and a followers list. The
-other extras are empty for now: installing one adds no packages, and there is
+and components for recent activity, a follow control and a followers list.
+
+The `mail` extra is configured and documented in
+[Mail](https://github.com/django-mvp/django-mvp-community/blob/main/docs/developer/mail.md):
+every email your project sends is queued and logged, then delivered through
+your provider, and stored templates extend django-mvp's email layout. It is
+settings and documentation only, so there is no integration module to import.
+The other extra is empty for now: installing it adds no packages, and there is
 no integration module to import.
 
 ## Overriding a template

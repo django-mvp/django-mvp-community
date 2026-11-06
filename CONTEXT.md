@@ -28,8 +28,9 @@ _Avoid_: plugin, module, add-on.
 **Integration module**:
 A Python module in this package that imports an extra's packages. A host
 project imports it only when it uses that extra, so the base install never
-imports a package it may not have. Each extra has one, named
-`mvp_community.integrations.<extra>`, as a module or a package. Nothing outside
+imports a package it may not have. Each extra with code of its own has one,
+named `mvp_community.integrations.<extra>`, as a module or a package. The mail
+extra has none: it is settings alone. Nothing outside
 `mvp_community.integrations` imports an extra's packages.
 _Avoid_: adapter, backend.
 
@@ -86,6 +87,23 @@ The newest few activities placed on any page, such as a dashboard, with a link
 to the full list when there is more. A feed is the paged list on a page of its
 own.
 _Avoid_: stream, widget, ticker.
+
+**Queued email**:
+An email your project sent that is stored in the database until a sender hands
+it to the provider, or handed over during the call when the project sends
+immediately. It stays in the delivery log after it is sent.
+_Avoid_: outbox (Django's test outbox), pending message.
+
+**Delivery log**:
+The record, in the admin, of each email the project sent: to whom, its subject
+and full body, whether it was handed to the provider, and the error when it was
+not. It does not record what happens after the provider accepts an email.
+_Avoid_: mail history, audit trail.
+
+**Stored template**:
+An email whose subject and body are kept in the database and edited in the
+admin, with a translation per language. It extends django-mvp's email layout.
+_Avoid_: email template (django-mvp uses that for the layout files), snippet.
 
 **Share card**:
 The preview image shown when a link to a page is shared.
