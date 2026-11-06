@@ -19,7 +19,10 @@ class MvpCommunityConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
 
     def ready(self):
-        """Add the notifications extra's Account Center entry when it is installed."""
+        """Add each installed extra's Account Center entry."""
         if apps.is_installed("generic_notifications"):
             from mvp_community.integrations.notifications import menus  # noqa: F401
-
+        if apps.is_installed("actstream"):
+            from mvp_community.integrations.activity import (
+                menus as activity,  # noqa: F401
+            )

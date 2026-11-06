@@ -43,3 +43,10 @@
 **Why:** Sam, 2026-11-06: a host project decides where a feed lives and what it shows, so the package should not choose for it. The Account Center pages have no configuration a host would change, so they stay built in. This also settles FR-008 for the feed page.
 **Revisit if:** most host projects end up mounting the same following feed at the same address.
 **ADR:** docs/adr/ candidate at S5 — the split between configurable views and built-in Account Center pages applies to every extra.
+
+## D8 — The URLconf carries no app namespace of its own
+
+**Decision:** `mvp_community.integrations.activity.urls` declares no `app_name`. Its own page is included inside it with the namespace `mvp_community_activity`, and django-activity-stream's four follow routes sit beside it with their own names, outside any namespace.
+**Why:** django-activity-stream's `follow_url` and `follow_all_url` tags reverse `actstream_follow` and its siblings without a namespace. An `app_name` on the module would put those four names behind it and the tags would fail to resolve. The host still adds one include.
+**Revisit if:** django-activity-stream's tags learn to reverse a namespaced route.
+**ADR:** none — local to this extra's URLconf.

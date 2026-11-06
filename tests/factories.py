@@ -2,6 +2,7 @@
 
 import factory
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -19,3 +20,12 @@ class UserFactory(factory.django.DjangoModelFactory):
         # the save is never written, and the session hash then fails to match.
         kwargs.setdefault("password", "password")
         return cls._get_manager(model_class).create_user(*args, **kwargs)
+
+
+class GroupFactory(factory.django.DjangoModelFactory):
+    """A group of people, which the demo lets a person follow."""
+
+    class Meta:
+        model = Group
+
+    name = factory.Sequence(lambda n: f"Group {n}")
