@@ -9,18 +9,6 @@ from mvp.templatetags.mvp_email import EmailSite
 UNSUBSCRIBE_SALT = "mvp_community.notifications.unsubscribe"
 
 
-def _always_emailed(notification_type):
-    """Say whether the project sends this type by email whatever the person chooses.
-
-    Args:
-        notification_type: A registered notification type class.
-
-    Returns:
-        True when the type requires the email channel.
-    """
-    return any(c.key == "email" for c in notification_type.required_channels)
-
-
 class UnsubscribeLink:
     """Which person and which notification types an unsubscribe address turns off email for.
 
@@ -42,6 +30,23 @@ class UnsubscribeLink:
         self.user = user
         self.type_keys = sorted(set(type_keys))
 
+    @staticmethod
+    def offered(key):
+        """Say whether a person can turn off email for this type.
+
+        Args:
+            key: A notification type key.
+
+        Returns:
+            False when the type is no longer registered, or the project always
+            sends it by email.
+        """
+        try:
+            notification_type = registry.get_type(key)
+        except KeyError:
+            return False
+        return not any(c.key == "email" for c in notification_type.required_channels)
+
     @classmethod
     def for_email(cls, user, type_keys):
         """Make the link for an email that carries these types.
@@ -51,10 +56,9 @@ class UnsubscribeLink:
             type_keys: The keys of the types the email carries.
 
         Returns:
-            A link for the types a person can turn off, or None when every
-            type is one the project always sends by email.
+            A link for the types a person can turn off, or None when none is.
         """
-        keys = [key for key in type_keys if not _always_emailed(registry.get_type(key))]
+        keys = [key for key in type_keys if cls.offered(key)]
         return cls(user, keys) if keys else None
 
     @property
@@ -99,11 +103,7 @@ class UnsubscribeLink:
         try:
             data = signing.loads(token, salt=UNSUBSCRIBE_SALT)
             user = user_model.objects.get(pk=data["u"])
-            keys = [
-                key
-                for key in data["t"]
-                if key in {t.key for t in registry.get_all_types()}
-            ]
+            keys = list(data["t"])
         except (signing.BadSignature, KeyError, TypeError, user_model.DoesNotExist):
             return None
         return cls.for_email(user, keys)

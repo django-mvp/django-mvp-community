@@ -35,6 +35,11 @@ class TestForEmail:
     def test_it_is_none_when_nothing_is_left(self, person) -> None:
         assert UnsubscribeLink.for_email(person, [SecurityNotice.key]) is None
 
+    def test_a_type_no_longer_registered_is_left_out(self, person) -> None:
+        link = UnsubscribeLink.for_email(person, [*KEYS, "removed_type"])
+
+        assert sorted(link.type_keys) == sorted(KEYS)
+
 
 class TestAddress:
     def test_the_path_leads_to_the_unsubscribe_page(self, person) -> None:
