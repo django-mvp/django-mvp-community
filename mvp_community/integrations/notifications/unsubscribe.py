@@ -10,7 +10,14 @@ from mvp_community.templatetags.mvp_community_notifications import UNSUBSCRIBE_S
 
 
 def _always_emailed(notification_type):
-    """Say whether the project sends this type by email whatever the person chooses."""
+    """Say whether the project sends this type by email whatever the person chooses.
+
+    Args:
+        notification_type: A registered notification type class.
+
+    Returns:
+        True when the type requires the email channel.
+    """
     return any(c.key == "email" for c in notification_type.required_channels)
 
 

@@ -199,6 +199,21 @@ class ProfileLanguageChannel(NotificationEmailChannel):
 
 Register the subclass from `AppConfig.ready()`, after the notifications extra has started, with `registry.register_channel(ProfileLanguageChannel, force=True)`. Name the subclass, not `NotificationEmailChannel`, in a type's channels, because channels are compared by identity.
 
+## Unsubscribe from notification email
+
+`UnsubscribeLink` in `mvp_community.integrations.notifications.unsubscribe` is the signed address that turns notification email off for one person and the types an email carries. It names no stored record and does not expire, so an old email's link keeps working.
+
+```python
+from mvp_community.integrations.notifications.unsubscribe import UnsubscribeLink
+
+link = UnsubscribeLink.for_email(user, ["reply_received", "new_follower"])
+link.url()  # "https://example.com/notifications/unsubscribe/<token>/"
+```
+
+`for_email` leaves out any type the project always sends by email, and returns `None` when none are left. `url()` is absolute through the current `Site`, so it needs `django.contrib.sites` and the `Site`'s domain set. Reading a link drops the types that have become always-sent since it was made, so an old link never turns off a required type.
+
+The address opens a page that asks the person to confirm before anything changes, so a mail scanner that opens the link changes nothing. The page works for a signed-out visitor, including in a project that uses `LoginRequiredMiddleware`. A mail app's one-click request (`List-Unsubscribe=One-Click`) is answered with status 200 and no page, or 400 for a link that does not read.
+
 ## Refresh the bell after sending
 
 The bell refreshes itself every 60 seconds. To refresh it sooner, for example after a request your own page makes with htmx, answer that request with the `HX-Trigger` header set to `notifications:changed`:
@@ -241,10 +256,11 @@ Each route has a name in the `mvp_community_notifications` namespace.
 | `mark_all_read` | `notifications/read/` | `MarkAllReadView` | POST only. Marks every unread notification on the site as read, and redirects to the list. A notification sent only by email stays unread. |
 | `bell` | `notifications/bell/` | `BellView` | The bell alone, for its own refresh. |
 | `preferences` | `account-center/notifications/` | `PreferencesView` | GET shows the grid of types, channels and email frequencies. POST saves it, adds a success message and redirects back. |
+| `unsubscribe` | `notifications/unsubscribe/<str:token>/` | `UnsubscribeView` | GET asks to confirm. POST turns email off for the types the link names. Open to a signed-out visitor. |
 
 The views live in `mvp_community.integrations.notifications.views`. To change one, subclass it and route your subclass at the same address ahead of the include.
 
-Every route except `bell` redirects a signed-out visitor to your sign-in page. `bell` answers a signed-out request with an empty 204 response, so the bell keeps its last count instead of drawing a sign-in page in the header.
+Every route except `bell` and `unsubscribe` redirects a signed-out visitor to your sign-in page. `bell` answers a signed-out request with an empty 204 response, so the bell keeps its last count instead of drawing a sign-in page in the header.
 
 ## Template tag
 
