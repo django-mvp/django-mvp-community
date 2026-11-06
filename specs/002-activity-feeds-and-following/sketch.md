@@ -33,7 +33,7 @@
 - Every page is built from django-mvp and daisy-cotton components and the classes django-mvp's stylesheet already ships, with no styles of its own.
 - The follow control is the follower count as plain text beside one button that names what it does: Follow (primary) or Unfollow (outline). Sam, round 1: a count inside a button labelled Following read as a menu of followers, and clicking it unfollowed him. On a person's own page it is the count alone.
 - An activity row is the actor's avatar, one sentence with each name linked, the description under it when there is one, and how long ago.
-- On a person's or an object's page the follow control sits in the title row, and the followers list is a column beside the object feed, showing the first eight and how many more.
+- On a person's or an object's page the follow control sits in the title row, and the followers list is a column beside its recent activity, showing the first eight and how many more.
 - Following an object follows everything around it: what it does, what is done to it and what happens in it.
 - The feed page's title row has a labelled button to the following page.
 - Names in a row are bold and linked, and the verb between them is plain, so a sentence reads as who did what to what.
