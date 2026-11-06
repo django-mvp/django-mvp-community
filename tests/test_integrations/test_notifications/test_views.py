@@ -2,6 +2,7 @@
 
 import re
 
+import pytest
 from django.conf import settings
 from django.contrib.messages import SUCCESS, get_messages
 from django.db import connection
@@ -353,3 +354,41 @@ class TestPreferencesViewPost:
         assert response.status_code == 302
         assert response["Location"] == PREFERENCES_URL
         assert [m.level for m in get_messages(response.wsgi_request)] == [SUCCESS]
+
+
+class TestPreferencesViewWithoutTheMailExtra:
+    @pytest.fixture
+    def without_mail(self, monkeypatch):
+        channels = {
+            key: channel
+            for key, channel in registry._channel_classes.items()
+            if key != "email"
+        }
+        monkeypatch.setattr(registry, "_channel_classes", channels)
+
+    def test_only_the_site_channel_is_listed(
+        self, client, signed_in, without_mail
+    ) -> None:
+        context = client.get(PREFERENCES_URL).context
+
+        assert [channel.key for channel in context["channels"]] == ["website"]
+
+    def test_no_choice_of_frequency_is_offered(
+        self, client, signed_in, without_mail
+    ) -> None:
+        response = client.get(PREFERENCES_URL)
+
+        assert response.context["frequencies"] == []
+        assert "__frequency" not in response.content.decode()
+
+    def test_with_the_mail_extra_the_frequencies_are_offered(
+        self, client, signed_in
+    ) -> None:
+        response = client.get(PREFERENCES_URL)
+
+        assert [key for key, _label in response.context["frequencies"]] == [
+            "realtime",
+            "daily",
+            "weekly",
+        ]
+        assert "reply_received__frequency" in response.content.decode()

@@ -130,9 +130,12 @@ class PreferencesView(LoginRequiredMixin, MVPTemplateView):
             row["offers_frequency"] = not row["notification_type"].required_channels
         context["preferences"] = preferences
         context["channels"] = registry.get_all_channels()
+        # How often an email comes means nothing without the email channel.
+        email_registered = any(c.key == "email" for c in context["channels"])
         context["frequencies"] = [
             (frequency.key, FREQUENCY_LABELS.get(frequency.key, frequency.name))
             for frequency in registry.get_all_frequencies()
+            if email_registered
         ]
         return context
 

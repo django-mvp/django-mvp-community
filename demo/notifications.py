@@ -1,8 +1,9 @@
 """The demo project's notification types, so every state of the pages can be seen."""
 
-from generic_notifications.channels import EmailChannel
 from generic_notifications.frequencies import RealtimeFrequency
 from generic_notifications.types import NotificationType, register
+
+from mvp_community.integrations.notifications.channels import NotificationEmailChannel
 
 
 @register
@@ -39,5 +40,5 @@ class SecurityNotice(NotificationType):
     key = "security_notice"
     name = "Security notices"
     description = "Sign-ins from a new device and changes to your account"
-    required_channels = [EmailChannel]
+    required_channels = [NotificationEmailChannel]
     default_frequency = RealtimeFrequency
