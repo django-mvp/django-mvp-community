@@ -11,8 +11,10 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from generic_notifications import send_notification
 from generic_notifications.channels import EmailChannel, WebsiteChannel
+from generic_notifications.frequencies import DailyFrequency
 from generic_notifications.preferences import get_notification_preferences
 from generic_notifications.registry import registry
+from generic_notifications.types import NotificationType
 from generic_notifications.utils import get_unread_count
 
 from demo.notifications import NewFollower, ReplyReceived, SecurityNotice
@@ -392,3 +394,94 @@ class TestPreferencesViewWithoutTheMailExtra:
             "weekly",
         ]
         assert "reply_received__frequency" in response.content.decode()
+
+
+def frequency_select(page: str, type_key: str) -> str:
+    """Return the select that chooses how often ``type_key`` arrives by email."""
+    match = re.search(
+        rf"<select[^>]*name=\"{re.escape(type_key)}__frequency\"[^>]*>.*?</select>",
+        page,
+        re.S,
+    )
+    return match.group(0) if match else ""
+
+
+def frequency_of(user, type_key: str) -> str:
+    """Return the frequency key the person has for ``type_key``."""
+    return next(
+        row["notification_frequency"]
+        for row in get_notification_preferences(user)
+        if row["notification_type"].key == type_key
+    )
+
+
+class TestPreferencesViewFrequency:
+    def test_a_posted_frequency_is_stored_for_the_type(self, client, signed_in) -> None:
+        data = current_choices(signed_in) | {"reply_received__frequency": "weekly"}
+
+        client.post(PREFERENCES_URL, data)
+
+        assert frequency_of(signed_in, "reply_received") == "weekly"
+        assert (
+            frequency_of(signed_in, "new_follower") == NewFollower.default_frequency.key
+        )
+
+    def test_the_frequency_is_stored_when_email_is_off(self, client, signed_in) -> None:
+        data = current_choices(signed_in) | {"reply_received__frequency": "daily"}
+        data.pop("reply_received__email", None)
+
+        client.post(PREFERENCES_URL, data)
+
+        assert frequency_of(signed_in, "reply_received") == "daily"
+
+    def test_a_stored_frequency_is_drawn_selected(self, client, signed_in) -> None:
+        client.post(
+            PREFERENCES_URL,
+            current_choices(signed_in) | {"reply_received__frequency": "weekly"},
+        )
+
+        select = frequency_select(
+            client.get(PREFERENCES_URL).content.decode(), "reply_received"
+        )
+
+        assert re.findall(r'<option value="(\w+)" selected', select) == ["weekly"]
+
+    def test_a_type_with_no_stored_choice_shows_its_declared_default(
+        self, client, signed_in, monkeypatch
+    ) -> None:
+        class DigestFirst(NotificationType):
+            key = "digest_first"
+            name = "Digest first"
+            default_frequency = DailyFrequency
+
+        monkeypatch.setattr(
+            registry,
+            "_type_classes",
+            {**registry._type_classes, DigestFirst.key: DigestFirst},
+        )
+
+        select = frequency_select(
+            client.get(PREFERENCES_URL).content.decode(), DigestFirst.key
+        )
+
+        assert re.findall(r'<option value="(\w+)" selected', select) == ["daily"]
+
+    def test_a_type_with_a_required_channel_offers_no_choice(
+        self, client, signed_in
+    ) -> None:
+        page = client.get(PREFERENCES_URL).content.decode()
+
+        assert f"{SecurityNotice.key}__frequency" not in page
+        assert frequency_select(page, "reply_received")
+
+    def test_the_row_keeps_the_choice_while_email_is_off(
+        self, client, signed_in
+    ) -> None:
+        page = client.get(PREFERENCES_URL).content.decode()
+
+        hidden = re.search(
+            r'<input type="hidden" name="reply_received__frequency"[^>]*>', page
+        ).group(0)
+        assert 'x-bind:disabled="email"' in hidden
+        assert 'x-bind:value="frequency"' in hidden
+        assert 'x-bind:disabled="!email"' in frequency_select(page, "reply_received")
