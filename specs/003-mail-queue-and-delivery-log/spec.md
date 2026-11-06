@@ -37,9 +37,10 @@ still chooses the provider. Digests and unsubscribing come later, with notificat
   each email at once instead. Email sent at once is still logged.
 - Q: Where do staff see what was sent? → A: In the admin pages of the package the log belongs to.
   This feature adds no page of its own for it.
-- Q: What does "delivered" mean in the log? → A: Two things, kept apart. Whether the provider
-  accepted the email, which is always recorded. Whether it then reached the recipient, bounced or
-  was rejected, which is recorded when the provider reports it back to the project.
+- Q: What does "delivered" mean in the log? → A: Whether the provider accepted the email, when,
+  and why it failed if it did. What happened after the provider accepted it (delivered, bounced,
+  rejected) is not recorded. A project that needs per-recipient bounce figures uses a dedicated
+  email marketing service (Sam, 2026-11-06).
 - Q: In which language is a stored email sent? → A: The one the sending code names, normally the
   recipient's. A language with no translation of that email falls back to the email's own wording.
 - Q: Which layout does a stored email use? → A: django-mvp's email layout, the same as every other
@@ -57,8 +58,7 @@ documented settings, naming the provider their email should leave through. From 
 the project sends, from allauth, the django-mvp packages and their own code, is queued instead of
 sent while a page loads, sent to the provider from the queue, and logged. Where the developer's own
 code sends an email, they can send it from a stored template by name, in the recipient's language,
-and it arrives in django-mvp's email layout. Where the provider reports what happened to an email
-after accepting it, the log records it.
+and it arrives in django-mvp's email layout.
 
 **Why this priority**: Nothing else in the feature, or in the notification email that follows it,
 works until a project's email goes through the queue and the log.
@@ -81,13 +81,10 @@ queue, and find both logged as sent.
    that translation and laid out in django-mvp's email layout.
 5. **Given** a stored template with no translation for the language asked for, **When** it is sent
    in that language, **Then** the email is written in the template's own wording.
-6. **Given** a provider that reports delivery back to the project, **When** it reports that an
-   email reached the recipient, bounced or was rejected, **Then** the log records that against the
-   email and that recipient.
-7. **Given** a provider that refuses an email or cannot be reached, **When** the queue is sent,
+6. **Given** a provider that refuses an email or cannot be reached, **When** the queue is sent,
    **Then** the log records the failure and its reason, and the email is tried again as the
    project's settings allow.
-8. **Given** a project that has not installed the mail extra, **When** it sends email, **Then** it
+7. **Given** a project that has not installed the mail extra, **When** it sends email, **Then** it
    is sent exactly as before, and nothing that belongs to the extra is imported.
 
 ---
@@ -95,9 +92,8 @@ queue, and find both logged as sent.
 ### User Story 2 - Staff check what was sent and whether it arrived (Priority: P1)
 
 A member of staff wants to know whether someone got an email. They open the email log in the admin,
-find the emails sent to that person, and see for each one when it was sent, whether the provider
-accepted it, and, where the provider reported it, whether it reached them. A failed email shows why
-it failed.
+find the emails sent to that person, and see for each one when it was sent and whether the
+provider accepted it. A failed email shows why it failed.
 
 **Why this priority**: The log is half of the reason for the feature. Without it, "did they get the
 email" has no answer short of asking the provider.
@@ -112,9 +108,7 @@ one person in the admin and read their status and the failure's reason.
 2. **Given** emails to several people, **When** staff search for one recipient's address, **Then**
    only the emails to that address are listed.
 3. **Given** an email that failed, **When** staff open it, **Then** they see the reason it failed.
-4. **Given** an email the provider reported on after accepting it, **When** staff open it, **Then**
-   they see what the provider reported for each recipient.
-5. **Given** a person who is not staff, **When** they try to open the email log, **Then** they are
+4. **Given** a person who is not staff, **When** they try to open the email log, **Then** they are
    refused.
 
 ---
@@ -149,10 +143,6 @@ the German subject in the admin, send the template in German, and receive the ne
 
 - The queue is not sent for a while: emails wait in the queue and are sent in order of priority
   once it is, and none is lost.
-- An email has several recipients: the provider's report is recorded per recipient, so one bounce
-  does not mark the others as bounced.
-- A provider reports on an email the log does not hold: the report is ignored and nothing breaks.
-- A provider's report arrives without proof that it came from the provider: it is refused.
 - A stored template is sent with a variable the sending code did not supply: the email is still
   sent, with that part empty, as for any Django template.
 - A stored template is deleted while emails sent from it are in the log: the log keeps those
@@ -173,9 +163,7 @@ the German subject in the admin, send the template in German, and receive the ne
   at once MUST still be logged.
 - **FR-005**: The log MUST record, for every email, its recipients, subject, time, whether the
   provider accepted it and, when it failed, why.
-- **FR-006**: Where the provider reports what happened to an email after accepting it, the log MUST
-  record that report per recipient. A report that cannot be shown to come from the provider MUST be
-  refused.
+- **FR-006**: The feature MUST NOT record what happens to an email after the provider accepts it.
 - **FR-007**: A host project MUST be able to send an email from a stored template by name, in a
   language it names, and the email MUST be written in that language's translation, or the
   template's own wording where it has none.
@@ -184,10 +172,10 @@ the German subject in the admin, send the template in German, and receive the ne
   translation for each language, in the admin, and the change MUST apply to the next email sent from
   it.
 - **FR-010**: Staff MUST be able to list logged emails newest first, find the emails to one address,
-  and see each email's status and any failure reason or provider report.
+  and see each email's status and any failure reason.
 - **FR-011**: The email log and the stored templates MUST be open to staff only.
 - **FR-012**: The documentation MUST cover installing the extra, the settings it needs, sending the
-  queue, receiving the provider's reports, and writing and sending a stored template.
+  queue, and writing and sending a stored template.
 - **FR-013**: Every string the feature shows MUST be translatable.
 
 ### Traceability
@@ -195,15 +183,15 @@ the German subject in the admin, send the template in German, and receive the ne
 | Story | Requirements |
 |---|---|
 | US1 | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-012, FR-013 |
-| US2 | FR-005, FR-006, FR-010, FR-011, FR-013 |
+| US2 | FR-005, FR-010, FR-011, FR-013 |
 | US3 | FR-007, FR-009, FR-011, FR-013 |
 
 ### Key Entities
 
 - **Queued email**: an email waiting to be sent, not yet handed to the provider. Owned by
   django-post-office.
-- **Delivery log**: the record of each email the project sent and what happened to it, including
-  any report from the provider. Owned by django-post-office.
+- **Delivery log**: the record of each email the project sent, whether the provider accepted it,
+  and why it failed if it did. Owned by django-post-office.
 - **Stored template**: an email's subject and wording kept in the database, with a translation per
   language, which staff change in the admin. Owned by django-post-office.
 - **Provider**: the service an email leaves through, configured for django-anymail by the host
@@ -216,8 +204,8 @@ the German subject in the admin, send the template in German, and receive the ne
 - **SC-001**: A developer routes all of an existing django-mvp project's email through the queue
   and the log by installing the extra and applying the documented settings, changing no code that
   sends email.
-- **SC-002**: Staff answer "did this person get the email" from the admin alone, without the
-  provider's dashboard, wherever the provider reports delivery.
+- **SC-002**: Staff see from the admin alone whether the provider accepted an email to a person,
+  and why it failed if it did.
 - **SC-003**: Staff change a stored email's wording in any language and the next email carries it,
   with no code change or deploy.
 - **SC-004**: No email is sent during a request once the project uses the queue.
@@ -225,7 +213,7 @@ the German subject in the admin, send the template in German, and receive the ne
 ## Assumptions
 
 - django-post-office provides the queue, the log, stored templates with their translations, and
-  their admin pages. django-anymail provides the providers and their delivery reports. This package
+  their admin pages. django-anymail provides the providers. This package
   adds no models of its own.
 - The host project decides which language an email is sent in when it sends it.
 - The admin pages are django-post-office's own. Their look is whatever the host project's admin

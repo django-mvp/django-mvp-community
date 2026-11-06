@@ -8,11 +8,10 @@ R2 as written lists the look of email, translated and editable templates, one-cl
 
 - **Which emails are editable.** Only email sent from a stored template. Email from allauth and the django-mvp packages keeps its file templates and is only queued and logged. Moving their wording into the database would mean changing how those packages send, which FR-002 rules out.
 - **Who sends the queue.** The host project, through django-post-office's own command or task. This package runs no worker, so it adds no scheduler dependency to the mail extra.
-- **"Delivered".** Kept as two facts: accepted by the provider (always recorded) and reached, bounced or rejected (recorded when the provider reports it). Recording provider reports needs django-anymail's delivery reports joined to django-post-office's per-recipient status. django-post-office receives reports itself only from SES and SparkPost.
+- **"Delivered".** The log records whether the provider accepted each email, when, and why it failed. Provider reports of what happened afterwards are out of scope (approved spec revision, 2026-11-06). django-post-office keeps one delivery status per email, not per recipient, and updates it from no report by default. The provider's message id, which django-anymail's reports refer to, is discarded when django-post-office sends. django-anymail has no report receiver for Scaleway. Joining reports to the log would need a model of this package's own, which the constitution rules out.
 - **Where staff look.** django-post-office's admin pages. No page of this package's own.
 - **Language fallback.** A missing translation falls back to the template's own wording, which is django-post-office's behaviour.
 
 ## Open for research
 
 - django-post-office renders a stored template from a string, not from a file. Extending `mvp/email/base.html` works from a string, but django-mvp's Cotton email pieces compile only in templates loaded from files. Research decides whether stored templates can use the pieces, or the documentation says they cannot.
-- Which providers django-anymail reports delivery for, and how a report is shown to come from the provider for each.
