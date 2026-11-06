@@ -142,7 +142,7 @@ class SecurityNotice(NotificationType):
     required_channels = [WebsiteChannel]
 ```
 
-Every registered type is listed on the preferences page against every channel. A channel the type requires is drawn on and cannot be turned off. A channel it forbids is drawn as unavailable.
+Every registered type is listed on the preferences page against every channel. A channel the type requires is drawn on and cannot be turned off. A channel it forbids is drawn as unavailable. Beside the email column of each type, a person chooses how often its email arrives: as it happens, as a daily digest or as a weekly digest. The choice is saved with the rest of the page, and a type with nothing saved shows the frequency the type declares. The choice is greyed out while email is off for that type and is kept, so turning email back on does not lose it. A type with a required channel offers no choice, because its email always arrives as it happens. Without the mail extra there is no email channel and no choice is drawn.
 
 The type's `name` and `description`, and the channel names, are shown exactly as django-generic-notifications and your project give them. This package does not translate them.
 
@@ -240,7 +240,7 @@ Each route has a name in the `mvp_community_notifications` namespace.
 | `open` | `notifications/<int:pk>/` | `OpenNotificationView` | Marks one of their notifications read and redirects to its `url`, or to the list when it has none or points at another site. Another person's notification is a 404. |
 | `mark_all_read` | `notifications/read/` | `MarkAllReadView` | POST only. Marks every unread notification on the site as read, and redirects to the list. A notification sent only by email stays unread. |
 | `bell` | `notifications/bell/` | `BellView` | The bell alone, for its own refresh. |
-| `preferences` | `account-center/notifications/` | `PreferencesView` | GET shows the grid of types and channels. POST saves it, adds a success message and redirects back. |
+| `preferences` | `account-center/notifications/` | `PreferencesView` | GET shows the grid of types, channels and email frequencies. POST saves it, adds a success message and redirects back. |
 
 The views live in `mvp_community.integrations.notifications.views`. To change one, subclass it and route your subclass at the same address ahead of the include.
 
@@ -258,7 +258,3 @@ Every route except `bell` redirects a signed-out visitor to your sign-in page. `
 ## Why the count only includes the site
 
 A notification can reach a person on several channels. The bell and the notifications page show what arrived on the site, so a notification sent only by email is not counted and is not marked read by "Mark all read". Marking it read would stop django-generic-notifications including it in an email digest.
-
-## Why saving preferences clears digest frequencies
-
-django-generic-notifications' `save_notification_preferences` replaces every saved choice with the ones posted, including any digest frequency. The preferences page posts channel choices only, so a person who has a digest frequency set elsewhere loses it when they save. No digest feature is built on this page yet.
