@@ -4,7 +4,7 @@
 
 ## Summary
 
-The pages and components Sam approved in the sketch are kept. Behind them go three views, one URLconf, two template tags and two menu entries. Every query, follow and unfollow is django-activity-stream's own. Nothing here has a model or a migration.
+The pages and components Sam approved in the sketch are kept. Behind them go one configurable feed view the host mounts itself, two built-in views, one URLconf, one template tag and one menu entry. Every query, follow and unfollow is django-activity-stream's own. Nothing here has a model or a migration.
 
 ## Technical Context
 
@@ -31,8 +31,8 @@ mvp_community/
   integrations/activity/
     __init__.py
     urls.py                                 app_name "mvp_community_activity"
-    views.py                                FeedView, FollowingView, FollowControlView
-    menus.py                                AppMenu "activity_feed", AccountCenterMenu "following"
+    views.py                                ActivityFeedView (mounted by the host), FollowingView, FollowControlView
+    menus.py                                AccountCenterMenu "following"
   templates/cotton/mvp_community/activity/  recent, feed, action, name, follow, followers, following_card
   templates/mvp_community/activity/         feed.html, following.html
   templates/mvp/account/overview.html       gains the following card, behind its URL guard
@@ -42,12 +42,29 @@ mvp_community/
 
 | Name | Path | View |
 |---|---|---|
-| `feed` | `activity/` | `FeedView(LoginRequiredMixin, MVPListView)`, `paginate_by = 20`, queryset `Action.objects.user(request.user)` with the person's own actions excluded (`.exclude(actor_object_id=…)` for their content type), so their own "started following" never reaches their feed |
+| `following` and the routes below | | the package's own. **No feed route**: the host mounts `ActivityFeedView` itself (below) |
 | `following` | `account-center/following/` | `FollowingView(LoginRequiredMixin, MVPListView)`, `paginate_by = 20`, queryset `Follow.objects.following_qs(request.user).order_by("-started")` |
 | `follow_control` | `activity/control/<int:content_type_id>/<str:object_id>/` | `FollowControlView(LoginRequiredMixin, View)`, GET only: resolves the object through `ContentType`, 404 for an unknown type, an unknown object or a model not registered with django-activity-stream, and renders the `follow` component alone. Its `next` query parameter, when it is a safe local path (`url_has_allowed_host_and_scheme`), is passed to the component as the page the plain form returns to |
 | `actstream_follow`, `actstream_follow_all`, `actstream_unfollow`, `actstream_unfollow_all` | under `activity/` | django-activity-stream's own four follow patterns, taken from `actstream.urls.urlpatterns` by name. Nothing else of `actstream.urls` is mounted: its `detail/` view shows actions that are not public and its `following/` view shows anyone's follows, to anyone |
 
 The host includes one URLconf: `path("", include("mvp_community.integrations.activity.urls"))` (SC-001).
+
+### The feed view
+
+`ActivityFeedView(MVPListView)`, `template_name = "mvp_community/activity/feed.html"`, `paginate_by = 20`. Configured by class attribute or `as_view()` argument:
+
+- `stream`: `"following"` (default), `"site"` or `"object"`. Each maps to django-activity-stream's own manager method: `user`, `public`, `any`.
+- `verb`: when set, passed to that method as `verb=`.
+- `get_stream_object()`: returns the object for `"object"`. The default raises `ImproperlyConfigured`; the host overrides it, usually from the URL's kwargs.
+- `"following"` requires a signed-in person (redirect to sign in, as `LoginRequiredMixin` does) and excludes the person's own actions. The other two are open.
+- Page title and lead are the host's, through `MVPListView`'s own `page_title` and `page_lead`; the defaults read "Activity".
+
+```python
+path("activity/", ActivityFeedView.as_view(), name="activity"),
+path("activity/finished/", ActivityFeedView.as_view(stream="site", verb="finished")),
+```
+
+The demo mounts it three times: following (in its sidebar), the whole site, and one group's activity.
 
 ### The follow control
 
@@ -77,7 +94,7 @@ The host includes one URLconf: `path("", include("mvp_community.integrations.act
 
 ### Documentation
 
-`docs/developer/activity.md`: installing the extra, `INSTALLED_APPS`, both URL includes and their order, registering models with django-activity-stream, recording activity (pointing at its documentation, with `public`), `get_absolute_url`, the icon names (`activity`, `activity.follow`, `activity.unfollow`, `activity.following`), placing each component with its props, every template that can be overridden by name, that `django.contrib.auth.context_processors.auth` is required, and the known limitations of django-activity-stream's follow view: no CSRF check, it follows on a plain GET, and it redirects to any `next` without checking it; and three queries per follow control in a list. README's extras section links to it. `CHANGELOG.md` gets an Added entry. `CONTEXT.md` gains **recent activity** (D3). `locale/en/LC_MESSAGES/django.po` is regenerated.
+`docs/developer/activity.md`: installing the extra, `INSTALLED_APPS`, both URL includes and their order, registering models with django-activity-stream, recording activity (pointing at its documentation, with `public`), `get_absolute_url`, the icon names (`activity`, `activity.follow`, `activity.unfollow`, `activity.following`), placing each component with its props, every template that can be overridden by name, that `django.contrib.auth.context_processors.auth` is required, and the known limitations of django-activity-stream's follow view: no CSRF check, it follows on a plain GET, and it redirects to any `next` without checking it; and three queries per follow control in a list. Mounting the feed view with each `stream`, and adding it to a menu, is documented with the two lines it takes. README's extras section links to it. `CHANGELOG.md` gets an Added entry. `CONTEXT.md` gains **recent activity** (D3). `locale/en/LC_MESSAGES/django.po` is regenerated.
 
 ### Story order
 

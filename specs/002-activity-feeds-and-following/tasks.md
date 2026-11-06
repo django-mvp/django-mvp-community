@@ -12,7 +12,7 @@ US1 → US2 → US3, one at a time (plan, *Story order*).
 
 ## Phase 1: User Story 1 — A developer turns activity on and places feeds and follow controls (P1)
 
-Issue: #14. Delivers FR-001, FR-002, FR-006 to FR-009, FR-011, FR-012, FR-014, FR-015.
+Issue: #14. Delivers FR-001, FR-002, FR-005 to FR-009, FR-011, FR-012, FR-014, FR-015.
 
 ### Group 1
 
@@ -20,13 +20,19 @@ Issue: #14. Delivers FR-001, FR-002, FR-006 to FR-009, FR-011, FR-012, FR-014, F
 
 **Files**: `mvp_community/apps.py`, `mvp_community/integrations/activity/__init__.py`, `urls.py`, `views.py`, `menus.py`, `tests/conftest.py`, `tests/test_apps.py`, `tests/test_integrations/test_activity/__init__.py`, `tests/test_integrations/test_activity/test_menus.py`, `tests/test_smoke.py` only if the base-install test needs the new module named
 
-Delete the sketch's Python first. `ready()` imports the menus when `actstream` is installed. The URLconf with `feed` and `following` routes (views are stubs returning the sketch's templates until US2 and US3). Fixtures: people, a group, actions (public and not), follows. Tests: the sidebar has the feed entry and the Account Center menu the following entry, each resolving; the base install imports no `actstream` module.
+Delete the sketch's Python first. `ready()` imports the menus when `actstream` is installed. The URLconf with the `following` route (a stub until US3) and django-activity-stream's four follow routes. No feed route. Fixtures: people, a group, actions (public and not), follows. Tests: the Account Center menu has the following entry, resolving; the package adds no sidebar entry and no feed route; the base install imports no `actstream` module.
 
 - [ ] T002 [US1] Recent activity
 
 **Files**: `mvp_community/templates/cotton/mvp_community/activity/recent.html`, `feed.html`, `entry.html` (renamed from `action.html`), `name.html`, `tests/test_integrations/test_activity/test_components.py`
 
 Tests (rendered through a template string): the whole site's public activity, newest first, and none that is not public; around one object, only actions where it is actor, target or action object; `following` shows only what the signed-in person follows, and nothing for a signed-out visitor; `verb` limits to that kind; `limit` caps the rows; the link to `more_url` is present only when given and there is more than `limit`; nothing to show draws the empty state; a name links to `get_absolute_url` where the model has one and is plain otherwise; an action whose target was deleted is not shown; model data is escaped.
+
+- [ ] T002a [US1] The feed view, for the whole site and one object
+
+**Files**: `mvp_community/integrations/activity/views.py`, `mvp_community/templates/mvp_community/activity/feed.html`, `demo/urls.py`, `demo/menus.py`, `demo/views.py`, `tests/urls.py`, `tests/test_integrations/test_activity/test_views.py`
+
+`ActivityFeedView` per plan, *The feed view*, with `stream` `"site"` and `"object"` and `verb`. The demo mounts it for the whole site and for a group. Tests: `"site"` lists the site's public activity newest first, open to a signed-out visitor; `"object"` lists only activity around the object from `get_stream_object()`; with no override, `"object"` raises `ImproperlyConfigured`; `verb` limits to that kind; 20 a page and page 2 holds the rest; the same number of queries for one action and for several.
 
 ### Group 2
 
@@ -56,11 +62,11 @@ Issue: #15. Delivers FR-003, FR-004, FR-005, FR-011, FR-012, FR-013.
 
 The component as plan, *The follow control*, and `FollowControlView` with the `follow_control` route. Tests: not following → the form posts to the follow address and the button is Follow; following → the stop-following address, Unfollow; the count is shown; signed out → a link to sign in carrying `next`; a person's own control has no form; the form carries `hx-post` to the follow address whose `next` is the control route, and the fallback `action` whose `next` is the page; `data-follow-control` on the wrapper; posting to django-activity-stream's follow address with that `next` and following the redirect returns the control showing Unfollow and the count one higher, and the reverse; the control route redirects a signed-out request to sign in and 404s for an unknown type, an unknown object or an unregistered model; only the four follow routes of django-activity-stream resolve under `activity/`; an off-site `next` is replaced by nothing.
 
-- [ ] T006 [US2] The feed page
+- [ ] T006 [US2] The feed of what a person follows
 
-**Files**: `views.py`, `mvp_community/templates/mvp_community/activity/feed.html`, `tests/test_integrations/test_activity/test_views.py`
+**Files**: `views.py`, `demo/urls.py`, `demo/menus.py`, `tests/test_integrations/test_activity/test_views.py`
 
-`FeedView` per plan. Tests: signed out redirects to sign-in; lists public activity of what the person follows, newest first, and nothing else; after unfollowing, new activity of that person does not appear; following someone records a public "started following" action, and the follower's own feed page does not show it; following nothing draws the empty state; 20 a page and page 2 holds the rest; the same number of queries for one action and for several.
+`stream="following"` on `ActivityFeedView` (the default), mounted by the demo in its sidebar. Tests: signed out redirects to sign-in; lists public activity of what the person follows, newest first, and nothing else; after unfollowing, new activity of that person does not appear; following someone records a public "started following" action, and the follower's own feed page does not show it; following nothing draws the empty state; 20 a page and page 2 holds the rest; the same number of queries for one action and for several.
 
 ---
 

@@ -36,3 +36,10 @@
 **Decision:** django-activity-stream's follow view is used as it is, so following records a public "started following" activity. The feed page leaves out the person's own actions.
 **Why:** Sam, 2026-11-06, approving the spec change: stopping the activity would mean a follow view of our own. Excluding a person's own actions keeps their feed to what others did.
 **ADR:** none — recorded in the spec.
+
+## D7 — A feed is a view the host mounts, not a page the package ships
+
+**Decision:** the package provides `ActivityFeedView`, an `MVPListView` configured with `stream` (`following`, `site`, `object`), `verb` and `get_stream_object()`, and mounts no feed page or menu entry. The following page stays built in, in the Account Center.
+**Why:** Sam, 2026-11-06: a host project decides where a feed lives and what it shows, so the package should not choose for it. The Account Center pages have no configuration a host would change, so they stay built in. This also settles FR-008 for the feed page.
+**Revisit if:** most host projects end up mounting the same following feed at the same address.
+**ADR:** docs/adr/ candidate at S5 — the split between configurable views and built-in Account Center pages applies to every extra.

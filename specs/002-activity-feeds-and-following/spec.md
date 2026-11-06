@@ -15,11 +15,11 @@ objects. G3, each page and component of the feature can be changed by overriding
 
 **Input**: People using a site built on django-mvp keep up with the people and things they care
 about without going looking for them. Next to a person or an object they find a control to follow
-it or stop following it, showing how many people follow it, and a feed page shows what the people
+it or stop following it, showing how many people follow it, and a feed shows what the people
 and things they follow have been doing, newest first. A "following" page in the Account Center
-lists everything they follow and lets them stop following any of it. A host project can also show
-what happened across the project, or around one object, as a feed on any page it chooses, limit a
-feed to some kinds of activity, and show who follows a person or an object. All of this comes with
+lists everything they follow and lets them stop following any of it. A host project mounts feed
+pages where it chooses, each showing what a person follows, the whole site or one object, limited
+to some kinds of activity if it likes, places recent activity on any page, and show who follows a person or an object. All of this comes with
 the activity extra, and any page or component can be changed by overriding one template. What
 counts as activity, and when it is recorded, stays with the host project. Activity and follows are
 those of django-activity-stream.
@@ -28,21 +28,23 @@ those of django-activity-stream.
 
 ### Session 2026-11-05
 
-- Q: Where does a person see the activity of what they follow? → A: On a feed page of the
-  feature's own, in the application shell and reachable from the menu. The following page in the
-  Account Center manages what they follow and does not show the feed.
+- Q: Where does a person see the activity of what they follow? → A: On a feed page the host
+  project mounts from the feature's feed view, at the address and in the menu it chooses. The
+  feature mounts no feed page of its own (Sam, 2026-11-06: a host project decides where a feed
+  lives and what it shows). The following page is built in, in the Account Center; it manages what
+  a person follows and does not show the feed.
 - Q: Which activity does a feed show? → A: Only activity the host project recorded as public.
   Keeping activity about an object from people who may not see that object stays with the host
   project, which decides what it records as public.
 - Q: What does a signed-out visitor see? → A: Recent activity the host project
   placed on a public page, and the follow control with its count. Using the follow control sends
-  them to sign in. The feed page and the following page send them to sign in, as every other
-  Account Center page does.
+  them to sign in. A feed page of what a person follows, and the following page, send them to sign
+  in. A feed page of the whole site or of one object is open to them.
 - Q: Can a person follow themselves? → A: No. The follow control is not offered to a person on
-  themselves, and a person's own activity never appears on their feed page.
+  themselves, and a person's own activity never appears in the feed of what they follow.
 - Q: Does following someone show up as activity? → A: Yes. Following records a public "started
   following" activity, as django-activity-stream does, which reaches the feeds of people who follow
-  either side. The follower does not see it on their own feed page.
+  either side. The follower does not see it in the feed of what they follow.
 - Q: What does a follower count count? → A: The people following that person or object. A
   person's own follow is included, and the count changes as soon as they follow or stop
   following.
@@ -52,25 +54,28 @@ those of django-activity-stream.
 ### User Story 1 - A developer turns activity on and places feeds and follow controls (Priority: P1)
 
 A developer building a site on django-mvp installs the activity extra and includes its URLs. From
-then on a signed-in person has a feed page and a following page in the Account Center, with no
-further configuration. The developer records activity where their site decides something happened,
+then on a signed-in person has a following page in the Account Center, with no further
+configuration. The developer mounts feed pages where they want them, each set to show what the
+signed-in person follows, the whole site or one object, and optionally only some kinds of activity,
+and adds them to their menu. The developer records activity where their site decides something happened,
 and places the feature's components on their own pages: a follow control next to a person or an
-object, recent activity from the whole site, around one object or from what a person follows, and a list of the people following a person or an object. Any feed can
-be limited to some kinds of activity. Where the developer wants a page or a component to look or
+object, recent activity from the whole site, around one object or from what a person follows, and
+a list of the people following a person or an object. Recent activity can be limited to some kinds
+of activity too. Where the developer wants a page or a component to look or
 read differently, they override that one template.
 
 **Why this priority**: Nothing else in the feature reaches anyone until a host project can switch
 it on and place it.
 
 **Independent Test**: Install the extra in a project, include its URLs, record some activity, place
-recent activity, a follow control and a followers list on pages of the project, and
-find each of them, the feed page and the following page.
+recent activity, a follow control and a followers list on pages of the project, mount a feed page,
+and find each of them and the following page.
 
 **Acceptance Scenarios**:
 
 1. **Given** a project that has installed the activity extra and included its URLs, **When** a
-   person signs in, **Then** the menu leads to their feed page, and the Account Center has an entry
-   and a card for the following page.
+   person signs in, **Then** the Account Center has an entry and a card for the following page,
+   and no feed page exists until the developer mounts one.
 2. **Given** a project that has not installed the activity extra, **When** any page renders,
    **Then** there is no feed page, no following page and no entry for either, and nothing that
    belongs to the extra is imported.
@@ -83,8 +88,11 @@ find each of them, the feed page and the following page.
 4a. **Given** recent activity given the address of the full list and more activity than it shows,
    **When** the page renders, **Then** it ends with a link to the full list, and without the
    address, or with nothing more to show, it has no link.
-5. **Given** a feed limited to some kinds of activity, **When** it renders, **Then** it lists
-   activity of those kinds only.
+4b. **Given** a feed page mounted to show the whole site, **When** anyone opens it, **Then** it
+   lists the site's public activity, newest first, split into pages. Mounted for one object, it
+   lists only activity around that object.
+5. **Given** a feed page or recent activity limited to some kinds of activity, **When** it renders,
+   **Then** it lists activity of those kinds only.
 6. **Given** a follow control placed for a person or an object, **When** the page renders, **Then**
    it shows how many people follow them.
 7. **Given** a followers list placed for a person or an object, **When** the page renders, **Then**
@@ -98,14 +106,15 @@ find each of them, the feed page and the following page.
 ### User Story 2 - A person follows people and things and sees their activity (Priority: P1)
 
 A signed-in person finds a follow control next to a person or an object, showing how many people
-follow it. They follow it, and the count includes them. From then on their feed page shows what
+follow it. They follow it, and the count includes them. From then on the feed of what they follow
+shows what
 the people and things they follow have been doing, newest first. They stop following with the same
 control, and that activity no longer reaches their feed.
 
 **Why this priority**: Following and seeing what happened is the reason the feature exists.
 
 **Independent Test**: Sign in, follow a person and an object, record activity by the person and
-about the object, and find both on the feed page. Stop following the person and see their new
+about the object, and find both on a feed page of what they follow. Stop following the person and see their new
 activity no longer arrive.
 
 **Acceptance Scenarios**:
@@ -158,7 +167,8 @@ following one person, and see them gone from the list and their new activity gon
 
 ### Edge Cases
 
-- A signed-out visitor is sent to sign in from the feed page and the following page.
+- A signed-out visitor is sent to sign in from a feed page of what a person follows and from the
+  following page.
 - A person or object someone follows is deleted: it drops off their following page, its count is
   gone with it, and their feed carries on without it.
 - Activity about an object that has since been deleted stays out of every feed rather than showing
@@ -181,25 +191,30 @@ following one person, and see them gone from the list and their new activity gon
   will do, and which shows how many people follow it.
 - **FR-004**: The follow control MUST send a signed-out visitor to sign in, and MUST NOT offer a
   person to follow themselves.
-- **FR-005**: The feature MUST provide a feed page listing the public activity of the people and
-  objects the signed-in person follows, newest first.
+- **FR-005**: The feature MUST provide a feed view, split into pages, that a host project mounts at
+  an address of its choosing and sets to show one of: the public activity of what the signed-in
+  person follows, newest first and without their own actions; the site's public activity; or the
+  public activity around one object the host project names. The feature MUST NOT mount a feed page
+  itself.
 - **FR-006**: The feature MUST provide a recent activity component showing the newest public
   activity, newest first, either across the whole site, around one given object (where it acted,
   was acted on, or was where it happened), or from what the signed-in person follows.
 - **FR-007**: A host project MUST be able to choose how many activities recent activity shows,
   and give it the address of the full list, which it then links to whenever there is more than it
   shows.
-- **FR-008**: A host project MUST be able to limit any feed to some kinds of activity.
+- **FR-008**: A host project MUST be able to limit a feed view and recent activity to some kinds
+  of activity.
 - **FR-009**: The feature MUST provide a followers list component listing the people who follow a
   given person or object.
 - **FR-010**: The Account Center MUST have an entry and a card for a following page, which lists
   everything the signed-in person follows and lets them stop following each one.
 - **FR-011**: Feeds MUST NOT show activity that is not public, or activity about an object that no
   longer exists.
-- **FR-012**: The feed page, the following page and the followers list MUST be split into pages,
+- **FR-012**: A feed view, the following page and the followers list MUST be split into pages,
   or say how many more there are, when they hold more than one page. Recent activity is never
   split into pages.
-- **FR-013**: The feed page and the following page MUST require a signed-in person.
+- **FR-013**: The following page, and a feed view set to what the signed-in person follows, MUST
+  require a signed-in person.
 - **FR-014**: Every page and component of the feature MUST be replaceable by overriding one
   template.
 - **FR-015**: Every string the feature shows MUST be translatable.
@@ -208,7 +223,7 @@ following one person, and see them gone from the list and their new activity gon
 
 | Story | Requirements |
 |---|---|
-| US1 | FR-001, FR-002, FR-006, FR-007, FR-008, FR-009, FR-011, FR-012, FR-014, FR-015 |
+| US1 | FR-001, FR-002, FR-005, FR-006, FR-007, FR-008, FR-009, FR-011, FR-012, FR-014, FR-015 |
 | US2 | FR-003, FR-004, FR-005, FR-011, FR-012, FR-013 |
 | US3 | FR-010, FR-012, FR-013 |
 
@@ -232,8 +247,8 @@ following one person, and see them gone from the list and their new activity gon
   list on a page with one component tag each.
 - **SC-003**: A person follows or stops following something in one action, and sees the change on
   the control without leaving the page.
-- **SC-004**: From any page, a person reaches the newest activity of what they follow in one
-  action from the menu.
+- **SC-004**: A developer mounts a feed page with one URL pattern and adds it to their menu with
+  one menu entry.
 - **SC-005**: Each page and component is replaced by overriding exactly one template, with no
   Python change.
 
