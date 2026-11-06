@@ -2,7 +2,7 @@
 
 **Branch**: `004-notifications-by-email` · **Plan**: [plan.md](plan.md) · **Research**: [research.md](research.md) · **Spec**: [spec.md](spec.md) · **Sketch**: [sketch.md](sketch.md)
 
-Every task with behaviour follows the red-green-refactor cycle of Article I. A task is done when its tests pass, the tree is green and the work is committed. The templates approved in the sketch are kept. The Python the sketch wrote is replaced, test-first.
+Groups run one after another, never in parallel. Every task with behaviour follows the red-green-refactor cycle of Article I. A task is done when its tests pass, the tree is green and the work is committed. The templates approved in the sketch are kept. The Python the sketch wrote is replaced, test-first.
 
 ## Order
 
@@ -18,9 +18,9 @@ Issue: #25. Delivers FR-001 to FR-004, FR-006 to FR-008, FR-013 to FR-015, FR-01
 
 - [ ] T001 [US1] The extra's set-up: weekly digest, System Message removed, email channel swapped or removed
 
-**Files**: `mvp_community/integrations/notifications/__init__.py`, `mvp_community/integrations/notifications/setup.py`, `mvp_community/integrations/notifications/frequencies.py`, `mvp_community/integrations/notifications/channels.py`, `mvp_community/apps.py`, `tests/test_integrations/test_notifications/test_setup.py`
+**Files**: `mvp_community/integrations/notifications/__init__.py`, `mvp_community/integrations/notifications/setup.py`, `mvp_community/integrations/notifications/checks.py`, `mvp_community/integrations/notifications/frequencies.py`, `mvp_community/integrations/notifications/channels.py`, `mvp_community/integrations/notifications/views.py`, `mvp_community/apps.py`, `demo/notifications.py`, `tests/test_integrations/test_notifications/test_setup.py`, `tests/test_integrations/test_notifications/test_views.py`
 
-Plan, *Set-up*, with an empty `NotificationEmailChannel` subclass. Tests 1 and 2 of plan, *Tests*.
+Plan, *Set-up*, with an empty `NotificationEmailChannel` subclass, the system check, and the view's empty `frequencies` without an email channel. Tests 1, 1a and 2 of plan, *Tests*.
 
 - [ ] T002 [US1] The channel: language, template context, always-sent types at once
 
@@ -34,7 +34,7 @@ Plan, *The channel*, without the unsubscribe address. Tests 3, 4, 6, 7 and 8.
 
 **Files**: `mvp_community/integrations/notifications/channels.py`, `mvp_community/templates/notifications/email/**`, `mvp_community/templatetags/mvp_community_notifications.py`, `tests/test_integrations/test_notifications/test_channels.py`
 
-Test 5. The templates take type names from the context; the sketch's `notification_type_name` tag is removed.
+Test 5. `notification_type_name` rebuilt on the registry's `get_type`.
 
 - [ ] T004 [US1] The demo: security notices by email, the site domain, the email seed through the real path
 
@@ -84,7 +84,7 @@ Plan, *The unsubscribe address*. Tests 11 and 12.
 
 **Files**: `mvp_community/integrations/notifications/views.py`, `mvp_community/integrations/notifications/urls.py`, `mvp_community/templates/mvp_community/notifications/unsubscribe.html`, `tests/test_integrations/test_notifications/test_views.py`
 
-Plan, *The unsubscribe view*. Tests 13, 14 and 16.
+Plan, *The unsubscribe view*. Tests 13, 14, 16, 17 and 18.
 
 ### Group 2
 
@@ -92,7 +92,7 @@ Plan, *The unsubscribe view*. Tests 13, 14 and 16.
 
 **Files**: `mvp_community/integrations/notifications/channels.py`, `mvp_community/templates/notifications/email/**`, `mvp_community/templatetags/mvp_community_notifications.py`, `tests/test_integrations/test_notifications/test_channels.py`
 
-Test 15. The sketch's `notification_unsubscribe_token` tag is removed.
+Test 15. The sketch's `notification_unsubscribe_token` tag becomes `notification_unsubscribe_url`, built on `UnsubscribeLink`.
 
 - [ ] T011 [US3] Documentation: unsubscribing, and the glossary
 

@@ -37,3 +37,23 @@ approved.
   registering it by default. It is English only and would appear in every host project.
 - The demo's security notices are always sent by email instead of on the site: email is where a
   new-sign-in warning reaches someone who is not on the site.
+
+## Rulings at the design review (2026-11-06)
+
+- **D1 — The package's email channel is a subclass registered under `email`, and a system check
+  guards the identity trap.** The library compares channel classes by identity, so a type naming
+  the library's `EmailChannel` stops matching once the package's channel replaces it. A subclass
+  is still the only route to the unsubscribe headers and the language without copying the
+  library's rendering. Check `mvp_community.E001` makes the trap loud at start-up. *Revisit if* the
+  library compares channels by key.
+- **D2 — The channel calls the parent's rendering rather than copying it.** It sets the link on the
+  instance and wraps the parent in `translation.override`. The templates use two tags.
+- **D3 — Emails are written in `LANGUAGE_CODE` unless the project overrides
+  `recipient_language`.** Django has no per-person language. "The recipient's language" in the
+  spec is delivered through that one override point.
+- **D4 — Unsubscribe links do not expire.** RFC 8058 expects the header to keep working. A link
+  never turns off a type that is always sent by email, checked when it is read.
+- **D5 — The unsubscribe view is `login_not_required`**, so projects using
+  `LoginRequiredMiddleware` keep it open.
+- **D6 — `configure` registers with `force=True`**, since the registry otherwise refuses a class it
+  has seen before.

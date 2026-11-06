@@ -42,15 +42,27 @@ pytest-django. No models and no migrations.
 
 ### Set-up (`integrations/notifications/setup.py`)
 
-A class `NotificationsSetup` with one class method, `configure(mail_installed)`, called from
-`MvpCommunityConfig.ready` with `apps.is_installed("post_office")`. It:
+A function `configure(mail_installed)`, called from `MvpCommunityConfig.ready` with
+`apps.is_installed("post_office")`. It:
 
 1. registers `WeeklyFrequency` (`frequencies.py`),
 2. unregisters django-generic-notifications' `SystemMessage`,
 3. unregisters the package's `EmailChannel`, and when the mail extra is installed registers
    `NotificationEmailChannel` (key `email`) in its place.
 
-`configure` is idempotent, so the test suite can call it with either value and restore it.
+Every registration passes `force=True`: the registry remembers each class it has seen and skips a
+second registration after an unregister (`generic_notifications/registry.py:26-27`), so without
+it `configure` could not be called again. With it, `configure` is idempotent and the suite calls it
+with either value and restores it.
+
+**Naming the email channel in a type.** django-generic-notifications compares channel classes by
+identity when it checks a type's `required_channels` and `default_channels`
+(`generic_notifications/types.py:133,146`, `preferences.py:61`). With the mail extra installed the
+registered email channel is the package's, so a type that names the library's `EmailChannel`
+would silently stop matching. A Django system check, `mvp_community.E001`, raised from `checks.py`
+in the integration module, reports every registered type that names the library's class while the
+package's channel is registered, and says which class to name instead. The documentation shows
+the package's class in its examples. The demo's security notice names it.
 The sketch's imports in the package `__init__` are removed.
 
 ### The channel (`integrations/notifications/channels.py`)
@@ -59,14 +71,16 @@ The sketch's imports in the package `__init__` are removed.
 
 - `process(notification)`: a type with any required channel is sent at once, whatever frequency
   is stored (FR-016). Otherwise the parent's behaviour.
-- `send_now` and `send_digest`: render inside `translation.override(self.recipient_language(user))`
-  and pass the unsubscribe address and the types' names into the template context. The parent
-  builds context itself, so these methods are overridden in full, keeping the parent's template
-  lookup names and fallbacks.
+- `send_now` and `send_digest`: set the email's unsubscribe link on the instance, then call the
+  parent inside `translation.override(self.recipient_language(user))`. The parent's rendering is
+  not copied. The templates compute the unsubscribe address and each digest group's type name with
+  the package's two template tags, from the `recipient` and the notification types the parent
+  already puts in their context.
 - `recipient_language(user)`: `settings.LANGUAGE_CODE`. The documented extension point.
 - `send_email(...)`: builds an `EmailMultiAlternatives` with `List-Unsubscribe` and
-  `List-Unsubscribe-Post: List-Unsubscribe=One-Click` when the email has an unsubscribe address,
-  and sends it through Django's mail backend, so django-post-office queues and logs it.
+  `List-Unsubscribe-Post: List-Unsubscribe=One-Click` from the link set by `send_now` or
+  `send_digest`, when there is one, and sends it through Django's mail backend, so
+  django-post-office queues and logs it.
 - An email whose types are all always sent by email has no unsubscribe address, no link and no
   headers.
 
@@ -76,33 +90,37 @@ The sketch's imports in the package `__init__` are removed.
 
 - `for_email(user, type_keys)`: drops keys whose type always sends email. Returns `None` when none
   remain.
-- `path` and `url(request_or_none)`: the signed address, absolute through the current `Site` when
-  there is no request.
+- `path` and `url()`: the signed address, made absolute with django-mvp's
+  `EmailSite.absolute` (`mvp/templatetags/mvp_email.py:117`).
 - `read(token)`: the person and the registered types, or `None` when the signature is bad, the
-  person no longer exists or no named type is registered.
+  person no longer exists or no named type is registered. Types that now always send email are
+  dropped at read time, so an old link never turns off a type the project has since made
+  required. The link does not expire: RFC 8058 expects the header to keep working.
 - `emailed()`: the types that still reach the person by email.
 - `turn_off()`: `disable_channel(user, email channel)` for each, returning the ones changed.
 
-The template tag from the sketch is removed: the templates receive the address in their context.
+The sketch's two tags stay, rebuilt on this class: `notification_unsubscribe_url recipient
+type_keys` (empty when `for_email` returns `None`) and `notification_type_name key`.
 
 ### The unsubscribe view
 
-`UnsubscribeView(MVPTemplateView)`, CSRF-exempt, no sign-in. `GET` renders `confirm`, `already` or
+`UnsubscribeView(MVPTemplateView)`, CSRF-exempt, and marked with Django's `login_not_required`,
+so it stays open in a project that uses `LoginRequiredMiddleware`. `GET` renders `confirm`, `already` or
 `invalid`. `POST` with `List-Unsubscribe=One-Click` turns the email off and answers `200` with no
 body, or `400` for an invalid address. Any other `POST` turns it off and renders `done`,
 `already` or `invalid`. The approved template is kept.
 
 ### The preferences page
 
-`PreferencesView` adds `frequencies` (key, translated label) and, per row, `offers_frequency`
-(no required channel). The approved template is kept: the Alpine row state, the joined select and
+`PreferencesView` adds `frequencies` (key, translated label), which is empty when no `email`
+channel is registered, and, per row, `offers_frequency` (no required channel). Without the mail
+extra no select is drawn. The approved template is kept: the Alpine row state, the joined select and
 the hidden input that carries the choice while email is off. `post` is unchanged:
 django-generic-notifications' `save_notification_preferences` already reads `<type>__frequency`.
 
 ### Templates
 
-The approved email templates under `notifications/email/` are kept. They read the address and the
-type names from the context rather than the sketch's tags. The footer include shows the
+The approved email templates under `notifications/email/` are kept, with their two tags. The footer include shows the
 unsubscribe link only when there is an address.
 
 ### The demo
@@ -122,13 +140,17 @@ never by wording (testing standard, *Text*).
 
 US1:
 1. With the mail extra, the email channel registered under `email` is the package's own; without
-   it, no `email` channel is registered and the preferences page lists the site only.
+   it, no `email` channel is registered and the preferences page lists the site only and draws no
+   frequency select. `configure` called twice in either order leaves the same registry.
+1a. The system check reports a type naming the library's `EmailChannel` while the package's channel
+   is registered, and reports nothing for a type naming the package's.
 2. The weekly frequency is registered; System Message is not.
 3. A notification to a person with email on and real-time is queued in django-post-office's log
    to that person, with an HTML part extending the layout (the layout's root element is present).
 4. Email off, or no address: nothing is queued.
 5. Daily and weekly digests: one email per person with unread, unsent notifications of the types
-   they chose for that frequency; none for a person with none; read notifications left out.
+   they chose for that frequency; none for a person with none; read notifications left out; a
+   person with no stored choice on a daily-default type is in the daily digest.
 6. `recipient_language` is used: a subclass returning `de` renders with `lang="de"`.
 7. A project template under the realtime name replaces the package's.
 8. An always-sent type is sent at once even with a stored daily frequency.
@@ -147,19 +169,24 @@ US3:
 14. One-click POST answers 200 with no page and turns email off; an invalid token answers 400.
 15. Notification and digest emails carry `List-Unsubscribe` with the address and
     `List-Unsubscribe-Post`; an email of only always-sent types carries neither, and no link.
-16. A signed-out visitor can GET and POST the page.
+16. A signed-out visitor can GET and POST the page, including with `LoginRequiredMiddleware`.
+17. Every state of the page (confirm, done, already, invalid) links to the preferences page.
+18. A link naming a type the project has since made always-sent changes nothing for that type.
 
 ### Documentation
 
 `docs/developer/notifications.md`:
 1. *Install notifications*: notification email needs the mail extra; without it the site is the
-   only channel.
+   only channel. Email links need `django.contrib.sites`, `SITE_ID` and the `Site`'s domain set to
+   the site's address. Name the package's email channel in a type's channels (check E001).
 2. Rewrite *What django-generic-notifications adds by itself*: the package's channel replaces the
    library's, System Message is removed, a project that wants it registers its own type.
-3. New *Send digests*: the daily and weekly commands and how to schedule them.
+3. New *Send digests*: the daily and weekly commands and how to schedule them. The command logs an
+   unknown frequency and exits 0, so check its log.
 4. New *Unsubscribing*: the link, the confirmation page, the one-click header, which types carry
    none.
-5. New *Email in the person's language*: subclassing the channel for `recipient_language`.
+5. New *Email in the person's language*: emails are written in the site's `LANGUAGE_CODE`, and a
+   project that stores a language per person subclasses the channel for `recipient_language`.
 6. *Replace a template or component*: the email template names.
 7. Remove *Why saving preferences clears digest frequencies*: the page now posts frequencies.
 

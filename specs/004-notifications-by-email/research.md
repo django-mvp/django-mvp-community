@@ -45,6 +45,10 @@ build meets it.
 - **Each digest group's type name.** The registry's `get_type(key)` returns the class; the tag the
   sketch added is replaced by passing names into the template context from the channel.
 - **Whether a type is always sent on some channel.** `NotificationType.required_channels`.
+- **The channel is named by identity.** django-generic-notifications checks `required_channels`
+  and `default_channels` by class identity (`generic_notifications/types.py:133,146`,
+  `preferences.py:61`), so a subclass registered under `email` does not match a type naming the
+  library's class. Plan, *Set-up*, adds a system check.
 - **The unsubscribe page's outcomes and the one-click POST.** The view reads the address through the
   class above. A mail app's one-click POST carries `List-Unsubscribe=One-Click` in its body
   (RFC 8058, section 3.1) and is answered with no page.
@@ -60,7 +64,7 @@ build meets it.
   read, which is what RFC 8058 expects of the header. It is signed, not timed. It names the person
   by primary key, so a changed email address does not matter, and a deleted account makes it
   invalid.
-- **Always-sent types still carry an unsubscribe link.** Emails whose every type is always sent
+- **Fake: always-sent types carried an unsubscribe link.** Emails whose every type is always sent
   by email carry neither the link nor the header.
 - **"Always as it happens" rests on the default frequency.** The channel sends an always-sent type
   at once whatever frequency is stored.
