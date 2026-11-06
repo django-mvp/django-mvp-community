@@ -259,3 +259,24 @@ class TestStoredTemplate:
             )
 
         assert not Email.objects.exists()
+
+    def test_an_edit_to_a_translation_reaches_the_next_email(self, welcome) -> None:
+        # django-post-office clears a different cache entry from the one it
+        # reads when a translation is saved, so with its template cache on
+        # this edit would be ignored. The demo turns the cache off.
+        def send_in_german() -> Email:
+            with translation.override("de"):
+                return post_office_mail.send(
+                    "to@example.com",
+                    "from@example.com",
+                    template="welcome",
+                    language="de",
+                    priority="medium",
+                )
+
+        send_in_german()
+        german = EmailTemplate.objects.get(name="welcome", language="de")
+        german.subject = "Herzlich willkommen"
+        german.save()
+
+        assert send_in_german().subject == "Herzlich willkommen"

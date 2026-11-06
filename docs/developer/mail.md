@@ -73,7 +73,7 @@ Queued email waits until something sends it. Choose one of the three ways.
   python manage.py send_queued_mail
   ```
 
-- **Send from Celery.** Set `CELERY_ENABLED` to `True` in `POST_OFFICE` and django-post-office queues a Celery task for each email you send. Its task is `post_office.tasks.send_queued_mail`.
+- **Send from Celery.** In a project that already runs Celery, set `CELERY_ENABLED` to `True` in `POST_OFFICE` and django-post-office queues a Celery task for each email you send. Its task is `post_office.tasks.send_queued_mail`.
 - **Send during the call.** Set `DEFAULT_PRIORITY` to `"now"` in `POST_OFFICE` and each email is handed to the provider as it is sent, and still logged. Nothing needs to run in the background, which suits a small project or development. A slow provider then slows the request that sent the email.
 
 A message that fails is left in the log with the error. It is tried again only when you set `MAX_RETRIES` in `POST_OFFICE` above its default of `0`, and `RETRY_INTERVAL` sets the wait between attempts.
@@ -127,21 +127,24 @@ A stored template is an email whose subject and body are kept in the database an
 from django.utils import translation
 from post_office import mail
 
+# The template's own wording is stored with no language, and each translation
+# with its own. Here the template is written in English.
+template_language = "" if user.language == "en" else user.language
+
 with translation.override(user.language):
     mail.send(
         user.email,
         template="welcome",
         context={"name": user.first_name},
-        language=user.language,
+        language=template_language,
     )
 ```
 
 Both lines about the language matter, and they do different things.
 
-- `language=` picks the translation to send. If the template has no translation in that language, `mail.send` raises `EmailTemplate.DoesNotExist` and nothing is queued or logged.
+- `language=` picks the translation to send. An empty value sends the template's own wording. A language the template has no translation for, including the template's own language given by name, makes `mail.send` raise `EmailTemplate.DoesNotExist`, and nothing is queued or logged.
 - `translation.override` sets the language the email is rendered in. The layout writes `lang` on the root element and its default footer from it, so without the override a German translation still says `lang="en"`.
 
-Leave `language` out to send the template's own language.
 
 ## Why a template writes its own footer
 
