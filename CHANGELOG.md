@@ -35,3 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   your choosing, a following page in the Account Center, and components for
   recent activity, a follow control and a followers list. Install it with
   `pip install "django-mvp-community[activity]"`.
+- The `mail` extra, built on django-post-office and django-anymail: every email
+  your project sends is queued, logged with its full body and delivered through
+  your provider, and stored templates extend django-mvp's email layout with a
+  translation per language. It adds no code of its own; the new Mail page
+  documents the settings. Install it with
+  `pip install "django-mvp-community[mail]"`.

@@ -44,15 +44,17 @@ Serves G2 and G3.
 *feature · advances G4*
 
 Notifications, digests and reminders all reach people by email, so branded, translated email is
-the base the notification items build on. It builds on django-mvp's own base email layout, so the
-project's other mail and this package's mail look the same.
+the base the notification items build on. The look is django-mvp's own email layout, so the
+project's other mail and this package's mail look the same. The queue, the log and the stored,
+translated templates are django-post-office's, delivered through django-anymail.
 
 **Deliverables:**
-- Email the host project sends through the mail extra carries the project's look and is sent in
-  the recipient's language.
+- Email the host project sends through the mail extra is queued and logged, then delivered through
+  the project's provider.
+- Stored email templates extend django-mvp's email layout and carry the project's look, and are
+  sent in the recipient's language.
 - Email templates can be edited and translated per language without a code change.
-- Every non-essential email can be unsubscribed from in one click, from the email itself.
-- Staff can see what was sent, to whom, and whether it was delivered.
+- Staff can see what was sent, to whom, and whether it was handed to the provider.
 
 Serves G4. Out of scope: choosing or running a mail provider, and campaign or newsletter tools.
 

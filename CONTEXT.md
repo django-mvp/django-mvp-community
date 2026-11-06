@@ -87,6 +87,23 @@ to the full list when there is more. A feed is the paged list on a page of its
 own.
 _Avoid_: stream, widget, ticker.
 
+**Queued email**:
+An email your project sent that is stored in the database until a sender hands
+it to the provider, or handed over during the call when the project sends
+immediately. It stays in the delivery log after it is sent.
+_Avoid_: outbox (Django's test outbox), pending message.
+
+**Delivery log**:
+The record, in the admin, of each email the project sent: to whom, its subject
+and full body, whether it was handed to the provider, and the error when it was
+not. It does not record what happens after the provider accepts an email.
+_Avoid_: mail history, audit trail.
+
+**Stored template**:
+An email whose subject and body are kept in the database and edited in the
+admin, with a translation per language. It extends django-mvp's email layout.
+_Avoid_: email template (django-mvp uses that for the layout files), snippet.
+
 **Share card**:
 The preview image shown when a link to a page is shared.
 _Avoid_: thumbnail, OG image, social image.
