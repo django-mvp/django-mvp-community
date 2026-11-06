@@ -1,0 +1,27 @@
+{# @description The follow control for a person or an object: a Follow button, or Unfollow once followed, beside how many people follow it. After a click only the control is redrawn. A signed-out visitor is sent to sign in. A person is never offered to follow themselves. #}
+{# @prop object:text | description:"The person or object to follow." #}
+{# @prop size:select['xs','sm','md'] | default:"sm" | description:"Size of the button." #}
+{# @prop replace_row:boolean | default:false | description:"For a control inside a list row marked data-follow-row: stopping following removes that row instead of redrawing the control." #}
+{# @prop next:text | description:"The page the control sits on, which a plain form post and signing in return to. Defaults to the current page." #}
+{% load i18n activity_tags mvp_community_activity %}
+<c-vars object size="sm" next="" replace_row />
+{% followers_of object as followers %}
+{% firstof next request.get_full_path as page %}
+<div class="flex items-center gap-3 shrink-0" data-follow-control>
+  <c-mvp.text muted tight size="sm" class="whitespace-nowrap" only>{% blocktrans count counter=followers.count %}{{ counter }} follower{% plural %}{{ counter }} followers{% endblocktrans %}</c-mvp.text>
+  {% if request.user.is_authenticated and object == request.user %}
+  {% elif request.user.is_authenticated %}
+    {% follow_control_url object page as refresh %}
+    <form method="post" action="{% follow_all_url object %}?next={{ page|urlencode }}" hx-post="{% follow_all_url object %}?next={{ refresh|urlencode:"" }}" {% if replace_row %}hx-target="closest [data-follow-row]" hx-swap="delete"{% else %}hx-target="closest [data-follow-control]" hx-swap="outerHTML"{% endif %}>
+      {% csrf_token %}
+      {% if request.user|is_following:object %}
+        <c-button type="submit" size="{{ size }}" outline icon="activity.unfollow" text="{% trans "Unfollow" %}" only />
+      {% else %}
+        <c-button type="submit" size="{{ size }}" variant="primary" icon="activity.follow" text="{% trans "Follow" %}" only />
+      {% endif %}
+    </form>
+  {% else %}
+    {% url "account_login" as login_url %}
+    <c-button href="{{ login_url }}?next={{ page|urlencode }}" size="{{ size }}" variant="primary" icon="activity.follow" text="{% trans "Follow" %}" only />
+  {% endif %}
+</div>

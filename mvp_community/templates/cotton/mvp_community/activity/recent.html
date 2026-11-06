@@ -1,0 +1,28 @@
+{# @description Recent activity: the newest few activities in a card, for a dashboard or any page. It shows the whole site's public activity, the activity around one object, or what the signed-in person follows. When there is more than it shows and more_url is given, a link at the foot leads to the full list. #}
+{# @prop object:text | description:"Show the activity around this person or object. Empty shows the whole site." #}
+{# @prop following:boolean | description:"Show what the signed-in person follows, instead of the whole site." #}
+{# @prop verb:text | description:"Show only activity of this kind, such as finished. Empty shows every kind." #}
+{# @prop limit:number | default:"10" | description:"How many of the newest to show, such as 5, 10 or 20." #}
+{# @prop more_url:text | description:"Where the full list lives. Given, a link to it appears when there is more than limit shows." #}
+{# @prop more_text:text | description:"The link's text. Defaults to View all activity." #}
+{% load i18n activity_tags mvp_community_activity %}
+<c-vars object following verb="" limit="10" more_url="" more_text="" />
+{% if following %}
+  {% if request.user.is_authenticated %}
+    {% followed_activity request.user verb as all_actions %}
+  {% endif %}
+{% elif object %}
+  {% if verb %}{% activity_stream "any" object verb=verb as="all_actions" %}{% else %}{% activity_stream "any" object as="all_actions" %}{% endif %}
+{% else %}
+  {% if verb %}{% activity_stream "public" verb=verb as="all_actions" %}{% else %}{% activity_stream "public" as="all_actions" %}{% endif %}
+{% endif %}
+{% with bound=":"|add:limit %}
+  {% with recent=all_actions|slice:bound %}
+    <c-mvp_community.activity.feed :actions="recent" only />
+  {% endwith %}
+{% endwith %}
+{% if more_url and all_actions.count > limit|add:0 %}
+  <div class="flex justify-end mt-2">
+    <c-link href="{{ more_url }}" hover variant="primary" class="text-sm" only>{% firstof more_text _("View all activity") %} →</c-link>
+  </div>
+{% endif %}

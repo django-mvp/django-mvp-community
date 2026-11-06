@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "mvp_community",
     # The notifications extra: the package it is built on.
     "generic_notifications",
+    "actstream",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -129,6 +130,11 @@ EASY_ICONS = {
             "overview": "bi bi-house",
             "notifications": "bi bi-bell",
             "notifications.preferences": "bi bi-sliders",
+            "activity": "bi bi-activity",
+            "activity.follow": "bi bi-plus-lg",
+            "activity.following": "bi bi-check2",
+            "activity.unfollow": "bi bi-x-lg",
+            "people": "bi bi-people",
         },
     },
 }
@@ -165,3 +171,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Notifications also go out by email. The demo prints them to the console
 # instead of reaching for a mail server it does not have.
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# django-activity-stream links each actor and object through get_absolute_url.
+# The demo's people and groups are Django's own models, so their pages are
+# named here instead.
+ABSOLUTE_URL_OVERRIDES = {
+    "auth.user": lambda user: f"/people/{user.pk}/",
+    "auth.group": lambda group: f"/groups/{group.pk}/",
+}

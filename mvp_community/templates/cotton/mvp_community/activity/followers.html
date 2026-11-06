@@ -1,0 +1,25 @@
+{# @description The people who follow a person or an object, in a card headed with their count. #}
+{# @prop object:text | description:"The person or object whose followers to list." #}
+{# @prop plain:boolean | description:"Leave out the card's heading, where the page already names the list." #}
+{% load i18n mvp_community_activity %}
+<c-vars object plain />
+{% followers_of object as followers %}
+{% with count=followers.count people=followers|slice:":8" %}
+  {% blocktrans count counter=count asvar heading %}{{ counter }} follower{% plural %}{{ counter }} followers{% endblocktrans %}
+  <c-mvp.card title="{% if not plain %}{{ heading }}{% endif %}" tight only>
+    {% if people %}
+      <c-list only>
+        {% for person in people %}
+          {% firstof person.get_full_name person as name %}
+          <c-list.row class="items-center" only>
+            <c-avatar placeholder="{{ name|make_list|first|upper }}" class="shrink-0" content_class="size-8 rounded-full bg-neutral text-neutral-content" only />
+            <div class="list-col-grow min-w-0 truncate"><c-mvp_community.activity.name :object="person" only /></div>
+          </c-list.row>
+        {% endfor %}
+      </c-list>
+      {% if count > 8 %}<c-mvp.text muted size="sm" class="px-4 pb-3" only>{% blocktrans with more=count|add:"-8" %}and {{ more }} more{% endblocktrans %}</c-mvp.text>{% endif %}
+    {% else %}
+      <c-mvp.text muted size="sm" class="px-4 py-3" only>{% trans "Nobody follows this yet." %}</c-mvp.text>
+    {% endif %}
+  </c-mvp.card>
+{% endwith %}

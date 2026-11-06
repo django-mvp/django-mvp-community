@@ -33,7 +33,14 @@ class DemoConfig(AppConfig):
 
     def ready(self):
         """Register the sidebar entries, the notification types and the site-naming hook."""
+        from actstream import registry
+        from django.contrib.auth import get_user_model
+        from django.contrib.auth.models import Group
+
         from demo import menus, notifications  # noqa: F401
+
+        # Only registered models can act, be acted on or be followed.
+        registry.register(get_user_model(), Group)
 
         # Hung off the sites app: Django skips post_migrate for an app with no
         # models, and connecting before SiteConfig.ready() means this runs first.

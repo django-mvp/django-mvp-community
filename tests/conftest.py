@@ -4,6 +4,8 @@ import os
 from datetime import timedelta
 
 import pytest
+from actstream import action as actstream_action
+from actstream.actions import follow as actstream_follow
 from django import template as dj_template
 from django.template import Context
 from django.urls import reverse
@@ -13,7 +15,7 @@ from generic_notifications import send_notification
 from generic_notifications.models import Notification
 
 from demo.notifications import NewFollower, ReplyReceived
-from tests.factories import UserFactory
+from tests.factories import GroupFactory, UserFactory
 
 
 @pytest.fixture(scope="session")
@@ -94,5 +96,41 @@ def make_notifications(person):
             sent.refresh_from_db()
             made.append(sent)
         return made
+
+    return make
+
+
+@pytest.fixture
+def group(db):
+    return GroupFactory()
+
+
+@pytest.fixture
+def make_action():
+    # Activity is recorded the way a host project records it, through
+    # django-activity-stream. Each call is older than the last when minutes_ago
+    # grows, so "newest first" has one answer.
+    def make(actor, verb="finished", target=None, public=True, minutes_ago=0):
+        from actstream.models import Action
+
+        sent = actstream_action.send(actor, verb=verb, target=target, public=public)[0][
+            1
+        ]
+        Action.objects.filter(pk=sent.pk).update(
+            timestamp=timezone.now() - timedelta(minutes=minutes_ago)
+        )
+        sent.refresh_from_db()
+        return sent
+
+    return make
+
+
+@pytest.fixture
+def make_follow():
+    # actor_only=False, as the follow control sends it: the person follows what
+    # happens to the object as well as what it does. No "started following"
+    # activity is recorded, so a test's feed holds only the activity it made.
+    def make(follower, followed):
+        return actstream_follow(follower, followed, actor_only=False, send_action=False)
 
     return make

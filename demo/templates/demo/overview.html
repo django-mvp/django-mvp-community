@@ -36,4 +36,19 @@
       </form>
     </c-mvp.section>
   {% endif %}
+  {% if user.is_authenticated %}
+    <c-mvp.section title="From people you follow" icon="activity">
+      <c-mvp.text>Recent activity from what you follow, five at a time, with a link to your full feed.</c-mvp.text>
+      {% url "feed" as feed_url %}
+      <c-mvp_community.activity.recent following limit="5" more_url="{{ feed_url }}" more_text="View your full feed" />
+    </c-mvp.section>
+  {% endif %}
+  <c-mvp.section title="What happened on the site" icon="activity">
+    <c-mvp.text>Recent activity across the whole site, ten at a time.</c-mvp.text>
+    <c-mvp_community.activity.recent />
+  </c-mvp.section>
+  <c-mvp.section title="Courses people finished" icon="activity">
+    <c-mvp.text>The same, limited to one kind of activity and five items.</c-mvp.text>
+    <c-mvp_community.activity.recent verb="finished" limit="5" />
+  </c-mvp.section>
 {% endblock page.content %}

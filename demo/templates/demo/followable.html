@@ -1,0 +1,13 @@
+{% extends "page_view.html" %}
+{% block page.eyebrow %}{{ kind }}{% endblock page.eyebrow %}
+{% block page.actions %}
+  <c-mvp_community.activity.follow :object="object" />
+{% endblock page.actions %}
+{% block page.side %}
+  <c-mvp.page.side label="Followers" collapse="stack" breakpoint="lg">
+    <c-mvp_community.activity.followers :object="object" plain />
+  </c-mvp.page.side>
+{% endblock page.side %}
+{% block page.content %}
+  <c-mvp_community.activity.recent :object="object" limit="20" />
+{% endblock page.content %}

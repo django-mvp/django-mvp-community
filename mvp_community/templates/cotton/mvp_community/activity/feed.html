@@ -1,0 +1,22 @@
+{# @description A list of activity in a card, newest first, or a message when there is none. The feed page, the project feed and the object feed all draw their rows through it. #}
+{# @prop actions:text | description:"The actions to draw, already in order." #}
+{# @prop empty_heading:text | description:"Heading shown when there is no activity." #}
+{# @prop empty_message:text | description:"Supporting text shown when there is no activity." #}
+{% load i18n %}
+<c-vars actions empty_heading empty_message />
+{% if actions %}
+  <c-mvp.card tight only>
+    <c-list only>
+      {% for action in actions %}
+        <c-mvp_community.activity.entry :action="action" only />
+      {% endfor %}
+    </c-list>
+  </c-mvp.card>
+{% else %}
+  <c-mvp.card only>
+    <c-mvp.page.list.empty icon="activity"
+                           heading="{% firstof empty_heading _('Nothing has happened yet') %}"
+                           message="{{ empty_message }}"
+                           only />
+  </c-mvp.card>
+{% endif %}

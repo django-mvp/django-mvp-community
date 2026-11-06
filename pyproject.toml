@@ -39,7 +39,9 @@ notifications = [
     "django-generic-notifications>=2.4",
 ]
 mail = []
-activity = []
+activity = [
+    "django-activity-stream>=2.0",
+]
 sharecards = []
 
 [project.urls]
@@ -75,7 +77,7 @@ dev = [
     # The demo project and the suite run every extra, so a plain `uv sync`
     # installs them. The base-install test blocks them again to prove the
     # package imports without them.
-    "django-mvp-community[notifications]",
+    "django-mvp-community[notifications,activity]",
 ]
 
 [tool.uv.sources]

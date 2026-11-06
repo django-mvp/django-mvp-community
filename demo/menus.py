@@ -12,5 +12,20 @@ AppMenu.extend(
             view_name="overview",
             extra_context={"label": "Overview", "icon": "overview"},
         ),
+        MenuItem(
+            name="people",
+            view_name="people",
+            extra_context={"label": "People and groups", "icon": "people"},
+        ),
+        MenuItem(
+            name="feed",
+            view_name="feed",
+            extra_context={"label": "Your feed", "icon": "activity"},
+        ),
+        MenuItem(
+            name="site_activity",
+            view_name="site_activity",
+            extra_context={"label": "Site activity", "icon": "activity"},
+        ),
     ]
 )

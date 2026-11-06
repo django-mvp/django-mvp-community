@@ -1,0 +1,38 @@
+{% extends "mvp/account/base.html" %}
+{% load i18n %}
+{% block title %}{{ page.title }}{% endblock title %}
+{% block account.content %}
+  <c-mvp.page only>
+    <c-mvp.page.title :layout="page.title_layout" only>
+      <c-slot name="heading">{{ page.title_args.title }}</c-slot>
+      <c-slot name="lead">{{ page.title_args.lead }}</c-slot>
+    </c-mvp.page.title>
+    {% if page_obj.paginator.count %}
+      <c-mvp.card tight only>
+        <c-list only>
+          {% for follow in page_obj %}
+            {% with followed=follow.follow_object %}
+              {% firstof followed.get_full_name followed as name %}
+              <c-list.row class="items-center" data-follow-row only>
+                <c-avatar placeholder="{{ name|make_list|first|upper }}" class="shrink-0" content_class="size-10 rounded-full bg-neutral text-neutral-content" only />
+                <div class="list-col-grow min-w-0">
+                  <c-mvp.text tight class="break-words" only><c-mvp_community.activity.name :object="followed" only /></c-mvp.text>
+                  <c-mvp.text muted tight size="sm" only>{{ follow.content_type.name|capfirst }}</c-mvp.text>
+                </div>
+                <c-mvp_community.activity.follow :object="followed" replace_row />
+              </c-list.row>
+            {% endwith %}
+          {% endfor %}
+        </c-list>
+      </c-mvp.card>
+      <c-mvp.page.list.footer :page_obj="page_obj" size="sm" />
+    {% else %}
+      <c-mvp.card only>
+        <c-mvp.page.list.empty icon="activity.following"
+                               heading="{% trans "You follow nothing yet" %}"
+                               message="{% trans "Use Follow next to a person or a thing to see what they do in your feed." %}"
+                               only />
+      </c-mvp.card>
+    {% endif %}
+  </c-mvp.page>
+{% endblock account.content %}

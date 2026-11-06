@@ -1,0 +1,9 @@
+{# @description The Account Center card that leads to the following page: a sentence and a button. Replace it by shipping a component of the same name. #}
+{% load i18n %}
+{% url "mvp_community_activity:following" as following_url %}
+<c-mvp.card title="{% trans "Following" %}" icon="activity.following">
+  <c-mvp.text>{% trans "See everyone and everything you follow, and stop following any of it." %}</c-mvp.text>
+  <c-slot name="footer">
+    <c-button href="{{ following_url }}" variant="primary" size="sm">{% trans "Manage following" %}</c-button>
+  </c-slot>
+</c-mvp.card>
