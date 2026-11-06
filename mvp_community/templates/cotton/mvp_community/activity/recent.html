@@ -8,7 +8,9 @@
 {% load i18n activity_tags %}
 <c-vars object following verb="" limit="10" more_url="" more_text="" />
 {% if following %}
-  {% if verb %}{% activity_stream "user" request.user verb=verb as="all_actions" %}{% else %}{% activity_stream "user" request.user as="all_actions" %}{% endif %}
+  {% if request.user.is_authenticated %}
+    {% if verb %}{% activity_stream "user" request.user verb=verb as="all_actions" %}{% else %}{% activity_stream "user" request.user as="all_actions" %}{% endif %}
+  {% endif %}
 {% elif object %}
   {% if verb %}{% activity_stream "any" object verb=verb as="all_actions" %}{% else %}{% activity_stream "any" object as="all_actions" %}{% endif %}
 {% else %}
