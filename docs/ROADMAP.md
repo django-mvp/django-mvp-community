@@ -87,7 +87,7 @@ email, and someone who prefers fewer emails gets a daily or weekly digest instea
 **Deliverables:**
 - Email as a notification channel, honouring each person's preferences.
 - A daily and a weekly digest a person can choose instead of one email per notification.
-- Digest and notification emails carry the one-click unsubscribe from R2.
+- Digest and notification emails carry a one-click unsubscribe link, delivered here and not from R2.
 
 Serves G1 and G4. Out of scope: push and reminders.
 

@@ -22,11 +22,24 @@
               </thead>
               <tbody>
                 {% for row in preferences %}
-                  <tr>
+                  <tr x-data="{ email: {{ row.channels.email.enabled|yesno:'true,false' }}, frequency: '{{ row.notification_frequency }}' }" @change="if ($event.target.name.endsWith('__email')) email = $event.target.checked">
                     <th scope="row" class="font-normal">
                       <span class="font-medium">{{ row.notification_type.name }}</span>
                       {% if row.notification_type.description %}
                         <c-mvp.text muted tight size="sm" :text="row.notification_type.description" only />
+                      {% endif %}
+                      {% if frequencies|length > 1 and row.offers_frequency %}
+                        {% blocktrans asvar frequency_label with type=row.notification_type.name %}How often {{ type }} arrive by email{% endblocktrans %}
+                        <c-join class="mt-2" only>
+                          <span class="join-item input input-xs w-auto text-base-content/70" aria-hidden="true">{% trans "Email" %}</span>
+                          <c-form.select name="{{ row.notification_type.key }}__frequency" size="xs" class="join-item w-auto" aria-label="{{ frequency_label }}" x-bind:disabled="!email" x-model="frequency" only>
+                            {% for key, label in frequencies %}
+                              <option value="{{ key }}"{% if key == row.notification_frequency %} selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                          </c-form.select>
+                        </c-join>
+                        {# A disabled select is not sent, so the choice rides here while email is off. The server writes both attributes, so the form works without script too. #}
+                        <input type="hidden" name="{{ row.notification_type.key }}__frequency" value="{{ row.notification_frequency }}"{% if row.channels.email.enabled %} disabled{% endif %} x-bind:disabled="email" x-bind:value="frequency">
                       {% endif %}
                     </th>
                     {% for key, choice in row.channels.items %}

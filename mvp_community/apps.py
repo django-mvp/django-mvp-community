@@ -21,7 +21,13 @@ class MvpCommunityConfig(AppConfig):
     def ready(self):
         """Add each installed extra's Account Center entry."""
         if apps.is_installed("generic_notifications"):
-            from mvp_community.integrations.notifications import menus  # noqa: F401
+            from mvp_community.integrations.notifications import (
+                checks,  # noqa: F401
+                menus,  # noqa: F401
+                setup,
+            )
+
+            setup.configure(apps.is_installed("post_office"))
         if apps.is_installed("actstream"):
             from mvp_community.integrations.activity import (
                 menus as activity,  # noqa: F401

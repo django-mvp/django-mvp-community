@@ -1,0 +1,22 @@
+{% extends "mvp/email/base.html" %}
+{% load i18n mvp_email mvp_community_notifications %}
+{% block subject %}{% include "notifications/email/digest/subject.txt" %}{% endblock %}
+{% block preheader %}{% for n in notifications|slice:":3" %}{{ n.get_subject }}{% if not forloop.last %} · {% endif %}{% endfor %}{% endblock %}
+{% block body %}
+  <c-mvp.email.text size="lg" mb="sm" only><strong>{% include "notifications/email/digest/subject.txt" %}</strong></c-mvp.email.text>
+  {% for type_key, items in notifications_by_type.items %}
+    {% if not forloop.first %}<c-mvp.email.divider />{% endif %}
+    {% notification_type_name type_key as type_name %}
+    <c-mvp.email.note only>{{ type_name }}</c-mvp.email.note>
+    {% for n in items %}
+      <c-mvp.email.text mb="xs" only><strong>{% if n.url %}{% email_url n.url as n_url %}<a href="{{ n_url }}">{{ n.get_subject }}</a>{% else %}{{ n.get_subject }}{% endif %}</strong></c-mvp.email.text>
+      {% if n.get_text %}<c-mvp.email.text size="sm" mb="sm" only>{{ n.get_text }}</c-mvp.email.text>{% endif %}
+    {% endfor %}
+  {% endfor %}
+  {% email_url "mvp_community_notifications:list" as list_url %}
+  {% trans "See all notifications" as list_text %}
+  <c-mvp.email.button href="{{ list_url }}" text="{{ list_text }}" only />
+{% endblock %}
+{% block footer %}
+  {% include "notifications/email/unsubscribe_footer.html" with type_keys=notifications_by_type.keys %}
+{% endblock %}

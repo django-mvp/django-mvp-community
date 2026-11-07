@@ -16,6 +16,11 @@ urlpatterns = [
     path("notifications/<int:pk>/", views.OpenNotificationView.as_view(), name="open"),
     path("notifications/bell/", views.BellView.as_view(), name="bell"),
     path(
+        "notifications/unsubscribe/<str:token>/",
+        views.UnsubscribeView.as_view(),
+        name="unsubscribe",
+    ),
+    path(
         "account-center/notifications/",
         views.PreferencesView.as_view(),
         name="preferences",

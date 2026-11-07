@@ -30,6 +30,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   notification preferences page in the Account Center, all built on
   django-generic-notifications. Install it with
   `pip install "django-mvp-community[notifications]"`.
+- Notifications by email, with the `mail` extra installed: a person who chose
+  email for a type receives it in django-mvp's email layout, written in the
+  site's language (`NotificationEmailChannel.recipient_language` changes that),
+  and a weekly digest beside the daily one. Name `NotificationEmailChannel` in
+  a type's channels instead of django-generic-notifications' `EmailChannel`;
+  system check `mvp_community.E001` reports any type that does not.
+- Unsubscribing from notification email: every notification email and digest
+  carries a link, and the `List-Unsubscribe` one-click header, that opens a page
+  to turn email off for the types in that email. It works without signing in
+  and does not expire. Types the project always sends by email carry no link.
 - The `activity` extra, built on django-activity-stream: `ActivityFeedView`,
   a feed of the whole site or of one object that you mount at an address of
   your choosing, a following page in the Account Center, and components for
@@ -41,3 +51,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   translation per language. It adds no code of its own; the new Mail page
   documents the settings. Install it with
   `pip install "django-mvp-community[mail]"`.
+
+### Changed
+
+- Notification preferences no longer list django-generic-notifications'
+  "System Message" type, and without the `mail` extra installed the email
+  column is not drawn. Register your own type if you want a system message.
