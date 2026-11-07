@@ -37,7 +37,7 @@ class DemoConfig(AppConfig):
         from django.contrib.auth import get_user_model
         from django.contrib.auth.models import Group
 
-        from demo import menus, notifications  # noqa: F401
+        from demo import menus, notifications, sketch_push  # noqa: F401
 
         # Only registered models can act, be acted on or be followed.
         registry.register(get_user_model(), Group)

@@ -13,7 +13,16 @@ from demo.views import (
 )
 from mvp_community.integrations.activity.views import ActivityFeedView
 
+from demo import sketch_push
+
 urlpatterns = [
+    # Sketch only: stand-ins for turning push on and stopping a browser.
+    path("sketch/push/on/", sketch_push.TurnOnView.as_view(), name="sketch_push_on"),
+    path(
+        "sketch/push/<int:pk>/stop/",
+        sketch_push.StopView.as_view(),
+        name="sketch_push_stop",
+    ),
     path("admin/", admin.site.urls),
     path("", OverviewView.as_view(), name="overview"),
     path(

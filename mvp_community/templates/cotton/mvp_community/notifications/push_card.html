@@ -1,0 +1,53 @@
+{# @description The preferences page's push card: whether this browser receives push, the control that turns it on, and every browser of the person's that receives it, each with a button that stops it. Replace it by shipping a component of the same name. #}
+{# @prop push:object | description:"browser (offer, on, denied, unsupported or homescreen), just_turned_on, and subscriptions, each with id, name, kind, turned_on and current." #}
+{% load i18n %}
+<c-vars push />
+<c-mvp.card title="{% trans "Push notifications" %}" icon="notifications.push" only>
+  {% if push.browser == "offer" %}
+    <c-mvp.text tight only>{% trans "Get your notifications on this device as they happen, even when the site is closed. When you turn push on, your browser asks whether to allow notifications from this site." %}</c-mvp.text>
+    <form method="post" action="{% url "sketch_push_on" %}" class="hidden" x-data="{ asking: false }" x-init="$el.classList.remove('hidden')" x-ref="form">
+      {% csrf_token %}
+      <c-mvp.text muted tight size="sm" class="pb-3" x-show="asking" x-cloak role="status" only>{% trans "Your browser is asking whether to allow notifications. Choose Allow to turn push on." %}</c-mvp.text>
+      <c-button type="button" variant="primary" size="sm" x-bind:disabled="asking" x-on:click="asking = true; setTimeout(() => $refs.form.submit(), 1500)">
+        <span class="loading loading-spinner loading-xs" x-show="asking" x-cloak aria-hidden="true"></span>
+        {% trans "Turn on push for this browser" %}
+      </c-button>
+    </form>
+    <noscript>
+      <c-mvp.text muted tight size="sm" only>{% trans "Turning push on needs JavaScript in this browser." %}</c-mvp.text>
+    </noscript>
+  {% elif push.browser == "on" %}
+    {% if push.just_turned_on %}
+      <c-alert variant="success" soft role="status" icon="notifications" only>{% trans "Push is on for this browser. A test notification is on its way." %}</c-alert>
+    {% else %}
+      <c-mvp.text tight only>{% trans "Push is on for this browser. The notifications you have on for push arrive here." %}</c-mvp.text>
+    {% endif %}
+  {% elif push.browser == "denied" %}
+    <c-alert variant="warning" soft role="status" only>{% trans "Notifications from this site are blocked in this browser. To get push here, allow notifications for this site in your browser's settings, then reload this page." %}</c-alert>
+  {% elif push.browser == "homescreen" %}
+    <c-alert variant="info" soft role="status" only>{% trans "On iPhone and iPad, push only reaches the site from your Home Screen. Tap Share, choose Add to Home Screen, then open the site from there and turn push on." %}</c-alert>
+  {% else %}
+    <c-alert variant="info" soft role="status" only>{% trans "This browser can't receive push notifications. You still get your notifications on the site." %}</c-alert>
+  {% endif %}
+  {% if push.subscriptions %}
+    <h3 class="text-sm font-medium pt-4">{% trans "Browsers receiving push" %}</h3>
+    <c-list class="-mx-2" only>
+      {% for subscription in push.subscriptions %}
+        <c-list.row class="items-center px-2" only>
+          <c-icon name="notifications.push.{{ subscription.kind }}" class="text-xl text-base-content/70" aria-hidden="true" only />
+          <div class="list-col-grow min-w-0">
+            <c-mvp.text tight class="break-words" only>{{ subscription.name }}</c-mvp.text>
+            <c-mvp.text muted tight size="sm" only>
+              {% if subscription.current %}{% trans "This browser" %} · {% endif %}{% blocktrans with date=subscription.turned_on|date:"j F Y" %}Turned on {{ date }}{% endblocktrans %}
+            </c-mvp.text>
+          </div>
+          <form method="post" action="{% url "sketch_push_stop" subscription.id %}">
+            {% csrf_token %}
+            {% blocktrans asvar stop_label with name=subscription.name %}Stop push to {{ name }}{% endblocktrans %}
+            <c-button type="submit" ghost size="sm" aria-label="{{ stop_label }}" only>{% trans "Stop" %}</c-button>
+          </form>
+        </c-list.row>
+      {% endfor %}
+    </c-list>
+  {% endif %}
+</c-mvp.card>
