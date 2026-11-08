@@ -215,11 +215,11 @@ ABSOLUTE_URL_OVERRIDES = {
 # memory only, so nothing is written to disk. A restart gives a new key, which
 # retires the demo's earlier push subscriptions: the push services refuse a
 # message signed with a different key. A real project sets a key of its own.
-_vapid = Vapid01()
-_vapid.generate_keys()
+demo_push_key = Vapid01()
+demo_push_key.generate_keys()
 PUSH_NOTIFICATIONS_SETTINGS = {
     "WP_PRIVATE_KEY": b64urlencode(
-        _vapid.private_key.private_numbers().private_value.to_bytes(32, "big")
+        demo_push_key.private_key.private_numbers().private_value.to_bytes(32, "big")
     ),
     "WP_CLAIMS": {"sub": "mailto:admin@example.com"},
 }

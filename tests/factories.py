@@ -1,5 +1,7 @@
 """Factories for the suite's models."""
 
+import base64
+
 import factory
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -29,3 +31,27 @@ class GroupFactory(factory.django.DjangoModelFactory):
         model = Group
 
     name = factory.Sequence(lambda n: f"Group {n}")
+
+
+def urlsafe(data):
+    """Encode bytes as a browser's push manager does: URL-safe, unpadded."""
+    return base64.urlsafe_b64encode(data).decode().rstrip("=")
+
+
+# The shapes a browser sends: an uncompressed P-256 point and a 16-byte secret.
+P256DH = urlsafe(b"\x04" + bytes(range(64)))
+AUTH = urlsafe(bytes(range(16)))
+
+
+class PushSubscriptionFactory(factory.django.DjangoModelFactory):
+    """One browser a person turned push on in."""
+
+    class Meta:
+        model = "push_notifications.WebPushDevice"
+
+    user = factory.SubFactory(UserFactory)
+    registration_id = factory.Sequence(
+        lambda n: f"https://fcm.googleapis.com/fcm/send/subscription-{n}"
+    )
+    p256dh = P256DH
+    auth = AUTH

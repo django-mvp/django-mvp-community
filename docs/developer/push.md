@@ -43,7 +43,17 @@ Install the extra, add the app, set the signing key, include the URLs and create
    }
    ```
 
-5. Include the push URLs at the root, beside the notifications URLs. Their routes are listed under [Pages and routes](#pages-and-routes).
+5. Include the push URLs at the root, beside the notifications URLs. Their routes are listed under [Pages and routes](#pages-and-routes):
+
+   ```python
+   from django.urls import include, path
+
+   urlpatterns = [
+       # ...
+       path("", include("mvp_community.integrations.notifications.urls")),
+       path("", include("mvp_community.integrations.push.urls")),
+   ]
+   ```
 
 6. Create django-push-notifications' tables:
 
@@ -108,7 +118,7 @@ The push routes are included at the root, with the namespace `mvp_community_push
 | `subscribe` | `notifications/push/subscribe/` | Stores a browser's subscription for the signed-in person and sends a test push. |
 | `stop` | `notifications/push/<pk>/stop/` | Deletes one of the signed-in person's own subscriptions. |
 
-The views behind the routes are `WorkerView`, `SubscribeView` and `StopView` in `mvp_community.integrations.push.views`. `SubscribeView` reads the JSON a browser's push manager produces and answers 204, or 400 with nothing stored when the endpoint, the `p256dh` key or the `auth` secret is missing or too long. It accepts an endpoint only when `is_push_endpoint` in `mvp_community.integrations.push.subscriptions` says it is on a push service the major browsers use: `fcm.googleapis.com`, `updates.push.services.mozilla.com`, `web.push.apple.com`, or a host ending in `.notify.windows.com` or `.push.apple.com`. Anything else is refused, so a signed-in person cannot make your server post to an address of their choosing.
+The views behind the routes are `WorkerView`, `SubscribeView` and `StopView` in `mvp_community.integrations.push.views`. `SubscribeView` reads the JSON a browser's push manager produces and answers 204, or 400 with nothing stored when the endpoint, the `p256dh` key or the `auth` secret is missing or malformed. The key must decode to 65 bytes and the secret to 16. When the browser had to drop a subscription made with an earlier key, it sends that endpoint as `previous`, and the person's row for it is deleted. It accepts an endpoint only when `is_push_endpoint` in `mvp_community.integrations.push.subscriptions` says it is on a push service the major browsers use: `fcm.googleapis.com`, `updates.push.services.mozilla.com`, `web.push.apple.com`, or a host ending in `.notify.windows.com` or `.push.apple.com`. An endpoint longer than 1024 characters, or whose host is anything but a plain DNS name, is refused as well. Anything else is refused, so a signed-in person cannot make your server post to an address of their choosing.
 
 `Browser.from_user_agent` in the same module reads a browser's `family`, `place` and `kind` (`phone`, `tablet` or `computer`) from a user agent string, and its `label` is the translated name, such as "Chrome on Android".
 
@@ -120,7 +130,7 @@ Production servers usually do not run system checks on start. Run `python manage
 
 ## Replace the key pair
 
-A subscription is tied to the key that was current when the browser subscribed. Push services refuse a message signed with a different key, so replacing `WP_PRIVATE_KEY` retires every existing subscription at once. People keep their other channels, and have to turn push on again from the preferences page. Replace the key only when you have to, such as after it leaks.
+A subscription is tied to the key that was current when the browser subscribed. Push services refuse a message signed with a different key, so replacing `WP_PRIVATE_KEY` retires every existing subscription at once. People keep their other channels. On their next visit the preferences page offers to turn push on again in each browser, and turning it on replaces the browser's old subscription and removes it from their list. Replace the key only when you have to, such as after it leaks.
 
 ## Write push in the person's language
 

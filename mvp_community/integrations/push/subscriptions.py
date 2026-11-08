@@ -1,5 +1,6 @@
 """What the preferences page needs to draw the push card."""
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -20,6 +21,9 @@ ALLOWED_PUSH_HOSTS = (
 )
 ALLOWED_PUSH_SUFFIXES = (".notify.windows.com", ".push.apple.com")
 SESSION_KEY = "mvp_community_push_turned_on"
+ENDPOINT_LENGTH = 1024
+PLAIN_HOST = re.compile(r"[a-z0-9.-]+")
+PLAIN_URL = re.compile(r"[\x21-\x7e]+")
 HANDHELD_DEVICES = {"iPhone": "phone", "iPad": "tablet"}
 
 
@@ -51,8 +55,11 @@ def is_push_endpoint(url):
         url: The endpoint a browser sent.
 
     Returns:
-        True for an ``https://`` URL on one of the allowed push services.
+        True for an ``https://`` URL of at most ``ENDPOINT_LENGTH``
+        characters, with a plain DNS host on one of the allowed push services.
     """
+    if len(url) > ENDPOINT_LENGTH or not PLAIN_URL.fullmatch(url) or "\\" in url:
+        return False
     try:
         parts = urlsplit(url)
         host = parts.hostname
@@ -60,6 +67,10 @@ def is_push_endpoint(url):
     except ValueError:
         return False
     if parts.scheme != "https" or parts.username or parts.password or not host:
+        return False
+    # A host the URL parser and the HTTP client could read differently is
+    # never compared: only a plain DNS name is.
+    if not PLAIN_HOST.fullmatch(host):
         return False
     return host in ALLOWED_PUSH_HOSTS or host.endswith(ALLOWED_PUSH_SUFFIXES)
 

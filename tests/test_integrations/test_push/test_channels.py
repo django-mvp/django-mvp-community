@@ -16,19 +16,12 @@ from push_notifications.models import WebPushDevice
 
 from demo.notifications import ReplyReceived
 from mvp_community.integrations.push.channels import PushChannel
-from tests.factories import UserFactory
+from tests.factories import PushSubscriptionFactory, UserFactory
 
 
 def subscribe(user, endpoint, **fields):
     """Store a push subscription for ``user``."""
-    return WebPushDevice.objects.create(
-        user=user,
-        registration_id=endpoint,
-        p256dh="p256dh-key",
-        auth="auth-secret",
-        browser="CHROME",
-        **fields,
-    )
+    return PushSubscriptionFactory(user=user, registration_id=endpoint, **fields)
 
 
 @pytest.fixture

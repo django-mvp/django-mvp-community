@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
 from generic_notifications.registry import registry
@@ -21,6 +22,7 @@ from mvp_community.integrations.push.subscriptions import (
     card_context,
     is_push_endpoint,
 )
+from tests.factories import PushSubscriptionFactory, UserFactory
 
 OVERRIDES = Path(__file__).resolve().parent.parent.parent / "templates" / "overrides"
 PREFERENCES_URL = reverse("mvp_community_notifications:preferences")
@@ -28,14 +30,7 @@ PREFERENCES_URL = reverse("mvp_community_notifications:preferences")
 
 def subscribe(user, endpoint, **fields):
     """Store a push subscription for ``user``."""
-    return WebPushDevice.objects.create(
-        user=user,
-        registration_id=endpoint,
-        p256dh="p256dh-key",
-        auth="auth-secret",
-        browser="CHROME",
-        **fields,
-    )
+    return PushSubscriptionFactory(user=user, registration_id=endpoint, **fields)
 
 
 @pytest.fixture
@@ -189,7 +184,8 @@ class TestPreferencesWithPush:
     def test_no_row_when_there_are_no_subscriptions(self, client, signed_in) -> None:
         page = client.get(PREFERENCES_URL).content.decode()
 
-        assert "/stop/" not in page
+        assert 'data-endpoint="' not in page
+        assert '<ul class="list ' not in page
 
 
 class TestCardContext:
@@ -346,7 +342,50 @@ class TestPushEndpoint:
             "https://user@fcm.googleapis.com@example.org/abc",
             "notaurl",
             "",
+            "https://127.0.0.1\\.push.apple.com/x",
+            "https://fcm.googleapis.com\\@127.0.0.1/x",
+            "https://127.0.0.1/x",
+            "https://[::1].push.apple.com/x",
+            "https://fcm.googleapis.com/send/a b",
+            "https://xn--fcm.googleapis.com/abc" + "a" * 1024,
         ],
     )
     def test_anything_else_is_refused(self, url) -> None:
         assert not is_push_endpoint(url)
+
+
+@pytest.mark.django_db(transaction=True)
+class TestPushCardInABrowser:
+    # Only what a real browser can show belongs here. The live server answers
+    # on localhost, which browsers treat as secure, so push is supported.
+
+    def test_the_card_offers_to_turn_push_on(
+        self, chromium, live_server, page, client
+    ) -> None:
+        person = UserFactory()
+        client.force_login(person)
+        page.context.add_cookies(
+            [
+                {
+                    "name": settings.SESSION_COOKIE_NAME,
+                    "value": client.cookies[settings.SESSION_COOKIE_NAME].value,
+                    "url": live_server.url,
+                }
+            ]
+        )
+
+        # Playwright's headless browser reports notifications as refused
+        # whatever is granted, so the page sees a browser that has not been
+        # asked yet, as a person's would.
+        page.add_init_script(
+            "Object.defineProperty(Notification, 'permission', {get: () => 'default'})"
+        )
+
+        page.goto(live_server.url + PREFERENCES_URL)
+
+        state = page.wait_for_function(
+            "() => document.querySelector('[x-data=mvpCommunityPush]')"
+            "?._x_dataStack?.[0]?.state",
+            timeout=10000,
+        )
+        assert state.json_value() == "offer"

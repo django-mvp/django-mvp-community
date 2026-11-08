@@ -1,5 +1,7 @@
 """The views that turn push on for a browser."""
 
+import base64
+import binascii
 import json
 
 from django.contrib import messages
@@ -13,14 +15,29 @@ from django.utils.translation import gettext as _
 from django.views import View
 from django.views.decorators.cache import cache_control
 from django.views.generic import TemplateView
+from generic_notifications.registry import registry
 from push_notifications.models import WebPushDevice
 
-from .channels import PushChannel
 from .subscriptions import SESSION_KEY, Browser, is_push_endpoint
 
 NAME_LENGTH = 255
-P256DH_LENGTH = 88
-AUTH_LENGTH = 24
+P256DH_BYTES = 65
+AUTH_BYTES = 16
+
+
+def decoded_length(value):
+    """Count the bytes a URL-safe base64 string decodes to.
+
+    Args:
+        value: The string a browser sent.
+
+    Returns:
+        The number of bytes, or None when the string is not URL-safe base64.
+    """
+    try:
+        return len(base64.urlsafe_b64decode(value + "=" * (-len(value) % 4)))
+    except (binascii.Error, ValueError):
+        return None
 
 
 @method_decorator(
@@ -51,8 +68,10 @@ class SubscribeView(LoginRequiredMixin, View):
             request: The POST request carrying the browser's JSON.
 
         Returns:
-            A tuple of the endpoint, the ``p256dh`` key and the ``auth``
-            secret, or None when anything is missing, too long or not accepted.
+            A tuple of the endpoint, the ``p256dh`` key, the ``auth`` secret and
+            the ``previous`` endpoint the browser dropped (an empty string when
+            there is none), or None when anything is missing, malformed or not
+            accepted.
         """
         try:
             data = json.loads(request.body)
@@ -67,17 +86,23 @@ class SubscribeView(LoginRequiredMixin, View):
             isinstance(value, str) and value for value in (endpoint, p256dh, auth)
         ):
             return None
-        if len(p256dh) > P256DH_LENGTH or len(auth) > AUTH_LENGTH:
+        if decoded_length(p256dh) != P256DH_BYTES:
+            return None
+        if decoded_length(auth) != AUTH_BYTES:
             return None
         if not is_push_endpoint(endpoint):
             return None
-        return endpoint, p256dh, auth
+        previous = data.get("previous") or ""
+        if not isinstance(previous, str):
+            return None
+        return endpoint, p256dh, auth, previous
 
     def post(self, request):
         """Store the subscription, remember it for the card and send a test.
 
         One row is kept for each person and endpoint, so turning push on again
-        in the same browser updates it.
+        in the same browser updates it. When the browser dropped a subscription
+        made with an earlier key, the person's row for it is deleted.
 
         Args:
             request: The POST request carrying the browser's JSON.
@@ -88,7 +113,11 @@ class SubscribeView(LoginRequiredMixin, View):
         fields = self.read(request)
         if fields is None:
             return HttpResponseBadRequest()
-        endpoint, p256dh, auth = fields
+        endpoint, p256dh, auth, previous = fields
+        if previous and previous != endpoint:
+            WebPushDevice.objects.filter(
+                user=request.user, registration_id=previous
+            ).delete()
         subscription = WebPushDevice.objects.update_or_create(
             user=request.user,
             registration_id=endpoint,
@@ -100,7 +129,7 @@ class SubscribeView(LoginRequiredMixin, View):
             },
         )[0]
         request.session[SESSION_KEY] = True
-        PushChannel().send_test(subscription)
+        registry.get_channel("push")().send_test(subscription)
         return HttpResponse(status=204)
 
 

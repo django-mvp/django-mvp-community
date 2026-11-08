@@ -8,7 +8,11 @@ import pytest
 import requests
 from django.contrib.messages import get_messages
 from django.urls import reverse
+from generic_notifications.registry import registry
 from push_notifications.models import WebPushDevice
+
+from mvp_community.integrations.push.channels import PushChannel
+from tests.factories import AUTH, P256DH, PushSubscriptionFactory, urlsafe
 
 SUBSCRIBE_URL = "/notifications/push/subscribe/"
 OVERRIDES = Path(__file__).resolve().parent.parent.parent / "templates" / "overrides"
@@ -28,9 +32,12 @@ def sent(monkeypatch):
     return sends
 
 
-def body(endpoint=ENDPOINT, **keys):
-    keys = {"p256dh": "p256dh-key", "auth": "auth-secret"} | keys
-    return json.dumps({"endpoint": endpoint, "keys": keys})
+def body(endpoint=ENDPOINT, previous=None, **keys):
+    keys = {"p256dh": P256DH, "auth": AUTH} | keys
+    data = {"endpoint": endpoint, "keys": keys}
+    if previous is not None:
+        data["previous"] = previous
+    return json.dumps(data)
 
 
 def post(client, data, user_agent=USER_AGENT):
@@ -64,8 +71,8 @@ class TestSubscribeView:
         subscription = WebPushDevice.objects.get()
         assert subscription.user == signed_in
         assert subscription.registration_id == ENDPOINT
-        assert subscription.p256dh == "p256dh-key"
-        assert subscription.auth == "auth-secret"
+        assert subscription.p256dh == P256DH
+        assert subscription.auth == AUTH
         assert subscription.active
         assert subscription.name == USER_AGENT
         assert [endpoint for endpoint, _ in sent] == [ENDPOINT]
@@ -85,10 +92,11 @@ class TestSubscribeView:
     ) -> None:
         post(client, body())
         WebPushDevice.objects.update(active=False)
-        post(client, body(auth="new-auth"))
+        new_auth = urlsafe(bytes(range(16, 32)))
+        post(client, body(auth=new_auth))
 
         subscription = WebPushDevice.objects.get()
-        assert subscription.auth == "new-auth"
+        assert subscription.auth == new_auth
         assert subscription.active
 
     def test_the_same_endpoint_from_another_person_is_a_second_row(
@@ -118,8 +126,11 @@ class TestSubscribeView:
             json.dumps({"endpoint": ENDPOINT, "keys": {"auth": "a"}}),
             json.dumps({"endpoint": ENDPOINT, "keys": "a"}),
             json.dumps({"endpoint": 5, "keys": {"p256dh": "a", "auth": "b"}}),
-            body(p256dh="x" * 89),
-            body(auth="x" * 25),
+            body(p256dh=urlsafe(bytes(64))),
+            body(p256dh="not base64!"),
+            body(auth=urlsafe(bytes(17))),
+            body(auth="?"),
+            body(previous=5),
             body(endpoint="https://example.org/push"),
             body(endpoint="http://fcm.googleapis.com/fcm/send/abc"),
         ],
@@ -189,13 +200,7 @@ class TestStopView:
         return client.post(reverse("mvp_community_push:stop", args=[pk]))
 
     def subscription(self, user, endpoint=ENDPOINT, name=USER_AGENT):
-        return WebPushDevice.objects.create(
-            user=user,
-            registration_id=endpoint,
-            p256dh="p256dh-key",
-            auth="auth-secret",
-            name=name,
-        )
+        return PushSubscriptionFactory(user=user, registration_id=endpoint, name=name)
 
     def test_the_route_is_where_the_card_expects_it(self) -> None:
         assert (
@@ -252,3 +257,43 @@ class TestStopView:
 
         assert response.status_code == 405
         assert WebPushDevice.objects.filter(pk=subscription.pk).exists()
+
+
+class TestSubscribeViewReplacingAnOldSubscription:
+    # A browser whose subscription was made with an earlier key drops it and
+    # sends its endpoint as ``previous``.
+    OLD = "https://fcm.googleapis.com/fcm/send/old"
+
+    def test_the_person_s_row_for_the_old_endpoint_is_deleted(
+        self, client, signed_in, sent
+    ) -> None:
+        PushSubscriptionFactory(user=signed_in, registration_id=self.OLD)
+
+        post(client, body(previous=self.OLD))
+
+        endpoints = WebPushDevice.objects.values_list("registration_id", flat=True)
+        assert list(endpoints) == [ENDPOINT]
+
+    def test_another_person_s_row_for_it_is_kept(self, client, signed_in, sent) -> None:
+        other = PushSubscriptionFactory(registration_id=self.OLD)
+
+        post(client, body(previous=self.OLD))
+
+        assert WebPushDevice.objects.filter(pk=other.pk).exists()
+
+
+class TestSubscribeViewUsesTheRegisteredChannel:
+    def test_a_project_s_push_channel_sends_the_test(
+        self, client, signed_in, monkeypatch
+    ) -> None:
+        tested = []
+
+        class ProjectPushChannel(PushChannel):
+            def send_test(self, subscription):
+                tested.append(subscription.registration_id)
+
+        monkeypatch.setitem(registry._channel_classes, "push", ProjectPushChannel)
+
+        post(client, body())
+
+        assert tested == [ENDPOINT]

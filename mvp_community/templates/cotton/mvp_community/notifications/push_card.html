@@ -101,7 +101,7 @@
           }
           const registration = await this.registration();
           const subscription = await registration.pushManager.getSubscription();
-          this.endpoint = subscription ? subscription.endpoint : "";
+          this.endpoint = subscription && this.madeWithThisKey(subscription) ? subscription.endpoint : "";
           const listed = [...this.$root.querySelectorAll("[data-endpoint]")].some(
             (row) => row.dataset.endpoint === this.endpoint,
           );
@@ -115,6 +115,17 @@
           const raw = atob(padded.replace(/-/g, "+").replace(/_/g, "/"));
           return Uint8Array.from(raw, (character) => character.charCodeAt(0));
         },
+        madeWithThisKey(subscription) {
+          // A subscription made before the site's key was replaced can no longer
+          // receive push, so it counts as none.
+          const key = subscription.options && subscription.options.applicationServerKey;
+          const current = this.applicationServerKey();
+          if (!key) {
+            return false;
+          }
+          const bytes = new Uint8Array(key);
+          return bytes.length === current.length && bytes.every((byte, index) => byte === current[index]);
+        },
         async turnOn() {
           this.asking = true;
           try {
@@ -124,8 +135,15 @@
               return;
             }
             const registration = await this.registration();
+            let existing = await registration.pushManager.getSubscription();
+            let previous = "";
+            if (existing && !this.madeWithThisKey(existing)) {
+              previous = existing.endpoint;
+              await existing.unsubscribe();
+              existing = null;
+            }
             const subscription =
-              (await registration.pushManager.getSubscription()) ||
+              existing ||
               (await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: this.applicationServerKey(),
@@ -137,14 +155,13 @@
                 "Content-Type": "application/json",
                 "X-CSRFToken": this.$root.querySelector("[name=csrfmiddlewaretoken]").value,
               },
-              body: JSON.stringify(subscription.toJSON()),
+              body: JSON.stringify({ ...subscription.toJSON(), previous }),
             });
             if (!response.ok) {
               throw new Error("The subscription was not stored.");
             }
             window.location.reload();
           } catch (error) {
-            console.error(error);
             this.state = Notification.permission === "denied" ? "denied" : "offer";
           } finally {
             this.asking = false;

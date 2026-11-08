@@ -115,3 +115,29 @@ Found at convergence: the unused second value of `update_or_create` was bound to
 **Files**: `mvp_community/templates/cotton/mvp_community/notifications/push_card.html`
 
 Found in the browser check: the script waited on `navigator.serviceWorker.ready`, which resolves only for a worker whose scope covers the page. The push worker's scope is below the preferences page, so the card never chose a state. The script now waits for its own registration's worker to activate, and logs a failure to turn push on to the console.
+
+## Review fixes
+
+- [ ] T014 [US2] Accept only plain push-service endpoints and well-formed keys
+
+**Files**: `mvp_community/integrations/push/subscriptions.py`, `mvp_community/integrations/push/views.py`, `tests/test_integrations/test_push/test_subscriptions.py`, `tests/test_integrations/test_push/test_views.py`, `tests/factories.py`
+
+A backslash in the host passed the endpoint check while the HTTP client connected elsewhere. Endpoints are now refused unless their host is a plain DNS name, the URL holds only printable ASCII without a backslash, and it is at most 1024 characters. The `p256dh` key must decode to 65 bytes and the `auth` secret to 16.
+
+- [ ] T015 [US2] Turning push on again after the site's key was replaced
+
+**Files**: `mvp_community/templates/cotton/mvp_community/notifications/push_card.html`, `mvp_community/integrations/push/views.py`, `docs/developer/push.md`, `tests/test_integrations/test_push/test_views.py`
+
+A browser subscription made with an earlier key counts as none: the card offers push, and turning it on unsubscribes the old one, subscribes with the current key and sends the old endpoint as `previous`, whose row the view deletes for that person.
+
+- [ ] T016 [US2] A browser test that the push card chooses a state
+
+**Files**: `tests/test_integrations/test_push/test_subscriptions.py`
+
+Guards T013: on the live server the card reaches the offer state; with the old wait on `serviceWorker.ready` it never does.
+
+- [ ] T017 [US1] Smaller review points
+
+**Files**: `mvp_community/integrations/push/views.py`, `docs/developer/push.md`, `demo/settings.py`, `tests/factories.py`, `tests/test_integrations/test_push/test_channels.py`, `tests/test_integrations/test_push/test_subscriptions.py`, `tests/test_integrations/test_push/test_views.py`
+
+The test push goes through the registered push channel, so a project's subclass applies; the guide shows the URL include; the demo's key variable has no leading underscore; push subscriptions in the tests come from one factory; the empty-list test fails when the guard is removed.
