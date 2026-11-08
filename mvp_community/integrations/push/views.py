@@ -2,17 +2,21 @@
 
 import json
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseBadRequest
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.utils.decorators import method_decorator
+from django.utils.translation import gettext as _
 from django.views import View
 from django.views.decorators.cache import cache_control
 from django.views.generic import TemplateView
 from push_notifications.models import WebPushDevice
 
 from .channels import PushChannel
-from .subscriptions import SESSION_KEY, is_push_endpoint
+from .subscriptions import SESSION_KEY, Browser, is_push_endpoint
 
 NAME_LENGTH = 255
 P256DH_LENGTH = 88
@@ -98,3 +102,32 @@ class SubscribeView(LoginRequiredMixin, View):
         request.session[SESSION_KEY] = True
         PushChannel().send_test(subscription)
         return HttpResponse(status=204)
+
+
+class StopView(LoginRequiredMixin, View):
+    """Stop push to one of the signed-in person's browsers."""
+
+    http_method_names = ["post", "options"]
+    raise_exception = True
+
+    def post(self, request, pk):
+        """Delete the subscription and go back to the preferences page.
+
+        Another person's subscription is a 404 and changes nothing. The
+        browser's own push subscription is left alone, because a browser shared
+        by two people has one endpoint for both.
+
+        Args:
+            request: The POST request from the row's Stop button.
+            pk: The id of the subscription to stop.
+
+        Returns:
+            A redirect to the notification preferences page.
+        """
+        subscription = get_object_or_404(WebPushDevice, pk=pk, user=request.user)
+        label = Browser.from_user_agent(subscription.name).label
+        subscription.delete()
+        messages.success(
+            request, _("Push to %(browser)s is stopped.") % {"browser": label}
+        )
+        return redirect(reverse("mvp_community_notifications:preferences"))

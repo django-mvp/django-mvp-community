@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from django.urls import include, path, reverse
+from django.urls import reverse
 from django.utils import timezone
 from generic_notifications.registry import registry
 from push_notifications.models import WebPushDevice
@@ -21,39 +21,9 @@ from mvp_community.integrations.push.subscriptions import (
     card_context,
     is_push_endpoint,
 )
-from mvp_community.integrations.push.views import SubscribeView, WorkerView
-from tests.urls import urlpatterns as suite_urlpatterns
 
 OVERRIDES = Path(__file__).resolve().parent.parent.parent / "templates" / "overrides"
 PREFERENCES_URL = reverse("mvp_community_notifications:preferences")
-
-
-def route(request):
-    """Stand in for a push view, which later tasks add."""
-    raise NotImplementedError
-
-
-push_urlpatterns = (
-    [
-        path("worker.js", WorkerView.as_view(), name="worker"),
-        path("subscribe/", SubscribeView.as_view(), name="subscribe"),
-        path("<int:pk>/stop/", route, name="stop"),
-    ],
-    "mvp_community_push",
-)
-
-# First, because the demo's own push routes share the namespace and the first
-# include in a urlconf is the one a name reverses to.
-urlpatterns = [
-    path("notifications/push/", include(push_urlpatterns)),
-    *suite_urlpatterns,
-]
-
-
-@pytest.fixture
-def with_push_urls(settings):
-    """Serve the routes the push views will own, as stand-ins."""
-    settings.ROOT_URLCONF = __name__
 
 
 def subscribe(user, endpoint, **fields):
@@ -92,7 +62,6 @@ class TestPreferencesWithoutPush:
         assert all("push" not in row["channels"] for row in context["preferences"])
 
 
-@pytest.mark.usefixtures("with_push_urls")
 class TestPreferencesWithPush:
     def test_the_page_has_a_push_card_and_a_push_column(
         self, client, signed_in
@@ -225,7 +194,7 @@ class TestPreferencesWithPush:
 
 class TestCardContext:
     def test_it_carries_the_subscriptions_and_the_two_urls_only(
-        self, rf, person, with_push_urls
+        self, rf, person
     ) -> None:
         request = rf.get(PREFERENCES_URL)
         request.user = person

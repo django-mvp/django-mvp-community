@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 import requests
+from django.contrib.messages import get_messages
 from django.urls import reverse
 from push_notifications.models import WebPushDevice
 
@@ -181,3 +182,73 @@ class TestWorkerView:
         response = client.get(reverse("mvp_community_push:worker"))
 
         assert response.content.decode().strip() == "// project worker"
+
+
+class TestStopView:
+    def stop(self, client, pk):
+        return client.post(reverse("mvp_community_push:stop", args=[pk]))
+
+    def subscription(self, user, endpoint=ENDPOINT, name=USER_AGENT):
+        return WebPushDevice.objects.create(
+            user=user,
+            registration_id=endpoint,
+            p256dh="p256dh-key",
+            auth="auth-secret",
+            name=name,
+        )
+
+    def test_the_route_is_where_the_card_expects_it(self) -> None:
+        assert (
+            reverse("mvp_community_push:stop", args=[7])
+            == "/notifications/push/7/stop/"
+        )
+
+    def test_it_deletes_the_persons_own_subscription_and_returns_to_preferences(
+        self, client, signed_in
+    ) -> None:
+        subscription = self.subscription(signed_in)
+
+        response = self.stop(client, subscription.pk)
+
+        assert not WebPushDevice.objects.filter(pk=subscription.pk).exists()
+        assert response.status_code == 302
+        assert response.url == reverse("mvp_community_notifications:preferences")
+
+    def test_the_message_names_the_browser_by_its_label(
+        self, client, signed_in
+    ) -> None:
+        subscription = self.subscription(signed_in)
+
+        response = self.stop(client, subscription.pk)
+
+        (message,) = get_messages(response.wsgi_request)
+        assert "Firefox on Linux" in str(message)
+
+    def test_another_persons_subscription_is_a_404_and_is_kept(
+        self, client, signed_in, django_user_model
+    ) -> None:
+        stranger = django_user_model.objects.create_user("stranger")
+        theirs = self.subscription(stranger)
+
+        response = self.stop(client, theirs.pk)
+
+        assert response.status_code == 404
+        assert WebPushDevice.objects.filter(pk=theirs.pk).exists()
+
+    def test_signed_out_changes_nothing(self, client, db, person) -> None:
+        subscription = self.subscription(person)
+
+        response = self.stop(client, subscription.pk)
+
+        assert response.status_code in (302, 403)
+        assert WebPushDevice.objects.filter(pk=subscription.pk).exists()
+
+    def test_a_get_is_refused_and_changes_nothing(self, client, signed_in) -> None:
+        subscription = self.subscription(signed_in)
+
+        response = client.get(
+            reverse("mvp_community_push:stop", args=[subscription.pk])
+        )
+
+        assert response.status_code == 405
+        assert WebPushDevice.objects.filter(pk=subscription.pk).exists()

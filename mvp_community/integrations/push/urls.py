@@ -15,4 +15,5 @@ urlpatterns = [
     path(
         "notifications/push/subscribe/", views.SubscribeView.as_view(), name="subscribe"
     ),
+    path("notifications/push/<int:pk>/stop/", views.StopView.as_view(), name="stop"),
 ]
