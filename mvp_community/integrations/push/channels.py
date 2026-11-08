@@ -65,6 +65,39 @@ class PushChannel(BaseChannel):
                 }
             )
 
+    def deliver(self, subscription, payload):
+        """Send one payload to one subscription, never raising.
+
+        A subscription the push service refuses, or cannot be reached, is
+        logged and skipped, so one browser never stops the others.
+
+        Args:
+            subscription: The ``WebPushDevice`` to send to.
+            payload: The JSON string to send.
+        """
+        try:
+            subscription.send_message(payload)
+        except (WebPushError, requests.RequestException):
+            logger.warning(
+                "Push to subscription %s failed.", subscription.pk, exc_info=True
+            )
+
+    def send_test(self, subscription):
+        """Send the push that tells a person it is on for their browser.
+
+        Args:
+            subscription: The ``WebPushDevice`` that was just turned on.
+        """
+        with translation.override(self.recipient_language(subscription.user)):
+            payload = json.dumps(
+                {
+                    "title": str(_("Push notifications")),
+                    "body": str(_("Push is on for this browser.")),
+                    "url": reverse("mvp_community_notifications:preferences"),
+                }
+            )
+        self.deliver(subscription, payload)
+
     def send_now(self, notification):
         """Send one notification to each active subscription of its recipient.
 
@@ -79,9 +112,4 @@ class PushChannel(BaseChannel):
             user=notification.recipient, active=True
         )
         for subscription in subscriptions:
-            try:
-                subscription.send_message(payload)
-            except (WebPushError, requests.RequestException):
-                logger.warning(
-                    "Push to subscription %s failed.", subscription.pk, exc_info=True
-                )
+            self.deliver(subscription, payload)

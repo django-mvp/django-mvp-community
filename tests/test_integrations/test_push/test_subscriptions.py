@@ -18,6 +18,7 @@ from mvp_community.integrations.push.subscriptions import (
     card_context,
     is_push_endpoint,
 )
+from mvp_community.integrations.push.views import SubscribeView
 from tests.urls import urlpatterns as suite_urlpatterns
 
 PREFERENCES_URL = reverse("mvp_community_notifications:preferences")
@@ -31,7 +32,7 @@ def route(request):
 push_urlpatterns = (
     [
         path("worker.js", route, name="worker"),
-        path("subscribe/", route, name="subscribe"),
+        path("subscribe/", SubscribeView.as_view(), name="subscribe"),
         path("<int:pk>/stop/", route, name="stop"),
     ],
     "mvp_community_push",
