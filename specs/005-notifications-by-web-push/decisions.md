@@ -121,3 +121,38 @@ holds, with py-vapid. There is no setting for it.
 pages.
 **Why:** a worker must come from the site's origin, and a template keeps it overridable (G3).
 Push and notification clicks reach a registration whatever its scope.
+
+## D16 — A subscription stores the user agent, and its name is read when the page is drawn
+
+**Decision:** `WebPushDevice.name` holds the request's user agent. The list reads the browser's
+family, where it runs and the kind of device from it with ua-parser each time the page is drawn,
+and words the label in the reader's language.
+**Why:** a label stored once, in the language of the request that turned push on, cannot be
+translated for whoever reads the list (FR-019), and the device kind would have to be guessed back
+from a sentence.
+**ADR:** none — local to this feature's list.
+
+## D17 — Only the push services browsers use are accepted as endpoints
+
+**Decision:** the subscribe view refuses an endpoint whose host is not Google's, Mozilla's,
+Apple's or Microsoft's push service.
+**Why:** the server posts to every stored endpoint on every notification. Any address would let a
+signed-in person make the server send requests where they choose, and stall other people's
+requests with addresses that never answer.
+**ADR:** none — a validation rule of one view, documented on the push page.
+
+## D18 — Stopping the browser in use leaves the browser's own subscription alone
+
+**Decision:** Stop deletes the person's row and nothing more. No script unsubscribes the browser.
+**Why:** two people sharing a browser share its endpoint, so unsubscribing it would stop the other
+person's push too. The page then offers to turn push on again in that browser.
+**ADR:** none — follows from the spec's shared-browser edge case.
+
+## Rulings at the design review
+
+Three high findings were applied to the plan: the system check reads the library's own settings
+dict and tests for an empty value (D14's check); endpoints are restricted to push services (D17);
+the browser helpers became one `Browser` class (D16). Medium and low findings were applied as plan
+edits as well: request errors are caught per subscription, the public key is not cached, the
+`browser` field keeps its default, Stop runs no script (D18), and tests were added for the
+registration without the package, the card's override and a digest preference.

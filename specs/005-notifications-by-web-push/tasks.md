@@ -18,9 +18,9 @@ Issue: #30. Delivers FR-001 to FR-007, FR-017 to FR-019.
 
 - [ ] T001 [US1] The `push` extra, the integration module's set-up and the demo's push configuration
 
-**Files**: `pyproject.toml`, `uv.lock`, `mvp_community/apps.py`, `mvp_community/integrations/push/__init__.py`, `mvp_community/integrations/push/setup.py`, `mvp_community/integrations/push/channels.py`, `mvp_community/integrations/push/checks.py`, `demo/settings.py`, `demo/urls.py`, `demo/apps.py`, `demo/sketch_push.py` (deleted), `.gitignore`, `tests/test_integrations/test_push/__init__.py`, `tests/test_integrations/test_push/test_setup.py`, `tests/test_integrations/test_notifications/test_views.py` (fixture `without_mail` only)
+**Files**: `pyproject.toml`, `uv.lock`, `mvp_community/apps.py`, `mvp_community/integrations/push/__init__.py`, `mvp_community/integrations/push/setup.py`, `mvp_community/integrations/push/channels.py`, `mvp_community/integrations/push/checks.py`, `demo/settings.py`, `demo/urls.py`, `demo/apps.py`, `demo/sketch_push.py` (deleted), `.gitignore`, `tests/test_integrations/test_push/__init__.py`, `tests/test_integrations/test_push/test_setup.py`, `tests/test_integrations/test_push/test_checks.py`, `tests/test_apps.py` (one new test), `tests/test_integrations/test_notifications/test_views.py` (fixture `without_mail` only)
 
-Plan, *The extra*, *Set-up*, *System check*, *The demo* (without `seed_push`). `PushChannel` with its class attributes and an empty `send_now`. Tests 1 and 3. The sketch's stand-ins are removed in this task.
+Plan, *The extra*, *Set-up*, *System check*, *The demo* (without `seed_push`, the key generated in memory). `PushChannel` with its class attributes and an empty `send_now`. Tests 1 and 3. The sketch's stand-ins are removed in this task.
 
 - [ ] T002 [US1] The channel sends each notification to every active subscription of its recipient
 
@@ -34,7 +34,7 @@ Plan, *The channel*, `recipient_language`, `payload` and `send_now`. Test 4.
 
 **Files**: `mvp_community/integrations/notifications/views.py`, `mvp_community/integrations/push/subscriptions.py`, `mvp_community/templates/mvp_community/notifications/preferences.html`, `tests/test_integrations/test_push/test_preferences.py`
 
-Plan, *The preferences page*, with `card_context` returning the active subscriptions and the public key. Test 2. The card renders from real context; the stand-in URLs are gone from the template.
+Plan, *The preferences page*, with `card_context` returning the active subscriptions and the two URLs only; the public key is added in T005 and each row's `Browser` in T009. Test 2. The card renders from real context; the stand-in URLs are gone from the template.
 
 - [ ] T004 [US1] The developer documentation for push
 
@@ -50,17 +50,17 @@ Issue: #31. Delivers FR-008 to FR-011, FR-016, FR-017, FR-019.
 
 ### Group 3
 
-- [ ] T005 [US2] The public key and the browser's name
+- [ ] T005 [US2] The public key, the browser read from a user agent, and the accepted push services
 
-**Files**: `mvp_community/integrations/push/subscriptions.py`, `tests/test_integrations/test_push/test_subscriptions.py`
+**Files**: `mvp_community/integrations/push/subscriptions.py`, `mvp_community/templates/cotton/mvp_community/notifications/push_card.html`, `tests/test_integrations/test_push/test_subscriptions.py`
 
-Plan, *The key and the browser name*. Test 5.
+Plan, *The key, the browser and the card's context*: `application_server_key` (added to `card_context` and to the card's data attributes), `Browser`, `is_push_endpoint`. Test 5.
 
 - [ ] T006 [US2] The subscribe view stores one subscription per person and browser and sends a test push
 
 **Files**: `mvp_community/integrations/push/views.py`, `mvp_community/integrations/push/urls.py`, `mvp_community/integrations/push/channels.py`, `mvp_community/integrations/push/subscriptions.py`, `tests/test_integrations/test_push/test_views.py`
 
-Plan, *The views*, `subscribe`, and `send_test`. Test 6.
+Plan, *The views*, `subscribe`, and the channel's `send_test`. Test 6.
 
 - [ ] T007 [US2] The service worker shows a push and opens the notification
 
@@ -72,7 +72,7 @@ Plan, *The views*, `worker`, and *The service worker*. Test 9.
 
 **Files**: `mvp_community/templates/cotton/mvp_community/notifications/push_card.html`, `tests/test_integrations/test_push/test_preferences.py`
 
-Plan, *The push card*, every state block and the script. The card's data attributes and no-script note are tested (test 8, those parts); the script is checked in a browser at the walkthrough.
+Plan, *The push card*, every state block, the script and the `@prop` header. The card's data attributes, the `<noscript>` element and a project's override of the component are tested (test 8, those parts); the script is checked in a browser at the walkthrough.
 
 ---
 
@@ -86,16 +86,16 @@ Issue: #32. Delivers FR-012 to FR-015, FR-017, FR-019.
 
 **Files**: `mvp_community/integrations/push/subscriptions.py`, `mvp_community/templates/cotton/mvp_community/notifications/push_card.html`, `tests/test_integrations/test_push/test_preferences.py`
 
-Plan, *The push card*, the rows. Test 8, the list.
+Plan, *The push card*, the rows, each with the `Browser` read from its stored user agent. Test 8, the list.
 
 - [ ] T010 [US3] Stopping push to one browser
 
 **Files**: `mvp_community/integrations/push/views.py`, `mvp_community/integrations/push/urls.py`, `mvp_community/templates/cotton/mvp_community/notifications/push_card.html`, `tests/test_integrations/test_push/test_views.py`
 
-Plan, *The views*, `stop`, and the row's form. Test 7.
+Plan, *The views*, `stop`, and the row's form, with no script. Test 7.
 
-- [ ] T011 [US3] The demo seeds push subscriptions to walk the list
+- [ ] T011 [US3] The demo seeds push subscriptions to walk the list, and the message catalogue is regenerated
 
-**Files**: `demo/management/commands/seed_push.py`, `tests/test_demo.py`
+**Files**: `demo/management/commands/seed_push.py`, `tests/test_demo.py`, `mvp_community/locale/en/LC_MESSAGES/django.po`
 
-Plan, *The demo*, `seed_push`, following `seed_demo`'s refusal without DEBUG.
+Plan, *The demo*, `seed_push`, following `seed_demo`'s refusal without DEBUG, and *Documentation*, the catalogue.
