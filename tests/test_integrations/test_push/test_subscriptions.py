@@ -1,14 +1,23 @@
 """The preferences page, with and without the push channel."""
 
+from base64 import urlsafe_b64decode
 from datetime import timedelta
+from unittest.mock import patch
 
 import pytest
 from django.urls import include, path, reverse
 from django.utils import timezone
 from generic_notifications.registry import registry
 from push_notifications.models import WebPushDevice
+from py_vapid import Vapid01
+from py_vapid.utils import b64urlencode
 
-from mvp_community.integrations.push.subscriptions import card_context
+from mvp_community.integrations.push.subscriptions import (
+    Browser,
+    application_server_key,
+    card_context,
+    is_push_endpoint,
+)
 from tests.urls import urlpatterns as suite_urlpatterns
 
 PREFERENCES_URL = reverse("mvp_community_notifications:preferences")
@@ -92,6 +101,15 @@ class TestPreferencesWithPush:
         assert str(push["worker_url"]) == reverse("mvp_community_push:worker")
         assert str(push["subscribe_url"]) == reverse("mvp_community_push:subscribe")
 
+    def test_the_card_carries_the_key_and_the_two_urls_as_data_attributes(
+        self, client, signed_in
+    ) -> None:
+        page = client.get(PREFERENCES_URL).content.decode()
+
+        assert f'data-application-server-key="{application_server_key()}"' in page
+        assert f'data-worker-url="{reverse("mvp_community_push:worker")}"' in page
+        assert f'data-subscribe-url="{reverse("mvp_community_push:subscribe")}"' in page
+
     def test_the_card_lists_active_subscriptions_newest_first(
         self, client, signed_in
     ) -> None:
@@ -139,4 +157,150 @@ class TestCardContext:
 
         context = card_context(request)
 
-        assert set(context) == {"subscriptions", "worker_url", "subscribe_url"}
+        assert set(context) == {
+            "subscriptions",
+            "worker_url",
+            "subscribe_url",
+            "application_server_key",
+        }
+        assert context["application_server_key"] == application_server_key()
+
+
+IPHONE = (
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 "
+    "(KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+)
+IPAD = (
+    "Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 "
+    "(KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+)
+ANDROID = (
+    "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+)
+WINDOWS_FIREFOX = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+)
+
+
+class TestBrowser:
+    def test_an_iphone_is_a_phone_named_by_its_device(self) -> None:
+        browser = Browser.from_user_agent(IPHONE)
+
+        assert browser.family == "Safari"
+        assert browser.place == "iPhone"
+        assert browser.kind == "phone"
+
+    def test_an_android_browser_is_a_phone_named_by_its_system(self) -> None:
+        browser = Browser.from_user_agent(ANDROID)
+
+        assert browser.family == "Chrome"
+        assert browser.place == "Android"
+        assert browser.kind == "phone"
+
+    def test_an_ipad_is_a_tablet(self) -> None:
+        browser = Browser.from_user_agent(IPAD)
+
+        assert browser.place == "iPad"
+        assert browser.kind == "tablet"
+
+    def test_a_desktop_browser_is_a_computer_named_by_its_system(self) -> None:
+        browser = Browser.from_user_agent(WINDOWS_FIREFOX)
+
+        assert browser.family == "Firefox"
+        assert browser.place == "Windows"
+        assert browser.kind == "computer"
+
+    def test_an_empty_user_agent_has_a_fallback_label(self) -> None:
+        browser = Browser.from_user_agent("")
+
+        assert browser.family == ""
+        assert browser.kind == "computer"
+        assert str(browser.label)
+
+    def test_the_label_names_the_family_and_the_place(self) -> None:
+        label = str(Browser.from_user_agent(WINDOWS_FIREFOX).label)
+
+        assert "Firefox" in label
+        assert "Windows" in label
+
+
+class TestApplicationServerKey:
+    def decode(self, key):
+        return urlsafe_b64decode(key + "=" * (-len(key) % 4))
+
+    def make_key(self):
+        vapid = Vapid01()
+        vapid.generate_keys()
+        return vapid
+
+    def test_a_key_string_gives_the_65_byte_public_key(self) -> None:
+        vapid = self.make_key()
+        settings_dict = {
+            "WP_PRIVATE_KEY": b64urlencode(
+                vapid.private_key.private_numbers().private_value.to_bytes(32, "big")
+            )
+        }
+
+        with patch.dict(
+            "push_notifications.settings.PUSH_NOTIFICATIONS_SETTINGS", settings_dict
+        ):
+            key = application_server_key()
+
+        assert len(self.decode(key)) == 65
+
+    def test_a_key_file_gives_the_65_byte_public_key(self, tmp_path) -> None:
+        vapid = self.make_key()
+        path = tmp_path / "private_key.pem"
+        vapid.save_key(str(path))
+
+        with patch.dict(
+            "push_notifications.settings.PUSH_NOTIFICATIONS_SETTINGS",
+            {"WP_PRIVATE_KEY": str(path)},
+        ):
+            key = application_server_key()
+
+        assert len(self.decode(key)) == 65
+
+    def test_two_keys_give_two_results(self, tmp_path) -> None:
+        keys = []
+        for name in ("one.pem", "two.pem"):
+            path = tmp_path / name
+            self.make_key().save_key(str(path))
+            with patch.dict(
+                "push_notifications.settings.PUSH_NOTIFICATIONS_SETTINGS",
+                {"WP_PRIVATE_KEY": str(path)},
+            ):
+                keys.append(application_server_key())
+
+        assert keys[0] != keys[1]
+
+
+class TestPushEndpoint:
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "https://fcm.googleapis.com/fcm/send/abc",
+            "https://updates.push.services.mozilla.com/wpush/v2/abc",
+            "https://web.push.apple.com/abc",
+            "https://wns2-par02p.notify.windows.com/w/?token=abc",
+            "https://api.push.apple.com/3/device/abc",
+        ],
+    )
+    def test_a_major_push_service_is_accepted(self, url) -> None:
+        assert is_push_endpoint(url)
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "http://fcm.googleapis.com/fcm/send/abc",
+            "https://example.org/push",
+            "https://fcm.googleapis.com.example.org/abc",
+            "https://example.org/?next=fcm.googleapis.com",
+            "https://user@fcm.googleapis.com@example.org/abc",
+            "notaurl",
+            "",
+        ],
+    )
+    def test_anything_else_is_refused(self, url) -> None:
+        assert not is_push_endpoint(url)

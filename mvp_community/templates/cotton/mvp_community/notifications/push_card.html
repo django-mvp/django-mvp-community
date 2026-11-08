@@ -1,8 +1,8 @@
 {# @description The preferences page's push card: whether this browser receives push, the control that turns it on, and every browser of the person's that receives it, each with a button that stops it. Replace it by shipping a component of the same name. #}
-{# @prop push:object | description:"subscriptions, the person's active push subscriptions newest first, and the worker_url and subscribe_url the card's script uses." #}
+{# @prop push:object | description:"subscriptions, the person's active push subscriptions newest first, the application_server_key, and the worker_url and subscribe_url the card's script uses." #}
 {% load i18n %}
 <c-vars push />
-<c-mvp.card title="{% trans "Push notifications" %}" icon="notifications.push" only>
+<c-mvp.card title="{% trans "Push notifications" %}" icon="notifications.push" data-push data-application-server-key="{{ push.application_server_key }}" data-worker-url="{{ push.worker_url }}" data-subscribe-url="{{ push.subscribe_url }}" only>
   <c-mvp.text tight only>{% trans "Get your notifications on this device as they happen, even when the site is closed. When you turn push on, your browser asks whether to allow notifications from this site." %}</c-mvp.text>
   <c-button type="button" variant="primary" size="sm">{% trans "Turn on push for this browser" %}</c-button>
   <noscript>
