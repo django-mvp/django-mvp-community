@@ -51,6 +51,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   translation per language. It adds no code of its own; the new Mail page
   documents the settings. Install it with
   `pip install "django-mvp-community[mail]"`.
+- The `push` extra, built on django-push-notifications and py-vapid: a person
+  can get their notifications as push messages in their browser, even when the
+  site is closed. The notification preferences page gains a push card that
+  turns push on for the browser in use, lists the browsers receiving push and
+  stops them one at a time, and `PushChannel` sends a push to each of them. Name
+  `PushChannel` in a type's channels and set `WP_PRIVATE_KEY` and `WP_CLAIMS`.
+  Install it with `pip install "django-mvp-community[push]"`.
 
 ### Changed
 

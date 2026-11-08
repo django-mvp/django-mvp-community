@@ -7,15 +7,20 @@ import pytest
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
-from django.core.management import call_command
+from django.core.management import CommandError, call_command
 from django.shortcuts import resolve_url
 from django.test import override_settings
 from django.urls import reverse
 from django.utils import translation
 from post_office import mail as post_office_mail
 from post_office.models import STATUS, Email, EmailTemplate
+from push_notifications.models import WebPushDevice
 
 import demo.settings as demo_settings
+from mvp_community.integrations.push.subscriptions import (
+    Browser,
+    is_push_endpoint,
+)
 
 # The address a page guarded by LoginRequiredMixin sends an anonymous visitor to.
 SIGN_IN_URL = resolve_url(settings.LOGIN_URL)
@@ -335,3 +340,57 @@ class TestSeedNotificationEmail:
         call_command("seed_notification_email", verbosity=0)
 
         assert Email.objects.count() == 4
+
+
+@pytest.mark.django_db
+class TestSeedPush:
+    @pytest.fixture(autouse=True)
+    def regular_user(self, settings, django_user_model):
+        settings.DEBUG = True
+        return django_user_model.objects.create_user(
+            username="regular.user@example.com",
+            email="regular.user@example.com",
+            password="password",
+        )
+
+    def test_it_refuses_without_debug(self, settings) -> None:
+        settings.DEBUG = False
+
+        with pytest.raises(CommandError):
+            call_command("seed_push", verbosity=0)
+
+        assert not WebPushDevice.objects.exists()
+
+    def test_it_gives_the_regular_user_an_iphone_and_a_windows_computer(
+        self, regular_user
+    ) -> None:
+        call_command("seed_push", verbosity=0)
+
+        browsers = {
+            Browser.from_user_agent(row.name).label
+            for row in WebPushDevice.objects.filter(user=regular_user)
+        }
+        assert browsers == {"Safari on iPhone", "Chrome on Windows"}
+
+    def test_the_endpoints_are_on_allowed_push_services(self) -> None:
+        call_command("seed_push", verbosity=0)
+
+        assert all(
+            is_push_endpoint(row.registration_id) for row in WebPushDevice.objects.all()
+        )
+
+    def test_running_it_again_leaves_two_subscriptions(self, regular_user) -> None:
+        call_command("seed_push", verbosity=0)
+        call_command("seed_push", verbosity=0)
+
+        assert WebPushDevice.objects.filter(user=regular_user).count() == 2
+
+    def test_the_preferences_page_lists_both(self, client, regular_user) -> None:
+        call_command("seed_push", verbosity=0)
+        client.force_login(regular_user)
+
+        push = client.get(reverse("mvp_community_notifications:preferences")).context[
+            "push"
+        ]
+
+        assert len(push["subscriptions"]) == 2
