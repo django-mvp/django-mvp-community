@@ -74,6 +74,22 @@
         get isInstalled() {
           return navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
         },
+        async registration() {
+          // The worker's scope is below this page, so navigator.serviceWorker.ready
+          // never resolves here: wait for this registration's own worker instead.
+          const registration = await navigator.serviceWorker.register(this.$root.dataset.workerUrl);
+          const worker = registration.installing || registration.waiting;
+          if (worker && worker.state !== "activated") {
+            await new Promise((resolve) => {
+              worker.addEventListener("statechange", () => {
+                if (worker.state === "activated") {
+                  resolve();
+                }
+              });
+            });
+          }
+          return registration;
+        },
         async decide() {
           if (!("serviceWorker" in navigator && "PushManager" in window && "Notification" in window)) {
             this.state = this.isApple && !this.isInstalled ? "homescreen" : "unsupported";
@@ -83,8 +99,7 @@
             this.state = "denied";
             return;
           }
-          await navigator.serviceWorker.register(this.$root.dataset.workerUrl);
-          const registration = await navigator.serviceWorker.ready;
+          const registration = await this.registration();
           const subscription = await registration.pushManager.getSubscription();
           this.endpoint = subscription ? subscription.endpoint : "";
           const listed = [...this.$root.querySelectorAll("[data-endpoint]")].some(
@@ -108,7 +123,7 @@
               this.state = permission === "denied" ? "denied" : "offer";
               return;
             }
-            const registration = await navigator.serviceWorker.ready;
+            const registration = await this.registration();
             const subscription =
               (await registration.pushManager.getSubscription()) ||
               (await registration.pushManager.subscribe({
@@ -129,6 +144,7 @@
             }
             window.location.reload();
           } catch (error) {
+            console.error(error);
             this.state = Notification.permission === "denied" ? "denied" : "offer";
           } finally {
             this.asking = false;

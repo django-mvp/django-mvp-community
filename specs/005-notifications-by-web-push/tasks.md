@@ -109,3 +109,9 @@ Plan, *The demo*, `seed_push`, following `seed_demo`'s refusal without DEBUG, an
 **Files**: `mvp_community/integrations/push/views.py`
 
 Found at convergence: the unused second value of `update_or_create` was bound to a name with a leading underscore, which the repo's standards rule out.
+
+- [ ] T013 [US2] Wait for the push card's own worker, not for a worker controlling the page
+
+**Files**: `mvp_community/templates/cotton/mvp_community/notifications/push_card.html`
+
+Found in the browser check: the script waited on `navigator.serviceWorker.ready`, which resolves only for a worker whose scope covers the page. The push worker's scope is below the preferences page, so the card never chose a state. The script now waits for its own registration's worker to activate, and logs a failure to turn push on to the console.
