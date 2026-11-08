@@ -98,7 +98,7 @@ Each feature is an extra, installed by naming it:
 pip install "django-mvp-community[notifications]"
 ```
 
-The extras are `notifications`, `mail`, `activity` and `sharecards`. An extra
+The extras are `notifications`, `push`, `mail`, `activity` and `sharecards`. An extra
 brings the packages its feature is built on, and the base install depends on
 Django and django-mvp alone. Importing `mvp_community` never imports a package
 that belongs to an extra, so a project carries nothing for a feature it does
@@ -113,6 +113,12 @@ The `notifications` extra is built and documented in
 a bell in the header, a notifications page, notification preferences in
 the Account Center, and, with the `mail` extra, notifications by email in real
 time or as a daily or weekly digest.
+
+The `push` extra is built and documented in
+[Push](https://github.com/django-mvp/django-mvp-community/blob/main/docs/developer/push.md):
+a push channel for notifications, so a person who turns push on from their
+preferences page gets each notification in their browser as it happens, even
+when the site is closed.
 
 The `activity` extra is built and documented in
 [Activity](https://github.com/django-mvp/django-mvp-community/blob/main/docs/developer/activity.md):

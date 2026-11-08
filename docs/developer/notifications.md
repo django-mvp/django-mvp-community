@@ -106,6 +106,10 @@ Email is a channel of the preferences page only when the mail extra is installed
 
 A notification now reaches a person by email when email is on for its type, they have an address, and the type's frequency is real-time. A type with a required channel is always sent at once, whatever frequency is stored for it. Each email is written on django-mvp's email layout and queued by django-post-office.
 
+## Send notifications by push
+
+Push is a channel of the preferences page only when the `push` extra is installed. It delivers each notification to the browsers a person turned push on in, as it is created, and adds a push column and a card to the preferences page. Installing it, the signing key it needs and its options are described in [Push](push.md).
+
 ## What django-generic-notifications adds by itself, and what this package changes
 
 django-generic-notifications registers an Email channel, a "System Message" notification type and two frequencies, real-time and daily. When the notifications extra starts, `mvp_community.integrations.notifications.setup.configure` changes that:
