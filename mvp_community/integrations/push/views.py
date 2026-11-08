@@ -25,21 +25,6 @@ P256DH_BYTES = 65
 AUTH_BYTES = 16
 
 
-def decoded_length(value):
-    """Count the bytes a URL-safe base64 string decodes to.
-
-    Args:
-        value: The string a browser sent.
-
-    Returns:
-        The number of bytes, or None when the string is not URL-safe base64.
-    """
-    try:
-        return len(base64.urlsafe_b64decode(value + "=" * (-len(value) % 4)))
-    except (binascii.Error, ValueError):
-        return None
-
-
 @method_decorator(
     [login_not_required, cache_control(no_cache=True)],
     name="dispatch",
@@ -60,6 +45,21 @@ class SubscribeView(LoginRequiredMixin, View):
 
     http_method_names = ["post", "options"]
     raise_exception = True
+
+    @staticmethod
+    def decoded_length(value):
+        """Count the bytes a URL-safe base64 string decodes to.
+
+        Args:
+            value: The string a browser sent.
+
+        Returns:
+            The number of bytes, or None when the string is not URL-safe base64.
+        """
+        try:
+            return len(base64.urlsafe_b64decode(value + "=" * (-len(value) % 4)))
+        except (binascii.Error, ValueError):
+            return None
 
     def read(self, request):
         """Read and check the subscription a browser posted.
@@ -86,9 +86,9 @@ class SubscribeView(LoginRequiredMixin, View):
             isinstance(value, str) and value for value in (endpoint, p256dh, auth)
         ):
             return None
-        if decoded_length(p256dh) != P256DH_BYTES:
+        if self.decoded_length(p256dh) != P256DH_BYTES:
             return None
-        if decoded_length(auth) != AUTH_BYTES:
+        if self.decoded_length(auth) != AUTH_BYTES:
             return None
         if not is_push_endpoint(endpoint):
             return None
