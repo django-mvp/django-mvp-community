@@ -22,6 +22,34 @@ django.setup()
 print(sys.argv[1] in sys.modules)
 """
 
+# A fresh interpreter again: the channels the registry holds after start-up.
+LIST_CHANNELS_AFTER_SETUP = """
+import sys
+
+import django
+from django.conf import settings
+
+apps = ["django.contrib.auth", "django.contrib.contenttypes", "mvp_community"]
+apps += sys.argv[1:]
+settings.configure(INSTALLED_APPS=apps)
+django.setup()
+
+from generic_notifications.registry import registry
+
+print(",".join(channel.key for channel in registry.get_all_channels()))
+"""
+
+
+def channels_registered_with(*extra_apps: str) -> list[str]:
+    result = subprocess.run(  # noqa: S603 - fixed script, this interpreter
+        [sys.executable, "-c", LIST_CHANNELS_AFTER_SETUP, *extra_apps],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    return result.stdout.strip().split(",")
+
 
 def menus_imported_with(*extra_apps: str, module: str = MENUS_MODULE) -> str:
     result = subprocess.run(  # noqa: S603 - fixed script, this interpreter
@@ -59,6 +87,12 @@ class TestMvpCommunityConfig:
 
     def test_it_leaves_the_activity_menu_alone_without_the_extra(self) -> None:
         assert menus_imported_with(module=ACTIVITY_MENUS_MODULE) == "False"
+
+    def test_it_registers_no_push_channel_without_the_push_app(self) -> None:
+        channels = channels_registered_with("mvp", "flex_menu", "generic_notifications")
+
+        assert "push" not in channels
+        assert "website" in channels
 
 
 class TestTemplateOrder:

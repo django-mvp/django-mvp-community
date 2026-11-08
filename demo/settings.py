@@ -3,6 +3,9 @@
 import os
 from pathlib import Path
 
+from py_vapid import Vapid01
+from py_vapid.utils import b64urlencode
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-demo-project-only"
@@ -28,6 +31,8 @@ INSTALLED_APPS = [
     # The notifications extra: the package it is built on.
     "generic_notifications",
     "actstream",
+    # The push extra: the package it is built on, with its own migrations.
+    "push_notifications",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -86,8 +91,6 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "mvp.context_processors.mvp_config",
-                # Sketch only: stand-in push state for the preferences page.
-                "demo.sketch_push.push",
             ],
         },
     },
@@ -206,4 +209,17 @@ EMAIL_PORT = int(os.environ.get("DEMO_EMAIL_PORT", "1025"))
 ABSOLUTE_URL_OVERRIDES = {
     "auth.user": lambda user: f"/people/{user.pk}/",
     "auth.group": lambda group: f"/groups/{group.pk}/",
+}
+
+# The push extra. The signing key is made when this file is imported and kept in
+# memory only, so nothing is written to disk. A restart gives a new key, which
+# retires the demo's earlier push subscriptions: the push services refuse a
+# message signed with a different key. A real project sets a key of its own.
+_vapid = Vapid01()
+_vapid.generate_keys()
+PUSH_NOTIFICATIONS_SETTINGS = {
+    "WP_PRIVATE_KEY": b64urlencode(
+        _vapid.private_key.private_numbers().private_value.to_bytes(32, "big")
+    ),
+    "WP_CLAIMS": {"sub": "mailto:admin@example.com"},
 }

@@ -371,7 +371,7 @@ class TestPreferencesViewWithoutTheMailExtra:
         channels = {
             key: channel
             for key, channel in registry._channel_classes.items()
-            if key != "email"
+            if key not in ("email", "push")
         }
         monkeypatch.setattr(registry, "_channel_classes", channels)
 
