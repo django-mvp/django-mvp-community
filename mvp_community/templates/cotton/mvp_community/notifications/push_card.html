@@ -1,32 +1,140 @@
 {# @description The preferences page's push card: whether this browser receives push, the control that turns it on, and every browser of the person's that receives it, each with a button that stops it. Replace it by shipping a component of the same name. #}
-{# @prop push:object | description:"subscriptions, the person's active push subscriptions newest first, the application_server_key, and the worker_url and subscribe_url the card's script uses." #}
+{# @prop push:object | description:"subscriptions, the person's active push subscriptions newest first, just_turned_on, whether push was turned on in the request before this one, application_server_key, the site's public key, and worker_url and subscribe_url, the service worker and the view that stores a subscription." #}
 {% load i18n %}
 <c-vars push />
-<c-mvp.card title="{% trans "Push notifications" %}" icon="notifications.push" data-push data-application-server-key="{{ push.application_server_key }}" data-worker-url="{{ push.worker_url }}" data-subscribe-url="{{ push.subscribe_url }}" only>
-  <c-mvp.text tight only>{% trans "Get your notifications on this device as they happen, even when the site is closed. When you turn push on, your browser asks whether to allow notifications from this site." %}</c-mvp.text>
-  <c-button type="button" variant="primary" size="sm">{% trans "Turn on push for this browser" %}</c-button>
-  <noscript>
-    <c-mvp.text muted tight size="sm" only>{% trans "Turning push on needs JavaScript in this browser." %}</c-mvp.text>
-  </noscript>
-  {% if push.subscriptions %}
-    <h3 class="text-sm font-medium pt-4">{% trans "Browsers receiving push" %}</h3>
-    <c-list class="-mx-2" only>
-      {% for subscription in push.subscriptions %}
-        <c-list.row class="items-center px-2" only>
-          <c-icon name="notifications.push" class="text-xl text-base-content/70" aria-hidden="true" only />
-          <div class="list-col-grow min-w-0">
-            <c-mvp.text tight class="break-words" only>{{ subscription.name }}</c-mvp.text>
-            <c-mvp.text muted tight size="sm" only>
-              {% blocktrans with date=subscription.date_created|date:"j F Y" %}Turned on {{ date }}{% endblocktrans %}
-            </c-mvp.text>
-          </div>
-          <form method="post" action="{% url "mvp_community_push:stop" subscription.pk %}">
-            {% csrf_token %}
-            {% blocktrans asvar stop_label with name=subscription.name %}Stop push to {{ name }}{% endblocktrans %}
-            <c-button type="submit" ghost size="sm" aria-label="{{ stop_label }}" only>{% trans "Stop" %}</c-button>
-          </form>
-        </c-list.row>
-      {% endfor %}
-    </c-list>
-  {% endif %}
+<c-mvp.card title="{% trans "Push notifications" %}" icon="notifications.push" only>
+  <div x-data="mvpCommunityPush" data-application-server-key="{{ push.application_server_key }}" data-worker-url="{{ push.worker_url }}" data-subscribe-url="{{ push.subscribe_url }}">
+    {% csrf_token %}
+    <div x-show="state === 'offer'" x-cloak>
+      <c-mvp.text tight only>{% trans "Get your notifications on this device as they happen, even when the site is closed. When you turn push on, your browser asks whether to allow notifications from this site." %}</c-mvp.text>
+      <c-mvp.text muted tight size="sm" class="pt-3" x-show="asking" x-cloak role="status" only>{% trans "Your browser is asking whether to allow notifications. Choose Allow to turn push on." %}</c-mvp.text>
+      <div class="pt-3">
+        <c-button type="button" variant="primary" size="sm" x-bind:disabled="asking" x-on:click="turnOn()">
+          <span class="loading loading-spinner loading-xs" x-show="asking" x-cloak aria-hidden="true"></span>
+          {% trans "Turn on push for this browser" %}
+        </c-button>
+      </div>
+    </div>
+    <noscript>
+      <c-mvp.text muted tight size="sm" only>{% trans "Turning push on needs JavaScript in this browser." %}</c-mvp.text>
+    </noscript>
+    <div x-show="state === 'on'" x-cloak>
+      {% if push.just_turned_on %}
+        <c-alert variant="success" soft role="status" icon="notifications" only>{% trans "Push is on for this browser. A test notification is on its way." %}</c-alert>
+      {% else %}
+        <c-mvp.text tight only>{% trans "Push is on for this browser. The notifications you have on for push arrive here." %}</c-mvp.text>
+      {% endif %}
+    </div>
+    <div x-show="state === 'denied'" x-cloak>
+      <c-alert variant="warning" soft role="status" only>{% trans "Notifications from this site are blocked in this browser. To get push here, allow notifications for this site in your browser's settings, then reload this page." %}</c-alert>
+    </div>
+    <div x-show="state === 'homescreen'" x-cloak>
+      <c-alert variant="info" soft role="status" only>{% trans "On iPhone and iPad, push only reaches the site from your Home Screen. Tap Share, choose Add to Home Screen, then open the site from there and turn push on." %}</c-alert>
+    </div>
+    <div x-show="state === 'unsupported'" x-cloak>
+      <c-alert variant="info" soft role="status" only>{% trans "This browser can't receive push notifications. You still get your notifications on the site." %}</c-alert>
+    </div>
+    {% if push.subscriptions %}
+      <h3 class="text-sm font-medium pt-4">{% trans "Browsers receiving push" %}</h3>
+      <c-list class="-mx-2" only>
+        {% for subscription in push.subscriptions %}
+          <c-list.row class="items-center px-2" data-endpoint="{{ subscription.registration_id }}" only>
+            <c-icon name="notifications.push" class="text-xl text-base-content/70" aria-hidden="true" only />
+            <div class="list-col-grow min-w-0">
+              <c-mvp.text tight class="break-words" only>{{ subscription.name }}</c-mvp.text>
+              <c-mvp.text muted tight size="sm" only>
+                <span x-show="endpoint !== '' && endpoint === $el.closest('[data-endpoint]').dataset.endpoint" x-cloak>{% trans "This browser" %} · </span>{% blocktrans with date=subscription.date_created|date:"j F Y" %}Turned on {{ date }}{% endblocktrans %}
+              </c-mvp.text>
+            </div>
+            <form method="post" action="{% url "mvp_community_push:stop" subscription.pk %}">
+              {% csrf_token %}
+              {% blocktrans asvar stop_label with name=subscription.name %}Stop push to {{ name }}{% endblocktrans %}
+              <c-button type="submit" ghost size="sm" aria-label="{{ stop_label }}" only>{% trans "Stop" %}</c-button>
+            </form>
+          </c-list.row>
+        {% endfor %}
+      </c-list>
+    {% endif %}
+  </div>
+  <script>
+    document.addEventListener("alpine:init", () => {
+      Alpine.data("mvpCommunityPush", () => ({
+        state: "",
+        asking: false,
+        endpoint: "",
+        init() {
+          this.decide().catch(() => {
+            this.state = "unsupported";
+          });
+        },
+        get isApple() {
+          const ua = navigator.userAgent;
+          return /iPhone|iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+        },
+        get isInstalled() {
+          return navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
+        },
+        async decide() {
+          if (!("serviceWorker" in navigator && "PushManager" in window && "Notification" in window)) {
+            this.state = this.isApple && !this.isInstalled ? "homescreen" : "unsupported";
+            return;
+          }
+          if (Notification.permission === "denied") {
+            this.state = "denied";
+            return;
+          }
+          await navigator.serviceWorker.register(this.$root.dataset.workerUrl);
+          const registration = await navigator.serviceWorker.ready;
+          const subscription = await registration.pushManager.getSubscription();
+          this.endpoint = subscription ? subscription.endpoint : "";
+          const listed = [...this.$root.querySelectorAll("[data-endpoint]")].some(
+            (row) => row.dataset.endpoint === this.endpoint,
+          );
+          this.state = this.endpoint && listed ? "on" : "offer";
+        },
+        applicationServerKey() {
+          const padded = this.$root.dataset.applicationServerKey.padEnd(
+            Math.ceil(this.$root.dataset.applicationServerKey.length / 4) * 4,
+            "=",
+          );
+          const raw = atob(padded.replace(/-/g, "+").replace(/_/g, "/"));
+          return Uint8Array.from(raw, (character) => character.charCodeAt(0));
+        },
+        async turnOn() {
+          this.asking = true;
+          try {
+            const permission = await Notification.requestPermission();
+            if (permission !== "granted") {
+              this.state = permission === "denied" ? "denied" : "offer";
+              return;
+            }
+            const registration = await navigator.serviceWorker.ready;
+            const subscription =
+              (await registration.pushManager.getSubscription()) ||
+              (await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: this.applicationServerKey(),
+              }));
+            const response = await fetch(this.$root.dataset.subscribeUrl, {
+              method: "POST",
+              credentials: "same-origin",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": this.$root.querySelector("[name=csrfmiddlewaretoken]").value,
+              },
+              body: JSON.stringify(subscription.toJSON()),
+            });
+            if (!response.ok) {
+              throw new Error("The subscription was not stored.");
+            }
+            window.location.reload();
+          } catch (error) {
+            this.state = Notification.permission === "denied" ? "denied" : "offer";
+          } finally {
+            this.asking = false;
+          }
+        },
+      }));
+    });
+  </script>
 </c-mvp.card>

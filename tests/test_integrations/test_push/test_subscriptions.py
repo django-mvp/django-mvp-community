@@ -1,7 +1,9 @@
 """The preferences page, with and without the push channel."""
 
+import copy
 from base64 import urlsafe_b64decode
 from datetime import timedelta
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -21,6 +23,7 @@ from mvp_community.integrations.push.subscriptions import (
 from mvp_community.integrations.push.views import SubscribeView, WorkerView
 from tests.urls import urlpatterns as suite_urlpatterns
 
+OVERRIDES = Path(__file__).resolve().parent.parent.parent / "templates" / "overrides"
 PREFERENCES_URL = reverse("mvp_community_notifications:preferences")
 
 
@@ -136,6 +139,43 @@ class TestPreferencesWithPush:
 
         assert [row.pk for row in push["subscriptions"]] == [mine.pk]
 
+    def test_the_card_has_a_noscript_element(self, client, signed_in) -> None:
+        page = client.get(PREFERENCES_URL).content.decode()
+
+        assert "<noscript>" in page
+
+    def test_each_row_carries_its_endpoint_for_the_script(
+        self, client, signed_in
+    ) -> None:
+        subscribe(signed_in, "https://fcm.googleapis.com/mine")
+
+        page = client.get(PREFERENCES_URL).content.decode()
+
+        assert 'data-endpoint="https://fcm.googleapis.com/mine"' in page
+
+    def test_the_turned_on_flag_is_read_once(self, client, signed_in) -> None:
+        session = client.session
+        session["mvp_community_push_turned_on"] = True
+        session.save()
+
+        first = client.get(PREFERENCES_URL).context["push"]
+        second = client.get(PREFERENCES_URL).context["push"]
+
+        assert first["just_turned_on"] is True
+        assert second["just_turned_on"] is False
+
+    def test_a_project_component_replaces_the_card(
+        self, client, signed_in, settings
+    ) -> None:
+        templates = copy.deepcopy(settings.TEMPLATES)
+        templates[0]["DIRS"] = [*templates[0]["DIRS"], OVERRIDES / "push_card"]
+        settings.TEMPLATES = templates
+
+        page = client.get(PREFERENCES_URL).content.decode()
+
+        assert 'data-override="push-card"' in page
+        assert "data-application-server-key" not in page
+
     def test_each_row_stops_at_its_own_url(self, client, signed_in) -> None:
         device = subscribe(signed_in, "https://fcm.googleapis.com/mine")
 
@@ -155,6 +195,7 @@ class TestCardContext:
     ) -> None:
         request = rf.get(PREFERENCES_URL)
         request.user = person
+        request.session = {}
 
         context = card_context(request)
 
@@ -163,6 +204,7 @@ class TestCardContext:
             "worker_url",
             "subscribe_url",
             "application_server_key",
+            "just_turned_on",
         }
         assert context["application_server_key"] == application_server_key()
 

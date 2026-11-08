@@ -12,12 +12,11 @@ from django.views.generic import TemplateView
 from push_notifications.models import WebPushDevice
 
 from .channels import PushChannel
-from .subscriptions import is_push_endpoint
+from .subscriptions import SESSION_KEY, is_push_endpoint
 
 NAME_LENGTH = 255
 P256DH_LENGTH = 88
 AUTH_LENGTH = 24
-SESSION_KEY = "mvp_community_push_turned_on"
 
 
 @method_decorator(

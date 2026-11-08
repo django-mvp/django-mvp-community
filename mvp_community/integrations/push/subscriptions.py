@@ -19,6 +19,7 @@ ALLOWED_PUSH_HOSTS = (
     "web.push.apple.com",
 )
 ALLOWED_PUSH_SUFFIXES = (".notify.windows.com", ".push.apple.com")
+SESSION_KEY = "mvp_community_push_turned_on"
 HANDHELD_DEVICES = {"iPhone": "phone", "iPad": "tablet"}
 
 
@@ -125,7 +126,8 @@ def card_context(request):
         request: The preferences page's request.
 
     Returns:
-        A dict with the person's active ``subscriptions``, newest first, the
+        A dict with the person's active ``subscriptions``, newest first,
+        whether push was ``just_turned_on`` (read once from the session), the
         ``application_server_key`` the browser subscribes with, and the
         ``worker_url`` and ``subscribe_url`` the card's script uses. The URLs
         resolve when they are rendered, so a project that has not included the
@@ -135,6 +137,7 @@ def card_context(request):
         "subscriptions": WebPushDevice.objects.filter(
             user=request.user, active=True
         ).order_by("-date_created", "-pk"),
+        "just_turned_on": bool(request.session.pop(SESSION_KEY, False)),
         "application_server_key": application_server_key(),
         "worker_url": reverse_lazy("mvp_community_push:worker"),
         "subscribe_url": reverse_lazy("mvp_community_push:subscribe"),
