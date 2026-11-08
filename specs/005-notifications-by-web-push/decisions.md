@@ -13,7 +13,7 @@ shows no email column without the mail extra.
 `notifications` extra, every project with notifications would carry them whether it pushes or
 not, which G2 rules out. The brainstorm put push in `notifications` before the dependency tree was
 looked at.
-**ADR:** to be decided at convergence, with D2.
+**ADR:** docs/adr/0004-web-push-is-an-extra-of-its-own.md
 
 ## D2 — The package ships the service worker; the host project configures keys and URLs only
 
@@ -29,6 +29,7 @@ as Article V of the constitution requires.
 **Planning checks:** that a worker registered at its own scope receives push inside a web app
 installed on a phone's home screen, and how a project with its own service worker for an installed
 web app is documented.
+**ADR:** docs/adr/0005-the-push-service-worker-is-a-template-at-its-own-scope.md
 
 ## D3 — Push turns on and is listed on the preferences page, not a page of its own
 
@@ -36,6 +37,7 @@ web app is documented.
 subscriptions all sit on the notification preferences page (FR-009 to FR-012).
 **Why:** the issue puts push on that page as a channel, and a person deciding which types reach
 them by push needs to see in the same place whether any browser receives it.
+**ADR:** none — a behaviour of this feature, stated in the spec and the push documentation; nothing outside it inherits it.
 
 ## D4 — The browser asks for permission only when the person asks
 
@@ -43,12 +45,14 @@ them by push needs to see in the same place whether any browser receives it.
 person's own action, on a page that has already explained push (FR-009, SC-003).
 **Why:** the issue asks for the explanation before the request, and browsers quieten or block
 permission requests made without a user action.
+**ADR:** none — a behaviour of this feature, stated in the spec and the push documentation; nothing outside it inherits it.
 
 ## D5 — Push is sent as it happens and is never gathered into a digest
 
 **Decision:** push is a real-time channel (FR-005). The choice of how often stays an email choice.
 **Why:** a digest exists to keep an inbox quiet. A push gathering a day's notifications would
 arrive long after any of them mattered.
+**ADR:** none — a behaviour of this feature, stated in the spec and the push documentation; nothing outside it inherits it.
 
 ## D6 — A test push confirms a browser that was just turned on
 
@@ -56,6 +60,7 @@ arrive long after any of them mattered.
 **Why:** a phone that is missing a step, such as the home screen, accepts the permission and then
 receives nothing. The test push shows at once whether push reaches this browser, rather than at the
 next notification.
+**ADR:** none — a behaviour of this feature, stated in the spec and the push documentation; nothing outside it inherits it.
 
 ## D7 — Tapping a push behaves like the bell's list
 
@@ -63,6 +68,7 @@ next notification.
 notifications page when it has no address (FR-008).
 **Why:** a notification read from a push should not stay unread on the site, and the bell's list
 already marks a notification read on the way to its address.
+**ADR:** none — a behaviour of this feature, stated in the spec and the push documentation; nothing outside it inherits it.
 
 ## D8 — A push is written in the recipient's language, as email is
 
@@ -70,6 +76,7 @@ already marks a notification read on the way to its address.
 email channel's (FR-006). A project that stores a language per person overrides both.
 **Why:** Django stores no language per person. The email channel exists only with the mail extra,
 so the push channel cannot borrow its method.
+**ADR:** none — a behaviour of this feature, stated in the spec and the push documentation; nothing outside it inherits it.
 
 ## D9 — Signing out does not stop push
 
@@ -78,6 +85,7 @@ browser, or deletes their account (FR-013 to FR-015).
 **Why:** a subscription belongs to a browser, not to a session. A person who signs out of a phone
 they carry still wants their notifications. The list on every device is the way to stop a browser
 someone else now holds.
+**ADR:** none — a behaviour of this feature, stated in the spec and the push documentation; nothing outside it inherits it.
 
 ## D10 — Gone subscriptions drop off on their own
 
@@ -86,6 +94,7 @@ someone else now holds.
 **Why:** django-push-notifications marks such a subscription inactive when a push to it is refused
 as gone (`push_notifications/webpush.py`, the 404 and 410 responses). The list shows active
 subscriptions only.
+**ADR:** none — a behaviour of this feature, stated in the spec and the push documentation; nothing outside it inherits it.
 
 ## D11 — A push service failure never fails sending
 
@@ -93,6 +102,7 @@ subscriptions only.
 stored and delivered on the other channels (FR-007).
 **Why:** the host project sends notifications inside its own requests and tasks, and a third-party
 push service being down must not make them fail.
+**ADR:** none — a behaviour of this feature, stated in the spec and the push documentation; nothing outside it inherits it.
 
 ## D12 — The pages are sketched before planning
 
@@ -101,6 +111,7 @@ planned.
 **Why:** turning push on is a flow across several steps, with a different message for a refusal, a
 blocked browser, a browser that cannot receive push and a phone that needs the home screen first,
 and the list of subscriptions is a part of the page nobody has drawn.
+**ADR:** none — a behaviour of this feature, stated in the spec and the push documentation; nothing outside it inherits it.
 
 ## D13 — One existing test fixture removes the push channel too
 
@@ -108,12 +119,14 @@ and the list of subscriptions is a part of the page nobody has drawn.
 channel, so it now removes `push` as well as `email`.
 **Why:** the suite runs every extra, so push is registered in it. The fixture's tests describe a
 project with the site as its only channel, which is still what they assert.
+**ADR:** none — a change to one test fixture.
 
 ## D14 — The public key is derived from the private key
 
 **Decision:** the page reads the public key from the private key django-push-notifications already
 holds, with py-vapid. There is no setting for it.
 **Why:** one setting fewer, and the two can never disagree.
+**ADR:** docs/adr/0005-the-push-service-worker-is-a-template-at-its-own-scope.md
 
 ## D15 — The service worker is served by a view from a template, at its own scope
 
@@ -121,6 +134,7 @@ holds, with py-vapid. There is no setting for it.
 pages.
 **Why:** a worker must come from the site's origin, and a template keeps it overridable (G3).
 Push and notification clicks reach a registration whatever its scope.
+**ADR:** docs/adr/0005-the-push-service-worker-is-a-template-at-its-own-scope.md
 
 ## D16 — A subscription stores the user agent, and its name is read when the page is drawn
 

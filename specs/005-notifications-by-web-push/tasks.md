@@ -99,3 +99,13 @@ Plan, *The views*, `stop`, and the row's form, with no script. Test 7.
 **Files**: `demo/management/commands/seed_push.py`, `tests/test_demo.py`, `mvp_community/locale/en/LC_MESSAGES/django.po`
 
 Plan, *The demo*, `seed_push`, following `seed_demo`'s refusal without DEBUG, and *Documentation*, the catalogue.
+
+---
+
+## Convergence
+
+- [ ] T012 [US2] Name the subscribe view's result without a leading underscore
+
+**Files**: `mvp_community/integrations/push/views.py`
+
+Found at convergence: the unused second value of `update_or_create` was bound to a name with a leading underscore, which the repo's standards rule out.

@@ -89,7 +89,7 @@ class SubscribeView(LoginRequiredMixin, View):
         if fields is None:
             return HttpResponseBadRequest()
         endpoint, p256dh, auth = fields
-        subscription, _created = WebPushDevice.objects.update_or_create(
+        subscription = WebPushDevice.objects.update_or_create(
             user=request.user,
             registration_id=endpoint,
             defaults={
@@ -98,7 +98,7 @@ class SubscribeView(LoginRequiredMixin, View):
                 "active": True,
                 "name": request.headers.get("User-Agent", "")[:NAME_LENGTH],
             },
-        )
+        )[0]
         request.session[SESSION_KEY] = True
         PushChannel().send_test(subscription)
         return HttpResponse(status=204)
