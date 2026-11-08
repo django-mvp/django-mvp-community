@@ -2,18 +2,18 @@
 
 Every decision below was made while the specification was written, where the issue was silent.
 
-## D1 — Push ships in the notifications extra and is off until it is set up
+## D1 — Push is an extra of its own, and is off until it is set up
 
-**Decision:** django-push-notifications, with the web push dependencies it names, is added to the
-`notifications` extra. Push is a channel only once the project adds django-push-notifications'
-app and the push settings. Without them the preferences page shows no push column and offers no
-way to turn push on (FR-002), as the page shows no email column without the mail extra.
-**Why:** CONTEXT.md and docs/developer/brainstorm.md name four extras and put web push in
-`notifications`. A fifth extra would be new public vocabulary for a channel of the same feature.
-**Risk:** G2 says a project never carries the packages of a feature it does not use. A project
-with notifications but no push carries the web push libraries. Planning weighs their size, and if
-it finds that weight unreasonable it proposes a separate extra as an amendment to this decision.
-**ADR:** at planning, beside ADR 0003, if the channel registration differs from the email channel's.
+**Decision:** django-push-notifications with its web push dependencies, and ua-parser, form a fifth
+extra, `push`, with its own integration module, `mvp_community.integrations.push`. Push is a
+channel only once the project installs that extra and adds django-push-notifications' app and
+settings. Without them the preferences page shows no push card or column (FR-002), as the page
+shows no email column without the mail extra.
+**Why:** pywebpush brings aiohttp, cryptography, requests, http-ece and py-vapid. Inside the
+`notifications` extra, every project with notifications would carry them whether it pushes or
+not, which G2 rules out. The brainstorm put push in `notifications` before the dependency tree was
+looked at.
+**ADR:** to be decided at convergence, with D2.
 
 ## D2 — The package ships the service worker; the host project configures keys and URLs only
 
@@ -66,10 +66,10 @@ already marks a notification read on the way to its address.
 
 ## D8 — A push is written in the recipient's language, as email is
 
-**Decision:** the push text is written in the language the email channel's `recipient_language`
-returns for the person (FR-006).
-**Why:** Django stores no language per person, and FS-004 (D10) already gave projects one place
-to say which language a person reads.
+**Decision:** the push channel has its own `recipient_language`, returning `LANGUAGE_CODE` like the
+email channel's (FR-006). A project that stores a language per person overrides both.
+**Why:** Django stores no language per person. The email channel exists only with the mail extra,
+so the push channel cannot borrow its method.
 
 ## D9 — Signing out does not stop push
 
@@ -101,3 +101,23 @@ planned.
 **Why:** turning push on is a flow across several steps, with a different message for a refusal, a
 blocked browser, a browser that cannot receive push and a phone that needs the home screen first,
 and the list of subscriptions is a part of the page nobody has drawn.
+
+## D13 — One existing test fixture removes the push channel too
+
+**Decision:** the `without_mail` fixture in the notifications view tests keeps only the website
+channel, so it now removes `push` as well as `email`.
+**Why:** the suite runs every extra, so push is registered in it. The fixture's tests describe a
+project with the site as its only channel, which is still what they assert.
+
+## D14 — The public key is derived from the private key
+
+**Decision:** the page reads the public key from the private key django-push-notifications already
+holds, with py-vapid. There is no setting for it.
+**Why:** one setting fewer, and the two can never disagree.
+
+## D15 — The service worker is served by a view from a template, at its own scope
+
+**Decision:** `notifications/push/worker.js` renders `mvp_community/push/worker.js`. It controls no
+pages.
+**Why:** a worker must come from the site's origin, and a template keeps it overridable (G3).
+Push and notification clicks reach a registration whatever its scope.

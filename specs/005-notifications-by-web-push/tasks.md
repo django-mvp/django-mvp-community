@@ -1,0 +1,101 @@
+# Tasks — 005 Notifications by web push
+
+**Branch**: `005-notifications-by-web-push` · **Plan**: [plan.md](plan.md) · **Research**: [research.md](research.md) · **Spec**: [spec.md](spec.md) · **Sketch**: [sketch.md](sketch.md)
+
+Groups run one after another, never in parallel. Every task with behaviour follows the red-green-refactor cycle of Article I. A task is done when its tests pass, the tree is green and the work is committed. The push card's markup, copy and order approved in the sketch are kept. The Python the sketch wrote is deleted and replaced, test-first.
+
+## Order
+
+US1 → US2 → US3.
+
+---
+
+## Phase 1: User Story 1 — A developer sends notifications by push (P1)
+
+Issue: #30. Delivers FR-001 to FR-007, FR-017 to FR-019.
+
+### Group 1
+
+- [ ] T001 [US1] The `push` extra, the integration module's set-up and the demo's push configuration
+
+**Files**: `pyproject.toml`, `uv.lock`, `mvp_community/apps.py`, `mvp_community/integrations/push/__init__.py`, `mvp_community/integrations/push/setup.py`, `mvp_community/integrations/push/channels.py`, `mvp_community/integrations/push/checks.py`, `demo/settings.py`, `demo/urls.py`, `demo/apps.py`, `demo/sketch_push.py` (deleted), `.gitignore`, `tests/test_integrations/test_push/__init__.py`, `tests/test_integrations/test_push/test_setup.py`, `tests/test_integrations/test_notifications/test_views.py` (fixture `without_mail` only)
+
+Plan, *The extra*, *Set-up*, *System check*, *The demo* (without `seed_push`). `PushChannel` with its class attributes and an empty `send_now`. Tests 1 and 3. The sketch's stand-ins are removed in this task.
+
+- [ ] T002 [US1] The channel sends each notification to every active subscription of its recipient
+
+**Files**: `mvp_community/integrations/push/channels.py`, `tests/test_integrations/test_push/test_channels.py`
+
+Plan, *The channel*, `recipient_language`, `payload` and `send_now`. Test 4.
+
+### Group 2
+
+- [ ] T003 [US1] The preferences page shows push only when it is set up
+
+**Files**: `mvp_community/integrations/notifications/views.py`, `mvp_community/integrations/push/subscriptions.py`, `mvp_community/templates/mvp_community/notifications/preferences.html`, `tests/test_integrations/test_push/test_preferences.py`
+
+Plan, *The preferences page*, with `card_context` returning the active subscriptions and the public key. Test 2. The card renders from real context; the stand-in URLs are gone from the template.
+
+- [ ] T004 [US1] The developer documentation for push
+
+**Files**: `docs/developer/push.md`, `docs/developer/notifications.md`, `README.md`, `CONTEXT.md`
+
+Plan, *Documentation*. Every example runs against the branch.
+
+---
+
+## Phase 2: User Story 2 — A person turns push on for the browser they are using (P1)
+
+Issue: #31. Delivers FR-008 to FR-011, FR-016, FR-017, FR-019.
+
+### Group 3
+
+- [ ] T005 [US2] The public key and the browser's name
+
+**Files**: `mvp_community/integrations/push/subscriptions.py`, `tests/test_integrations/test_push/test_subscriptions.py`
+
+Plan, *The key and the browser name*. Test 5.
+
+- [ ] T006 [US2] The subscribe view stores one subscription per person and browser and sends a test push
+
+**Files**: `mvp_community/integrations/push/views.py`, `mvp_community/integrations/push/urls.py`, `mvp_community/integrations/push/channels.py`, `mvp_community/integrations/push/subscriptions.py`, `tests/test_integrations/test_push/test_views.py`
+
+Plan, *The views*, `subscribe`, and `send_test`. Test 6.
+
+- [ ] T007 [US2] The service worker shows a push and opens the notification
+
+**Files**: `mvp_community/integrations/push/views.py`, `mvp_community/integrations/push/urls.py`, `mvp_community/templates/mvp_community/push/worker.js`, `tests/test_integrations/test_push/test_views.py`, `tests/templates/overrides/**`
+
+Plan, *The views*, `worker`, and *The service worker*. Test 9.
+
+- [ ] T008 [US2] The push card picks its state in the browser and turns push on
+
+**Files**: `mvp_community/templates/cotton/mvp_community/notifications/push_card.html`, `tests/test_integrations/test_push/test_preferences.py`
+
+Plan, *The push card*, every state block and the script. The card's data attributes and no-script note are tested (test 8, those parts); the script is checked in a browser at the walkthrough.
+
+---
+
+## Phase 3: User Story 3 — A person sees and stops their push subscriptions (P2)
+
+Issue: #32. Delivers FR-012 to FR-015, FR-017, FR-019.
+
+### Group 4
+
+- [ ] T009 [US3] The list of the person's browsers receiving push
+
+**Files**: `mvp_community/integrations/push/subscriptions.py`, `mvp_community/templates/cotton/mvp_community/notifications/push_card.html`, `tests/test_integrations/test_push/test_preferences.py`
+
+Plan, *The push card*, the rows. Test 8, the list.
+
+- [ ] T010 [US3] Stopping push to one browser
+
+**Files**: `mvp_community/integrations/push/views.py`, `mvp_community/integrations/push/urls.py`, `mvp_community/templates/cotton/mvp_community/notifications/push_card.html`, `tests/test_integrations/test_push/test_views.py`
+
+Plan, *The views*, `stop`, and the row's form. Test 7.
+
+- [ ] T011 [US3] The demo seeds push subscriptions to walk the list
+
+**Files**: `demo/management/commands/seed_push.py`, `tests/test_demo.py`
+
+Plan, *The demo*, `seed_push`, following `seed_demo`'s refusal without DEBUG.
