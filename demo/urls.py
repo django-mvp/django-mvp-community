@@ -51,6 +51,7 @@ urlpatterns = [
     ),
     path("", include("mvp_community.integrations.notifications.urls")),
     path("", include("mvp_community.integrations.activity.urls")),
+    path("", include("mvp_community.integrations.push.urls")),
     # django-mvp's Account Center, with a development sign-in and sign-out
     # until an account app such as allauth is installed.
     path("", include("mvp.urls")),

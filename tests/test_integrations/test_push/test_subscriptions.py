@@ -41,9 +41,11 @@ push_urlpatterns = (
     "mvp_community_push",
 )
 
+# First, because the demo's own push routes share the namespace and the first
+# include in a urlconf is the one a name reverses to.
 urlpatterns = [
-    *suite_urlpatterns,
     path("notifications/push/", include(push_urlpatterns)),
+    *suite_urlpatterns,
 ]
 
 

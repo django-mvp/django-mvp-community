@@ -6,25 +6,13 @@ from pathlib import Path
 
 import pytest
 import requests
-from django.urls import include, path, reverse
+from django.urls import reverse
 from push_notifications.models import WebPushDevice
-
-from tests.urls import urlpatterns as suite_urlpatterns
-
-urlpatterns = [
-    *suite_urlpatterns,
-    path("", include("mvp_community.integrations.push.urls")),
-]
 
 SUBSCRIBE_URL = "/notifications/push/subscribe/"
 OVERRIDES = Path(__file__).resolve().parent.parent.parent / "templates" / "overrides"
 ENDPOINT = "https://fcm.googleapis.com/fcm/send/abc"
 USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) Firefox/121.0"
-
-
-@pytest.fixture(autouse=True)
-def push_urls(settings):
-    settings.ROOT_URLCONF = __name__
 
 
 @pytest.fixture
