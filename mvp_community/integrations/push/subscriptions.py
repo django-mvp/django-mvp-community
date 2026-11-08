@@ -127,16 +127,23 @@ def card_context(request):
 
     Returns:
         A dict with the person's active ``subscriptions``, newest first,
+        each carrying the ``reader``, the ``Browser`` read from its stored
+        user agent,
         whether push was ``just_turned_on`` (read once from the session), the
         ``application_server_key`` the browser subscribes with, and the
         ``worker_url`` and ``subscribe_url`` the card's script uses. The URLs
         resolve when they are rendered, so a project that has not included the
         push routes fails on the card, not on every page.
     """
+    subscriptions = list(
+        WebPushDevice.objects.filter(user=request.user, active=True).order_by(
+            "-date_created", "-pk"
+        )
+    )
+    for subscription in subscriptions:
+        subscription.reader = Browser.from_user_agent(subscription.name)
     return {
-        "subscriptions": WebPushDevice.objects.filter(
-            user=request.user, active=True
-        ).order_by("-date_created", "-pk"),
+        "subscriptions": subscriptions,
         "just_turned_on": bool(request.session.pop(SESSION_KEY, False)),
         "application_server_key": application_server_key(),
         "worker_url": reverse_lazy("mvp_community_push:worker"),

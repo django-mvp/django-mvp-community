@@ -1,6 +1,7 @@
 """The preferences page, with and without the push channel."""
 
 import copy
+import re
 from base64 import urlsafe_b64decode
 from datetime import timedelta
 from pathlib import Path
@@ -140,6 +141,37 @@ class TestPreferencesWithPush:
         push = client.get(PREFERENCES_URL).context["push"]
 
         assert [row.pk for row in push["subscriptions"]] == [mine.pk]
+
+    def test_each_subscription_is_paired_with_the_browser_in_its_user_agent(
+        self, client, signed_in
+    ) -> None:
+        subscribe(signed_in, "https://fcm.googleapis.com/mine", name=IPHONE)
+
+        push = client.get(PREFERENCES_URL).context["push"]
+
+        (row,) = push["subscriptions"]
+        assert row.reader == Browser.from_user_agent(IPHONE)
+
+    def test_each_row_has_the_icon_for_its_kind_of_browser(
+        self, client, signed_in
+    ) -> None:
+        subscribe(signed_in, "https://fcm.googleapis.com/phone", name=IPHONE)
+        subscribe(signed_in, "https://fcm.googleapis.com/pc", name=WINDOWS_FIREFOX)
+
+        page = client.get(PREFERENCES_URL).content.decode()
+
+        assert re.search(r"bi-phone(?![-\w])", page)
+        assert "bi-laptop" in page
+
+    def test_a_row_names_the_browser_by_its_label_not_the_raw_user_agent(
+        self, client, signed_in
+    ) -> None:
+        subscribe(signed_in, "https://fcm.googleapis.com/phone", name=IPHONE)
+
+        page = client.get(PREFERENCES_URL).content.decode()
+
+        assert str(Browser.from_user_agent(IPHONE).label) in page
+        assert IPHONE not in page
 
     def test_the_card_has_a_noscript_element(self, client, signed_in) -> None:
         page = client.get(PREFERENCES_URL).content.decode()

@@ -39,16 +39,16 @@
       <c-list class="-mx-2" only>
         {% for subscription in push.subscriptions %}
           <c-list.row class="items-center px-2" data-endpoint="{{ subscription.registration_id }}" only>
-            <c-icon name="notifications.push" class="text-xl text-base-content/70" aria-hidden="true" only />
+            <c-icon name="notifications.push.{{ subscription.reader.kind }}" class="text-xl text-base-content/70" aria-hidden="true" only />
             <div class="list-col-grow min-w-0">
-              <c-mvp.text tight class="break-words" only>{{ subscription.name }}</c-mvp.text>
+              <c-mvp.text tight class="break-words" only>{{ subscription.reader.label }}</c-mvp.text>
               <c-mvp.text muted tight size="sm" only>
                 <span x-show="endpoint !== '' && endpoint === $el.closest('[data-endpoint]').dataset.endpoint" x-cloak>{% trans "This browser" %} · </span>{% blocktrans with date=subscription.date_created|date:"j F Y" %}Turned on {{ date }}{% endblocktrans %}
               </c-mvp.text>
             </div>
             <form method="post" action="{% url "mvp_community_push:stop" subscription.pk %}">
               {% csrf_token %}
-              {% blocktrans asvar stop_label with name=subscription.name %}Stop push to {{ name }}{% endblocktrans %}
+              {% blocktrans asvar stop_label with name=subscription.reader.label %}Stop push to {{ name }}{% endblocktrans %}
               <c-button type="submit" ghost size="sm" aria-label="{{ stop_label }}" only>{% trans "Stop" %}</c-button>
             </form>
           </c-list.row>
