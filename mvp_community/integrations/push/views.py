@@ -21,6 +21,7 @@ from push_notifications.models import WebPushDevice
 from .subscriptions import SESSION_KEY, Browser, is_push_endpoint
 
 NAME_LENGTH = 255
+SUBSCRIPTION_LIMIT = 20
 P256DH_BYTES = 65
 AUTH_BYTES = 16
 
@@ -97,6 +98,23 @@ class SubscribeView(LoginRequiredMixin, View):
             return None
         return endpoint, p256dh, auth, previous
 
+    @staticmethod
+    def keep_within_limit(user):
+        """Delete the person's oldest subscriptions beyond ``SUBSCRIPTION_LIMIT``.
+
+        Every notification is sent to each of a person's subscriptions, so the
+        number is capped.
+
+        Args:
+            user: The person who just stored a subscription.
+        """
+        beyond = WebPushDevice.objects.filter(user=user).order_by(
+            "-date_created", "-pk"
+        )[SUBSCRIPTION_LIMIT:]
+        WebPushDevice.objects.filter(
+            pk__in=list(beyond.values_list("pk", flat=True))
+        ).delete()
+
     def post(self, request):
         """Store the subscription, remember it for the card and send a test.
 
@@ -128,6 +146,7 @@ class SubscribeView(LoginRequiredMixin, View):
                 "name": request.headers.get("User-Agent", "")[:NAME_LENGTH],
             },
         )[0]
+        self.keep_within_limit(request.user)
         request.session[SESSION_KEY] = True
         registry.get_channel("push")().send_test(subscription)
         return HttpResponse(status=204)

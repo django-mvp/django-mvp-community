@@ -12,6 +12,7 @@ from generic_notifications.registry import registry
 from push_notifications.models import WebPushDevice
 
 from mvp_community.integrations.push.channels import PushChannel
+from mvp_community.integrations.push.views import SUBSCRIPTION_LIMIT
 from tests.factories import AUTH, P256DH, PushSubscriptionFactory, urlsafe
 
 SUBSCRIBE_URL = "/notifications/push/subscribe/"
@@ -297,3 +298,32 @@ class TestSubscribeViewUsesTheRegisteredChannel:
         post(client, body())
 
         assert tested == [ENDPOINT]
+
+
+class TestSubscribeViewLimit:
+    def test_the_person_s_oldest_beyond_the_limit_are_deleted(
+        self, client, signed_in, sent
+    ) -> None:
+        kept = [
+            PushSubscriptionFactory(user=signed_in) for _ in range(SUBSCRIPTION_LIMIT)
+        ]
+
+        post(client, body())
+
+        endpoints = set(
+            WebPushDevice.objects.filter(user=signed_in).values_list(
+                "registration_id", flat=True
+            )
+        )
+        assert len(endpoints) == SUBSCRIPTION_LIMIT
+        assert ENDPOINT in endpoints
+        assert kept[0].registration_id not in endpoints
+
+    def test_another_person_s_subscriptions_are_not_counted(
+        self, client, signed_in, sent
+    ) -> None:
+        PushSubscriptionFactory.create_batch(SUBSCRIPTION_LIMIT)
+
+        post(client, body())
+
+        assert WebPushDevice.objects.count() == SUBSCRIPTION_LIMIT + 1

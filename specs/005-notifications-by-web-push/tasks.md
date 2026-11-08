@@ -141,3 +141,9 @@ Guards T013: on the live server the card reaches the offer state; with the old w
 **Files**: `mvp_community/integrations/push/views.py`, `docs/developer/push.md`, `demo/settings.py`, `tests/factories.py`, `tests/test_integrations/test_push/test_channels.py`, `tests/test_integrations/test_push/test_subscriptions.py`, `tests/test_integrations/test_push/test_views.py`
 
 The test push goes through the registered push channel, so a project's subclass applies; the guide shows the URL include; the demo's key variable has no leading underscore; push subscriptions in the tests come from one factory; the empty-list test fails when the guard is removed.
+
+- [ ] T018 [US2] Keep at most 20 push subscriptions per person
+
+**Files**: `mvp_community/integrations/push/views.py`, `docs/developer/push.md`, `tests/test_integrations/test_push/test_views.py`
+
+Closes the review's open medium: storing a subscription deletes the person's oldest beyond `SUBSCRIPTION_LIMIT`, since every notification is sent to each one.
