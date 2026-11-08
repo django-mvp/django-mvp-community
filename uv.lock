@@ -1047,8 +1047,10 @@ notifications = [
     { name = "django-generic-notifications" },
 ]
 push = [
+    { name = "cryptography" },
     { name = "django-generic-notifications" },
     { name = "django-push-notifications", extra = ["wp"] },
+    { name = "py-vapid" },
     { name = "requests" },
     { name = "ua-parser" },
 ]
@@ -1061,6 +1063,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "cryptography", marker = "extra == 'push'", specifier = ">=42" },
     { name = "django", specifier = ">=5.2" },
     { name = "django-activity-stream", marker = "extra == 'activity'", specifier = ">=2.0" },
     { name = "django-anymail", marker = "extra == 'mail'", specifier = ">=13" },
@@ -1069,6 +1072,7 @@ requires-dist = [
     { name = "django-mvp", specifier = ">=0.28.1" },
     { name = "django-post-office", marker = "extra == 'mail'", specifier = ">=3.12" },
     { name = "django-push-notifications", extras = ["wp"], marker = "extra == 'push'", specifier = ">=3.3" },
+    { name = "py-vapid", marker = "extra == 'push'", specifier = ">=1.9" },
     { name = "requests", marker = "extra == 'push'", specifier = ">=2.31" },
     { name = "ua-parser", marker = "extra == 'push'", specifier = ">=1.0" },
 ]

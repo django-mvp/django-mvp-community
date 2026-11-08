@@ -108,6 +108,10 @@ The push routes are included at the root, with the namespace `mvp_community_push
 | `subscribe` | `notifications/push/subscribe/` | Stores a browser's subscription for the signed-in person and sends a test push. |
 | `stop` | `notifications/push/<pk>/stop/` | Deletes one of the signed-in person's own subscriptions. |
 
+The views behind the `worker` and `subscribe` routes are `WorkerView` and `SubscribeView` in `mvp_community.integrations.push.views`. `SubscribeView` reads the JSON a browser's push manager produces and answers 204, or 400 with nothing stored when the endpoint, the `p256dh` key or the `auth` secret is missing or too long. It accepts an endpoint only when `is_push_endpoint` in `mvp_community.integrations.push.subscriptions` says it is on a push service the major browsers use: `fcm.googleapis.com`, `updates.push.services.mozilla.com`, `web.push.apple.com`, or a host ending in `.notify.windows.com` or `.push.apple.com`. Anything else is refused, so a signed-in person cannot make your server post to an address of their choosing.
+
+`Browser.from_user_agent` in the same module reads a browser's `family`, `place` and `kind` (`phone`, `tablet` or `computer`) from a user agent string, and its `label` is the translated name, such as "Chrome on Android".
+
 ## Check your settings
 
 Starting the project runs the system check `mvp_community.E002`, which reports a missing or empty `WP_PRIVATE_KEY`, and `WP_CLAIMS` that are missing or have no `sub`. Each is reported as its own error naming the setting.
