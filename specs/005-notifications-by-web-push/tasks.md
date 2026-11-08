@@ -32,7 +32,7 @@ Plan, *The channel*, `recipient_language`, `payload` and `send_now`. Test 4.
 
 - [ ] T003 [US1] The preferences page shows push only when it is set up
 
-**Files**: `mvp_community/integrations/notifications/views.py`, `mvp_community/integrations/push/subscriptions.py`, `mvp_community/templates/mvp_community/notifications/preferences.html`, `tests/test_integrations/test_push/test_preferences.py`
+**Files**: `mvp_community/integrations/notifications/views.py`, `mvp_community/integrations/push/subscriptions.py`, `mvp_community/templates/mvp_community/notifications/preferences.html`, `tests/test_integrations/test_push/test_subscriptions.py`
 
 Plan, *The preferences page*, with `card_context` returning the active subscriptions and the two URLs only; the public key is added in T005 and each row's `Browser` in T009. Test 2. The card renders from real context; the stand-in URLs are gone from the template.
 
@@ -70,7 +70,7 @@ Plan, *The views*, `worker`, and *The service worker*. Test 9.
 
 - [ ] T008 [US2] The push card picks its state in the browser and turns push on
 
-**Files**: `mvp_community/templates/cotton/mvp_community/notifications/push_card.html`, `tests/test_integrations/test_push/test_preferences.py`
+**Files**: `mvp_community/templates/cotton/mvp_community/notifications/push_card.html`, `tests/test_integrations/test_push/test_subscriptions.py`
 
 Plan, *The push card*, every state block, the script and the `@prop` header. The card's data attributes, the `<noscript>` element and a project's override of the component are tested (test 8, those parts); the script is checked in a browser at the walkthrough.
 
@@ -84,7 +84,7 @@ Issue: #32. Delivers FR-012 to FR-015, FR-017, FR-019.
 
 - [ ] T009 [US3] The list of the person's browsers receiving push
 
-**Files**: `mvp_community/integrations/push/subscriptions.py`, `mvp_community/templates/cotton/mvp_community/notifications/push_card.html`, `tests/test_integrations/test_push/test_preferences.py`
+**Files**: `mvp_community/integrations/push/subscriptions.py`, `mvp_community/templates/cotton/mvp_community/notifications/push_card.html`, `tests/test_integrations/test_push/test_subscriptions.py`
 
 Plan, *The push card*, the rows, each with the `Browser` read from its stored user agent. Test 8, the list.
 
