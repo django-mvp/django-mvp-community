@@ -68,8 +68,10 @@
 - Stop acts at once, with no confirmation: push can be turned on again on any browser the person
   still holds.
 
-## Open question
+- At phone width the grid of types and channels scrolls sideways inside its own box, so the last
+  channel column may start out of view. The table keeps its normal size (ruled at the sketch
+  review, 2026-11-08).
 
-- At phone width the grid now has three channel columns beside the type names, and scrolls
-  sideways by about one column, so Email starts out of view. A smaller table size did not fit it
-  and shrank the type names, so it was not kept.
+## Sketch review
+
+Approved by the maintainer on 2026-11-08 with no changes asked for.
