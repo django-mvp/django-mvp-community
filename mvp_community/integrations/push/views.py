@@ -2,9 +2,13 @@
 
 import json
 
+from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseBadRequest
+from django.utils.decorators import method_decorator
 from django.views import View
+from django.views.decorators.cache import cache_control
+from django.views.generic import TemplateView
 from push_notifications.models import WebPushDevice
 
 from .channels import PushChannel
@@ -14,6 +18,21 @@ NAME_LENGTH = 255
 P256DH_LENGTH = 88
 AUTH_LENGTH = 24
 SESSION_KEY = "mvp_community_push_turned_on"
+
+
+@method_decorator(
+    [login_not_required, cache_control(no_cache=True)],
+    name="dispatch",
+)
+class WorkerView(TemplateView):
+    """Serve the service worker that shows a push and opens it on a click.
+
+    A browser fetches it signed out too, and checks it for a change on every
+    visit, so it is never kept without revalidating.
+    """
+
+    template_name = "mvp_community/push/worker.js"
+    content_type = "text/javascript"
 
 
 class SubscribeView(LoginRequiredMixin, View):

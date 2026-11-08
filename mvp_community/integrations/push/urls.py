@@ -11,6 +11,7 @@ from . import views
 app_name = "mvp_community_push"
 
 urlpatterns = [
+    path("notifications/push/worker.js", views.WorkerView.as_view(), name="worker"),
     path(
         "notifications/push/subscribe/", views.SubscribeView.as_view(), name="subscribe"
     ),

@@ -1,6 +1,8 @@
 """The push views, asserted through what they store and answer."""
 
+import copy
 import json
+from pathlib import Path
 
 import pytest
 import requests
@@ -15,6 +17,7 @@ urlpatterns = [
 ]
 
 SUBSCRIBE_URL = "/notifications/push/subscribe/"
+OVERRIDES = Path(__file__).resolve().parent.parent.parent / "templates" / "overrides"
 ENDPOINT = "https://fcm.googleapis.com/fcm/send/abc"
 USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) Firefox/121.0"
 
@@ -163,3 +166,30 @@ class TestSubscribeView:
         post(client, body())
 
         assert client.session["mvp_community_push_turned_on"] is True
+
+
+class TestWorkerView:
+    def test_the_route_is_where_the_card_expects_it(self) -> None:
+        assert reverse("mvp_community_push:worker") == "/notifications/push/worker.js"
+
+    def test_it_is_served_signed_out_as_javascript(self, client, db) -> None:
+        response = client.get(reverse("mvp_community_push:worker"))
+
+        assert response.status_code == 200
+        assert response["Content-Type"].startswith("text/javascript")
+
+    def test_the_browser_revalidates_it_every_time(self, client, db) -> None:
+        response = client.get(reverse("mvp_community_push:worker"))
+
+        assert response["Cache-Control"] == "no-cache"
+
+    def test_a_project_replaces_it_with_its_own_template(
+        self, client, db, settings
+    ) -> None:
+        templates = copy.deepcopy(settings.TEMPLATES)
+        templates[0]["DIRS"] = [*templates[0]["DIRS"], OVERRIDES / "worker"]
+        settings.TEMPLATES = templates
+
+        response = client.get(reverse("mvp_community_push:worker"))
+
+        assert response.content.decode().strip() == "// project worker"
