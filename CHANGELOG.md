@@ -22,6 +22,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Notification email and digests are sent in a project whose user model has a UUID primary key.
+  Building the unsubscribe link failed there, because the key was signed as a JSON value, so no
+  notification email went out. The key is now signed as text. Links in email already sent keep
+  working.
+- An unsubscribe link whose signed key the user model cannot hold now opens the invalid-link page
+  instead of failing with a server error.
+
 ## [v0.1.0] - 2026-11-09
 
 ### Added

@@ -24,6 +24,15 @@ class UserFactory(factory.django.DjangoModelFactory):
         return cls._get_manager(model_class).create_user(*args, **kwargs)
 
 
+class UUIDUserFactory(factory.django.DjangoModelFactory):
+    """A person whose primary key is a UUID, as some host projects' user models have."""
+
+    class Meta:
+        model = "uuid_users.UUIDUser"
+
+    email = factory.Sequence(lambda n: f"uuid{n}@example.com")
+
+
 class GroupFactory(factory.django.DjangoModelFactory):
     """A group of people, which the demo lets a person follow."""
 

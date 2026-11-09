@@ -68,6 +68,40 @@ class TestRead:
         assert read.user == person
         assert sorted(t.key for t in read.types) == sorted(KEYS)
 
+    def test_it_reads_back_a_person_whose_key_is_a_uuid(self, uuid_person) -> None:
+        link = UnsubscribeLink.for_email(uuid_person, KEYS)
+        token = link.path.rstrip("/").rsplit("/", 1)[-1]
+
+        read = UnsubscribeLink.read(token)
+
+        assert read.user == uuid_person
+        assert sorted(t.key for t in read.types) == sorted(KEYS)
+
+    def test_a_token_carrying_a_numeric_key_still_reads(self, person) -> None:
+        # Links in email sent before keys were signed as text carry the number.
+        token = signing.dumps(
+            {"u": person.pk, "t": KEYS},
+            salt="mvp_community.notifications.unsubscribe",
+        )
+
+        assert UnsubscribeLink.read(token).user == person
+
+    def test_a_signed_key_that_is_not_a_uuid_is_invalid(self, uuid_person) -> None:
+        token = signing.dumps(
+            {"u": "not-a-uuid", "t": KEYS},
+            salt="mvp_community.notifications.unsubscribe",
+        )
+
+        assert UnsubscribeLink.read(token) is None
+
+    def test_a_signed_key_that_is_not_a_number_is_invalid(self, person) -> None:
+        token = signing.dumps(
+            {"u": "not-a-number", "t": KEYS},
+            salt="mvp_community.notifications.unsubscribe",
+        )
+
+        assert UnsubscribeLink.read(token) is None
+
     def test_an_altered_token_is_invalid(self, person) -> None:
         link = UnsubscribeLink.for_email(person, KEYS)
         token = link.path.rstrip("/").rsplit("/", 1)[-1]
