@@ -19,34 +19,27 @@
                 <tr>
                   <th scope="col">{% trans "Notification" %}</th>
                   {% for channel in channels %}
-                    <th scope="col" class="text-center">{{ channel.name }}</th>
+                    <th scope="col" class="text-center px-2">{{ channel.name }}</th>
                   {% endfor %}
                 </tr>
               </thead>
               <tbody>
                 {% for row in preferences %}
-                  <tr x-data="{ email: {{ row.channels.email.enabled|yesno:'true,false' }}, frequency: '{{ row.notification_frequency }}' }" @change="if ($event.target.name.endsWith('__email')) email = $event.target.checked">
-                    <th scope="row" class="font-normal">
+                  {# A type with a frequency row below it draws its rule under that row instead. #}
+                  {% if frequencies|length > 1 and row.offers_frequency %}
+                    {% firstof "border-0" as cell_class %}
+                  {% else %}
+                    {% firstof "" as cell_class %}
+                  {% endif %}
+                  <tr>
+                    <th scope="row" class="font-normal {{ cell_class }}">
                       <span class="font-medium">{{ row.notification_type.name }}</span>
                       {% if row.notification_type.description %}
                         <c-mvp.text muted tight size="sm" :text="row.notification_type.description" only />
                       {% endif %}
-                      {% if frequencies|length > 1 and row.offers_frequency %}
-                        {% blocktrans asvar frequency_label with type=row.notification_type.name %}How often {{ type }} arrive by email{% endblocktrans %}
-                        <c-join class="mt-2" only>
-                          <span class="join-item input input-xs w-auto text-base-content/70" aria-hidden="true">{% trans "Email" %}</span>
-                          <c-form.select name="{{ row.notification_type.key }}__frequency" size="xs" class="join-item w-auto" aria-label="{{ frequency_label }}" x-bind:disabled="!email" x-model="frequency" only>
-                            {% for key, label in frequencies %}
-                              <option value="{{ key }}"{% if key == row.notification_frequency %} selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                          </c-form.select>
-                        </c-join>
-                        {# A disabled select is not sent, so the choice rides here while email is off. The server writes both attributes, so the form works without script too. #}
-                        <input type="hidden" name="{{ row.notification_type.key }}__frequency" value="{{ row.notification_frequency }}"{% if row.channels.email.enabled %} disabled{% endif %} x-bind:disabled="email" x-bind:value="frequency">
-                      {% endif %}
                     </th>
                     {% for key, choice in row.channels.items %}
-                      <td class="text-center">
+                      <td class="text-center px-2 {{ cell_class }}">
                         {% if choice.forbidden %}
                           <span aria-hidden="true">—</span><span class="sr-only">{% trans "Not available" %}</span>
                         {% else %}
@@ -62,6 +55,24 @@
                       </td>
                     {% endfor %}
                   </tr>
+                  {% if frequencies|length > 1 and row.offers_frequency %}
+                    {# How often sits on a row of its own across the table, so it never widens the first column and every channel stays in reach on a phone. #}
+                    <tr x-data="{ email: {{ row.channels.email.enabled|yesno:'true,false' }}, frequency: '{{ row.notification_frequency }}' }" @change.window="if ($event.target.name === '{{ row.notification_type.key|escapejs }}__email') email = $event.target.checked">
+                      <td colspan="{{ channels|length|add:1 }}" class="pt-0">
+                        {% blocktrans asvar frequency_label with type=row.notification_type.name %}How often {{ type }} arrive by email{% endblocktrans %}
+                        <c-join only>
+                          <span class="join-item input input-xs w-auto text-base-content/70" aria-hidden="true">{% trans "Email" %}</span>
+                          <c-form.select name="{{ row.notification_type.key }}__frequency" size="xs" class="join-item w-auto" aria-label="{{ frequency_label }}" x-bind:disabled="!email" x-model="frequency" only>
+                            {% for key, label in frequencies %}
+                              <option value="{{ key }}"{% if key == row.notification_frequency %} selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                          </c-form.select>
+                        </c-join>
+                        {# A disabled select is not sent, so the choice rides here while email is off. The server writes both attributes, so the form works without script too. #}
+                        <input type="hidden" name="{{ row.notification_type.key }}__frequency" value="{{ row.notification_frequency }}"{% if row.channels.email.enabled %} disabled{% endif %} x-bind:disabled="email" x-bind:value="frequency">
+                      </td>
+                    </tr>
+                  {% endif %}
                 {% endfor %}
               </tbody>
           </c-table>

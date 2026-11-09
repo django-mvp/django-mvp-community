@@ -516,6 +516,48 @@ class TestPreferencesViewFrequency:
         assert (re.search(r"\sdisabled(\s|>|$)", hidden) is not None) is email_on
 
 
+@pytest.mark.django_db(transaction=True)
+class TestPreferencesViewInABrowser:
+    # Only what a real browser can measure belongs here. The demo registers the
+    # site, email and push channels, and types that offer a choice of how often.
+
+    def test_every_toggle_is_in_reach_on_a_phone_without_scrolling(
+        self, chromium, live_server, page, client, signed_in
+    ) -> None:
+        page.context.add_cookies(
+            [
+                {
+                    "name": settings.SESSION_COOKIE_NAME,
+                    "value": client.cookies[settings.SESSION_COOKIE_NAME].value,
+                    "url": live_server.url,
+                }
+            ]
+        )
+        page.set_viewport_size({"width": 390, "height": 844})
+
+        page.goto(live_server.url + PREFERENCES_URL)
+
+        measured = page.evaluate(
+            """() => {
+              const region = document.querySelector('form [role=region]');
+              const box = region.getBoundingClientRect();
+              const toggles = [...region.querySelectorAll('input[role=switch]')];
+              return {
+                overflow: region.scrollWidth - region.clientWidth,
+                toggles: toggles.length,
+                outside: toggles
+                  .filter((t) => t.getBoundingClientRect().right > box.right)
+                  .map((t) => t.name),
+              };
+            }"""
+        )
+        assert measured["toggles"] == len(registry.get_all_types()) * len(
+            registry.get_all_channels()
+        )
+        assert measured["outside"] == []
+        assert measured["overflow"] <= 0
+
+
 def unsubscribe_url(person, *notification_types):
     """The page address a link for these types leads to."""
     keys = [t.key for t in notification_types]

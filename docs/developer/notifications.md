@@ -146,7 +146,7 @@ class SecurityNotice(NotificationType):
     required_channels = [WebsiteChannel]
 ```
 
-Every registered type is listed on the preferences page against every channel. A channel the type requires is drawn on and cannot be turned off. A channel it forbids is drawn as unavailable. Beside the email column of each type, a person chooses how often its email arrives: as it happens, as a daily digest or as a weekly digest. The choice is saved with the rest of the page, and a type with nothing saved shows the frequency the type declares. The choice is greyed out while email is off for that type and is kept, so turning email back on does not lose it. A type with a required channel offers no choice, because its email always arrives as it happens. Without the mail extra there is no email channel and no choice is drawn.
+Every registered type is listed on the preferences page against every channel. A channel the type requires is drawn on and cannot be turned off. A channel it forbids is drawn as unavailable. On a line of its own under each type, a person chooses how often its email arrives: as it happens, as a daily digest or as a weekly digest. The choice is saved with the rest of the page, and a type with nothing saved shows the frequency the type declares. The choice is greyed out while email is off for that type and is kept, so turning email back on does not lose it. A type with a required channel offers no choice, because its email always arrives as it happens. Without the mail extra there is no email channel and no choice is drawn.
 
 The type's `name` and `description`, and the channel names, are shown exactly as django-generic-notifications and your project give them. This package does not translate them.
 
