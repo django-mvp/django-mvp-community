@@ -136,6 +136,11 @@ class PreferencesView(LoginRequiredMixin, MVPTemplateView):
             for frequency in registry.get_all_frequencies()
             if email_registered
         ]
+        if any(c.key == "push" for c in context["channels"]):
+            # Imported here so the notifications extra never needs the push one.
+            from mvp_community.integrations.push.subscriptions import card_context
+
+            context["push"] = card_context(self.request)
         return context
 
     def post(self, request):

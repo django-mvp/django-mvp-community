@@ -38,6 +38,14 @@ classifiers = [
 notifications = [
     "django-generic-notifications>=2.4",
 ]
+push = [
+    "django-generic-notifications>=2.4",
+    "django-push-notifications[wp]>=3.3",
+    "cryptography>=42",
+    "py-vapid>=1.9",
+    "requests>=2.31",
+    "ua-parser>=1.0",
+]
 mail = [
     "django-post-office>=3.12",
     "django-anymail>=13",
@@ -80,7 +88,7 @@ dev = [
     # The demo project and the suite run every extra, so a plain `uv sync`
     # installs them. The base-install test blocks them again to prove the
     # package imports without them.
-    "django-mvp-community[notifications,mail,activity]",
+    "django-mvp-community[notifications,push,mail,activity]",
 ]
 
 [tool.uv.sources]

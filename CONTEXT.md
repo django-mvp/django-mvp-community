@@ -21,7 +21,7 @@ _Avoid_: widget, partial, include, block.
 
 **Extra**:
 A feature a host project installs on request, named at install time:
-`notifications`, `mail`, `activity` or `sharecards`. An extra brings the
+`notifications`, `push`, `mail`, `activity` or `sharecards`. An extra brings the
 packages its feature is built on. Nothing in the base install depends on one.
 _Avoid_: plugin, module, add-on.
 

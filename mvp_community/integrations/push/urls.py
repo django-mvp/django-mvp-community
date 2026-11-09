@@ -1,0 +1,19 @@
+"""The push extra's routes.
+
+Include this at the root, ``path("", include(...))``, as django-mvp's own URLs
+are: each route chooses its own address.
+"""
+
+from django.urls import path
+
+from . import views
+
+app_name = "mvp_community_push"
+
+urlpatterns = [
+    path("notifications/push/worker.js", views.WorkerView.as_view(), name="worker"),
+    path(
+        "notifications/push/subscribe/", views.SubscribeView.as_view(), name="subscribe"
+    ),
+    path("notifications/push/<int:pk>/stop/", views.StopView.as_view(), name="stop"),
+]

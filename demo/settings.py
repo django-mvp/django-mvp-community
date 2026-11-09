@@ -3,6 +3,9 @@
 import os
 from pathlib import Path
 
+from py_vapid import Vapid01
+from py_vapid.utils import b64urlencode
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-demo-project-only"
@@ -28,6 +31,8 @@ INSTALLED_APPS = [
     # The notifications extra: the package it is built on.
     "generic_notifications",
     "actstream",
+    # The push extra: the package it is built on, with its own migrations.
+    "push_notifications",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -133,6 +138,10 @@ EASY_ICONS = {
             "overview": "bi bi-house",
             "notifications": "bi bi-bell",
             "notifications.preferences": "bi bi-sliders",
+            "notifications.push": "bi bi-phone-vibrate",
+            "notifications.push.phone": "bi bi-phone",
+            "notifications.push.tablet": "bi bi-tablet",
+            "notifications.push.computer": "bi bi-laptop",
             "activity": "bi bi-activity",
             "activity.follow": "bi bi-plus-lg",
             "activity.following": "bi bi-check2",
@@ -201,3 +210,19 @@ ABSOLUTE_URL_OVERRIDES = {
     "auth.user": lambda user: f"/people/{user.pk}/",
     "auth.group": lambda group: f"/groups/{group.pk}/",
 }
+
+# The push extra. The signing key is made when this file is imported and kept in
+# memory only, so nothing is written to disk. A restart gives a new key, which
+# retires the demo's earlier push subscriptions: the push services refuse a
+# message signed with a different key. A real project sets a key of its own.
+demo_push_key = Vapid01()
+demo_push_key.generate_keys()
+PUSH_NOTIFICATIONS_SETTINGS = {
+    "WP_PRIVATE_KEY": b64urlencode(
+        demo_push_key.private_key.private_numbers().private_value.to_bytes(32, "big")
+    ),
+    "WP_CLAIMS": {"sub": "mailto:admin@example.com"},
+}
+# The icon every push shows. Browsers draw a PNG wherever they show one, and
+# not all of them draw an SVG.
+MVP_COMMUNITY_PUSH_ICON = "demo/push-icon.png"

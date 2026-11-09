@@ -7,6 +7,9 @@
       <c-slot name="heading">{{ page.title_args.title }}</c-slot>
       <c-slot name="lead">{{ page.title_args.lead }}</c-slot>
     </c-mvp.page.title>
+    {% if push %}
+      <c-mvp_community.notifications.push_card :push="push" />
+    {% endif %}
     {% if preferences %}
       <form method="post">
         {% csrf_token %}

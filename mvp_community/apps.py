@@ -28,6 +28,15 @@ class MvpCommunityConfig(AppConfig):
             )
 
             setup.configure(apps.is_installed("post_office"))
+        if apps.is_installed("generic_notifications") and apps.is_installed(
+            "push_notifications"
+        ):
+            from mvp_community.integrations.push import (
+                checks as push_checks,  # noqa: F401
+            )
+            from mvp_community.integrations.push import setup as push_setup
+
+            push_setup.configure()
         if apps.is_installed("actstream"):
             from mvp_community.integrations.activity import (
                 menus as activity,  # noqa: F401

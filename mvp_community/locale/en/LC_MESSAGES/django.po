@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: django-mvp-community\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-06 06:02-0600\n"
+"POT-Creation-Date: 2026-11-08 06:32-0600\n"
 "PO-Revision-Date: 2026-11-05 00:00+0000\n"
 "Last-Translator: Samuel Jennings <samuel.scott.jennings@gmail.com>\n"
 "Language-Team: English\n"
@@ -20,49 +20,102 @@ msgid "Community"
 msgstr ""
 
 #: mvp_community/integrations/activity/menus.py:11
-#: mvp_community/integrations/activity/views.py:102
-#: mvp_community/integrations/activity/views.py:104
+#: mvp_community/integrations/activity/views.py:98
+#: mvp_community/integrations/activity/views.py:100
 #: mvp_community/templates/cotton/mvp_community/activity/following_card.html:4
 #: mvp_community/templates/mvp_community/activity/feed.html:5
 msgid "Following"
 msgstr ""
 
-#: mvp_community/integrations/activity/views.py:34
+#: mvp_community/integrations/activity/views.py:36
 msgid "Activity"
 msgstr ""
 
-#: mvp_community/integrations/activity/views.py:103
+#: mvp_community/integrations/activity/views.py:99
 msgid "The people and things whose activity reaches your feed."
 msgstr ""
 
-#: mvp_community/integrations/activity/views.py:104
-#: mvp_community/integrations/notifications/views.py:109
+#: mvp_community/integrations/activity/views.py:100
+#: mvp_community/integrations/notifications/views.py:120
 msgid "Account Center"
 msgstr ""
 
-#: mvp_community/integrations/notifications/menus.py:11
-#: mvp_community/integrations/notifications/views.py:27
+#: mvp_community/integrations/notifications/frequencies.py:12
 #: mvp_community/integrations/notifications/views.py:28
-#: mvp_community/integrations/notifications/views.py:109
+msgid "Weekly digest"
+msgstr ""
+
+#: mvp_community/integrations/notifications/frequencies.py:14
+msgid "Bundle notifications into a weekly email"
+msgstr ""
+
+#: mvp_community/integrations/notifications/menus.py:11
+#: mvp_community/integrations/notifications/views.py:38
+#: mvp_community/integrations/notifications/views.py:39
+#: mvp_community/integrations/notifications/views.py:120
 #: mvp_community/templates/cotton/mvp_community/notifications/bell.html:10
 #: mvp_community/templates/cotton/mvp_community/notifications/bell.html:23
 #: mvp_community/templates/cotton/mvp_community/notifications/preferences_card.html:4
 msgid "Notifications"
 msgstr ""
 
-#: mvp_community/integrations/notifications/views.py:107
+#: mvp_community/integrations/notifications/views.py:26
+msgid "As it happens"
+msgstr ""
+
+#: mvp_community/integrations/notifications/views.py:27
+msgid "Daily digest"
+msgstr ""
+
+#: mvp_community/integrations/notifications/views.py:118
 #: mvp_community/templates/mvp_community/notifications/list.html:11
-#: mvp_community/templates/mvp_community/notifications/preferences.html:14
+#: mvp_community/templates/mvp_community/notifications/preferences.html:17
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:36
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:40
+#: mvp_community/templates/notifications/email/unsubscribe_footer.html:5
 msgid "Notification preferences"
 msgstr ""
 
-#: mvp_community/integrations/notifications/views.py:108
+#: mvp_community/integrations/notifications/views.py:119
 #: mvp_community/templates/cotton/mvp_community/notifications/preferences_card.html:5
 msgid "Choose which notifications you receive, and where."
 msgstr ""
 
-#: mvp_community/integrations/notifications/views.py:129
+#: mvp_community/integrations/notifications/views.py:157
 msgid "Your notification preferences are saved."
+msgstr ""
+
+#: mvp_community/integrations/notifications/views.py:169
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:3
+#: mvp_community/templates/notifications/email/unsubscribe_footer.html:5
+msgid "Unsubscribe"
+msgstr ""
+
+#: mvp_community/integrations/push/channels.py:29
+msgid "Push"
+msgstr ""
+
+#: mvp_community/integrations/push/channels.py:94
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:5
+msgid "Push notifications"
+msgstr ""
+
+#: mvp_community/integrations/push/channels.py:95
+msgid "Push is on for this browser."
+msgstr ""
+
+#: mvp_community/integrations/push/subscriptions.py:113
+msgid "Unknown browser"
+msgstr ""
+
+#: mvp_community/integrations/push/subscriptions.py:116
+#, python-format
+msgid "%(family)s on %(place)s"
+msgstr ""
+
+#: mvp_community/integrations/push/views.py:131
+#, python-format
+msgid "Push to %(browser)s is stopped."
 msgstr ""
 
 #: mvp_community/templates/cotton/mvp_community/activity/entry.html:12
@@ -81,12 +134,12 @@ msgid_plural "%(counter)s followers"
 msgstr[0] ""
 msgstr[1] ""
 
-#: mvp_community/templates/cotton/mvp_community/activity/follow.html:17
+#: mvp_community/templates/cotton/mvp_community/activity/follow.html:18
 msgid "Unfollow"
 msgstr ""
 
-#: mvp_community/templates/cotton/mvp_community/activity/follow.html:19
-#: mvp_community/templates/cotton/mvp_community/activity/follow.html:24
+#: mvp_community/templates/cotton/mvp_community/activity/follow.html:20
+#: mvp_community/templates/cotton/mvp_community/activity/follow.html:25
 msgid "Follow"
 msgstr ""
 
@@ -126,6 +179,64 @@ msgstr ""
 msgid "Manage notifications"
 msgstr ""
 
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:9
+msgid "Get your notifications on this device as they happen, even when the site is closed. When you turn push on, your browser asks whether to allow notifications from this site."
+msgstr ""
+
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:10
+msgid "Your browser is asking whether to allow notifications. Choose Allow to turn push on."
+msgstr ""
+
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:14
+msgid "Turn on push for this browser"
+msgstr ""
+
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:19
+msgid "Turning push on needs JavaScript in this browser."
+msgstr ""
+
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:23
+msgid "Push is on for this browser. A test notification is on its way."
+msgstr ""
+
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:25
+msgid "Push is on for this browser. The notifications you have on for push arrive here."
+msgstr ""
+
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:29
+msgid "Notifications from this site are blocked in this browser. To get push here, allow notifications for this site in your browser's settings, then reload this page."
+msgstr ""
+
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:32
+msgid "On iPhone and iPad, push only reaches the site from your Home Screen. Tap Share, choose Add to Home Screen, then open the site from there and turn push on."
+msgstr ""
+
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:35
+msgid "This browser can't receive push notifications. You still get your notifications on the site."
+msgstr ""
+
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:38
+msgid "Browsers receiving push"
+msgstr ""
+
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:46
+msgid "This browser"
+msgstr ""
+
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:46
+#, python-format
+msgid "Turned on %(date)s"
+msgstr ""
+
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:51
+#, python-format
+msgid "Stop push to %(name)s"
+msgstr ""
+
+#: mvp_community/templates/cotton/mvp_community/notifications/push_card.html:52
+msgid "Stop"
+msgstr ""
+
 #: mvp_community/templates/mvp_community/activity/feed.html:12
 msgid "Your feed is empty"
 msgstr ""
@@ -139,8 +250,7 @@ msgid "You follow nothing yet"
 msgstr ""
 
 #: mvp_community/templates/mvp_community/activity/following.html:33
-msgid ""
-"Use Follow next to a person or a thing to see what they do in your feed."
+msgid "Use Follow next to a person or a thing to see what they do in your feed."
 msgstr ""
 
 #: mvp_community/templates/mvp_community/notifications/list.html:7
@@ -155,31 +265,129 @@ msgstr ""
 msgid "When something happens that concerns you, it appears here."
 msgstr ""
 
-#: mvp_community/templates/mvp_community/notifications/preferences.html:17
+#: mvp_community/templates/mvp_community/notifications/preferences.html:20
 msgid "Notification"
 msgstr ""
 
 #: mvp_community/templates/mvp_community/notifications/preferences.html:35
-msgid "Not available"
+#, python-format
+msgid "How often %(type)s arrive by email"
 msgstr ""
 
 #: mvp_community/templates/mvp_community/notifications/preferences.html:37
+msgid "Email"
+msgstr ""
+
+#: mvp_community/templates/mvp_community/notifications/preferences.html:51
+msgid "Not available"
+msgstr ""
+
+#: mvp_community/templates/mvp_community/notifications/preferences.html:53
 #, python-format
 msgid "%(type)s by %(channel)s"
 msgstr ""
 
-#: mvp_community/templates/mvp_community/notifications/preferences.html:39
+#: mvp_community/templates/mvp_community/notifications/preferences.html:55
 msgid "Always sent"
 msgstr ""
 
-#: mvp_community/templates/mvp_community/notifications/preferences.html:54
+#: mvp_community/templates/mvp_community/notifications/preferences.html:70
 msgid "Save"
 msgstr ""
 
-#: mvp_community/templates/mvp_community/notifications/preferences.html:59
+#: mvp_community/templates/mvp_community/notifications/preferences.html:75
 msgid "Nothing to choose"
 msgstr ""
 
-#: mvp_community/templates/mvp_community/notifications/preferences.html:59
+#: mvp_community/templates/mvp_community/notifications/preferences.html:75
 msgid "This site sends no notifications you can turn on or off."
+msgstr ""
+
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:5
+msgid "Turn off notification email?"
+msgstr ""
+
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:5
+msgid "You're unsubscribed"
+msgstr ""
+
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:5
+msgid "You're already unsubscribed"
+msgstr ""
+
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:5
+msgid "This link doesn't work"
+msgstr ""
+
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:9
+msgid "You'll stop getting this notification by email."
+msgid_plural "You'll stop getting these notifications by email."
+msgstr[0] ""
+msgstr[1] ""
+
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:11
+msgid "You won't get this notification by email any more."
+msgid_plural "You won't get these notifications by email any more."
+msgstr[0] ""
+msgstr[1] ""
+
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:13
+msgid "You had already turned these emails off. Nothing has changed."
+msgstr ""
+
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:15
+msgid "The link may have been copied incompletely. Nothing has changed, and you can turn these emails off in your notification preferences."
+msgstr ""
+
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:20
+msgid "Email to turn off"
+msgstr ""
+
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:20
+msgid "Turned off by email"
+msgstr ""
+
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:21
+msgid "Notifications on the site stay as they are."
+msgstr ""
+
+#: mvp_community/templates/mvp_community/notifications/unsubscribe.html:35
+msgid "Turn off these emails"
+msgstr ""
+
+#: mvp_community/templates/notifications/email/digest/message.html:17
+msgid "See all notifications"
+msgstr ""
+
+#: mvp_community/templates/notifications/email/digest/message.txt:8
+#: mvp_community/templates/notifications/email/realtime/message.txt:8
+msgid "Stop these emails:"
+msgstr ""
+
+#: mvp_community/templates/notifications/email/digest/message.txt:9
+#: mvp_community/templates/notifications/email/realtime/message.txt:9
+msgid "All your notification preferences:"
+msgstr ""
+
+#: mvp_community/templates/notifications/email/digest/subject.txt:1
+#, python-format
+msgid "Your week: %(counter)s new notification"
+msgid_plural "Your week: %(counter)s new notifications"
+msgstr[0] ""
+msgstr[1] ""
+
+#: mvp_community/templates/notifications/email/digest/subject.txt:1
+#, python-format
+msgid "Today: %(counter)s new notification"
+msgid_plural "Today: %(counter)s new notifications"
+msgstr[0] ""
+msgstr[1] ""
+
+#: mvp_community/templates/notifications/email/realtime/message.html:10
+msgid "Open"
+msgstr ""
+
+#: mvp_community/templates/notifications/email/unsubscribe_footer.html:4
+#, python-format
+msgid "Sent by <a href=\"%(site_url)s\">%(site_name)s</a> because you chose to get these notifications by email."
 msgstr ""

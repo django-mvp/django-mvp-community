@@ -41,7 +41,7 @@ Serves G2 and G3.
 
 ### R2 — Email that looks like the application
 
-*feature · advances G4*
+*delivered in [#18](https://github.com/django-mvp/django-mvp-community/issues/18) · advances G4*
 
 Notifications, digests and reminders all reach people by email, so branded, translated email is
 the base the notification items build on. The look is django-mvp's own email layout, so the
@@ -79,7 +79,7 @@ project.
 
 ### R4 — Notifications by email, and digests
 
-*feature · advances G1, G4*
+*delivered in [#23](https://github.com/django-mvp/django-mvp-community/issues/23) · advances G1, G4*
 
 Joins the two previous items: a notification a person chose to receive by email arrives as
 email, and someone who prefers fewer emails gets a daily or weekly digest instead.
@@ -97,7 +97,7 @@ What a complete, dependable version is expected to have.
 
 ### R5 — Web push
 
-*feature · advances G5*
+*delivered in [#28](https://github.com/django-mvp/django-mvp-community/issues/28) · advances G5*
 
 Notifications reach a person's browser or installed web app as push, through the same
 preferences. Includes the subscribe and unsubscribe controls, and the explanation people need
