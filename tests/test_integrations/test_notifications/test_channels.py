@@ -1,6 +1,7 @@
 """The notification email channel, asserted through django-post-office's queue."""
 
 import pytest
+from django.core import signing
 from generic_notifications import send_notification
 from generic_notifications.digest import send_notification_digests
 from generic_notifications.models import (
@@ -240,6 +241,16 @@ class TestDigests:
 
 
 class TestUnsubscribeHeaders:
+    @pytest.fixture(autouse=True)
+    def signing_clock(self, monkeypatch):
+        """Sign every token in the same second.
+
+        A token carries the second it was signed in, so an address built here
+        and one built during the send differ as text whenever the clock ticks
+        between them.
+        """
+        monkeypatch.setattr(signing.TimestampSigner, "timestamp", lambda self: "1")
+
     @pytest.fixture
     def link(self, person):
         return UnsubscribeLink.for_email(person, [ReplyReceived.key])
