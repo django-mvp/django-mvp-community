@@ -162,6 +162,17 @@ requests with addresses that never answer.
 person's push too. The page then offers to turn push on again in that browser.
 **ADR:** none — follows from the spec's shared-browser edge case.
 
+## D19 — Every push carries an icon, from the type, the project or the site
+
+**Decision:** a push carries an icon: the notification type's `push_icon`, else the
+`MVP_COMMUNITY_PUSH_ICON` setting, else the icon django-mvp's brand resolver gives for the site.
+Each is a static path or a URL and is sent as an absolute address, built with
+django-generic-notifications' own base-URL rules. With none of them, no icon is sent.
+**Why:** the maintainer asked for it after the walkthrough, where Opera on Windows showed a push
+with no icon at all. The site's icon is the sensible default, and a setting and a per-type
+attribute follow how the package already lets a project and a type override defaults.
+**ADR:** none — a behaviour of the push payload, stated in the spec and the push guide.
+
 ## Rulings at the design review
 
 Three high findings were applied to the plan: the system check reads the library's own settings

@@ -3,6 +3,7 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(message.title || "", {
       body: message.body || "",
+      icon: message.icon,
       data: { url: message.url || "/" },
     }),
   );

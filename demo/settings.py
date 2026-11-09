@@ -223,3 +223,6 @@ PUSH_NOTIFICATIONS_SETTINGS = {
     ),
     "WP_CLAIMS": {"sub": "mailto:admin@example.com"},
 }
+# The icon every push shows. Browsers draw a PNG wherever they show one, and
+# not all of them draw an SVG.
+MVP_COMMUNITY_PUSH_ICON = "demo/push-icon.png"

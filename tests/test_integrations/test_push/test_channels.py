@@ -5,12 +5,14 @@ import logging
 
 import pytest
 import requests
+from django.templatetags.static import static
 from django.urls import reverse
 from generic_notifications import send_notification
 from generic_notifications.models import (
     NotificationFrequencyPreference,
     NotificationTypeChannelPreference,
 )
+from mvp.config import MVP_CONFIG
 from push_notifications.exceptions import WebPushError
 from push_notifications.models import WebPushDevice
 
@@ -84,11 +86,11 @@ class TestPushChannel:
         notification = notify(person)
 
         payload = json.loads(sent[0][1])
-        assert payload == {
-            "title": "Anna replied",
-            "body": "Try the second exercise first.",
-            "url": reverse("mvp_community_notifications:open", args=[notification.pk]),
-        }
+        assert payload["title"] == "Anna replied"
+        assert payload["body"] == "Try the second exercise first."
+        assert payload["url"] == reverse(
+            "mvp_community_notifications:open", args=[notification.pk]
+        )
 
     def test_a_long_body_is_cut(self, person, sent) -> None:
         subscribe(person, "https://push.example/one")
@@ -174,3 +176,68 @@ class TestPushChannel:
         settings.LANGUAGE_CODE = "de"
 
         assert PushChannel().recipient_language(person) == "de"
+
+
+def no_site_icon(request, height, theme):
+    """Stand in for a brand icon resolver that finds no icon."""
+    return ""
+
+
+class TestPushIcon:
+    @pytest.fixture
+    def icon(self, person, sent):
+        subscribe(person, "https://push.example/one")
+
+        def pushed_icon():
+            notify(person)
+            return json.loads(sent[-1][1]).get("icon")
+
+        return pushed_icon
+
+    def test_the_project_s_static_icon_is_sent_as_an_absolute_url(
+        self, icon, settings
+    ) -> None:
+        settings.MVP_COMMUNITY_PUSH_ICON = "demo/push-icon.png"
+
+        sent_icon = icon()
+
+        assert sent_icon.startswith(("http://", "https://"))
+        assert sent_icon.endswith(static("demo/push-icon.png"))
+
+    def test_an_icon_given_as_a_url_is_sent_unchanged(self, icon, settings) -> None:
+        settings.MVP_COMMUNITY_PUSH_ICON = "https://cdn.example.org/icon.png"
+
+        assert icon() == "https://cdn.example.org/icon.png"
+
+    def test_the_notification_type_s_icon_wins(
+        self, icon, settings, monkeypatch
+    ) -> None:
+        settings.MVP_COMMUNITY_PUSH_ICON = "demo/push-icon.png"
+        monkeypatch.setattr(
+            ReplyReceived,
+            "push_icon",
+            "https://cdn.example.org/reply.png",
+            raising=False,
+        )
+
+        assert icon() == "https://cdn.example.org/reply.png"
+
+    def test_without_a_setting_the_site_s_icon_is_sent(self, icon, settings) -> None:
+        del settings.MVP_COMMUNITY_PUSH_ICON
+
+        sent_icon = icon()
+
+        assert sent_icon.startswith(("http://", "https://"))
+        assert sent_icon.endswith(static("brand/icon.svg"))
+
+    def test_without_a_setting_or_a_site_icon_no_icon_is_sent(
+        self, icon, settings, monkeypatch
+    ) -> None:
+        del settings.MVP_COMMUNITY_PUSH_ICON
+        monkeypatch.setitem(
+            MVP_CONFIG["brand"],
+            "icon_resolver",
+            "tests.test_integrations.test_push.test_channels.no_site_icon",
+        )
+
+        assert icon() is None

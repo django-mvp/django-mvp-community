@@ -147,3 +147,11 @@ The test push goes through the registered push channel, so a project's subclass 
 **Files**: `mvp_community/integrations/push/views.py`, `docs/developer/push.md`, `tests/test_integrations/test_push/test_views.py`
 
 Closes the review's open medium: storing a subscription deletes the person's oldest beyond `SUBSCRIPTION_LIMIT`, since every notification is sent to each one.
+
+## Merge-gate fixes
+
+- [ ] T019 [US1] Every push carries an icon
+
+**Files**: `mvp_community/integrations/push/channels.py`, `mvp_community/templates/mvp_community/push/worker.js`, `demo/settings.py`, `demo/static/demo/push-icon.png`, `docs/developer/push.md`, `tests/test_integrations/test_push/test_channels.py`, `tests/test_integrations/test_push/test_views.py`, `specs/005-notifications-by-web-push/spec.md`, `specs/005-notifications-by-web-push/decisions.md`
+
+Asked for at the merge gate. The payload carries the type's `push_icon`, else `MVP_COMMUNITY_PUSH_ICON`, else the site's brand icon, as an absolute address; the worker shows it.

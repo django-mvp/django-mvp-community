@@ -100,6 +100,10 @@ push unconfigured and find the preferences page and sending unchanged.
    and sending does not fail.
 9. **Given** a project that overrides the template of the push controls, **When** a person opens
    their preferences, **Then** the project's template is used.
+10. **Given** a project that names an icon for its pushes, and a notification type that names one
+    of its own, **When** the project sends a notification, **Then** its push carries the type's
+    icon if it has one, otherwise the project's, otherwise the site's own icon, and no icon when
+    there is none of these.
 
 ---
 
@@ -235,12 +239,15 @@ notification sent, and find a push on the remaining browser only.
   include, naming push in a notification type's channels, what replacing the key pair does, and
   what phones need before they accept push from a web app.
 - **FR-019**: Every string the feature shows, on the page and in a push, MUST be translatable.
+- **FR-020**: Every push MUST carry an icon as an absolute address: the notification type's own
+  when it names one, otherwise the one the project names, otherwise the site's own icon. With
+  none of these, a push MUST carry no icon.
 
 ### Traceability
 
 | Story | Requirements |
 |---|---|
-| US1 | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-017, FR-018, FR-019 |
+| US1 | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-017, FR-018, FR-019, FR-020 |
 | US2 | FR-008, FR-009, FR-010, FR-011, FR-016, FR-017, FR-019 |
 | US3 | FR-012, FR-013, FR-014, FR-015, FR-017, FR-019 |
 

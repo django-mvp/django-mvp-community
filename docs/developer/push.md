@@ -87,7 +87,26 @@ A type that does not list `PushChannel` is still offered on push: the preference
 
 A notification is pushed to every browser of its recipient that has push turned on, at the moment it is created. Push has no digest: a type a person receives as a daily email digest is still pushed at once. A person with push off for the type gets nothing.
 
-What each push shows is the notification's subject as the title, its text as the body, cut to 400 characters, and a link that opens the notification on the site, which marks it read on the way.
+What each push shows is the notification's subject as the title, its text as the body, cut to 400 characters, an icon, and a link that opens the notification on the site, which marks it read on the way.
+
+The icon is the first of these that is set:
+
+1. The notification type's `push_icon`, for a type with an icon of its own.
+2. The `MVP_COMMUNITY_PUSH_ICON` setting, the icon for every other push.
+3. The site's own icon, from django-mvp's brand icon resolver.
+
+Each is a static path, such as `"brand/push-icon.png"`, or a URL. It is sent as an absolute address, built from the same base URL django-generic-notifications uses for a notification's link. With none of the three, the push shows no icon. Some browsers draw no SVG icon on a push, so set a square PNG of at least 192 pixels:
+
+```python
+MVP_COMMUNITY_PUSH_ICON = "brand/push-icon.png"
+
+
+@register
+class ReplyReceived(NotificationType):
+    key = "reply_received"
+    name = "Replies"
+    push_icon = "brand/reply-icon.png"
+```
 
 A push service that is slow, refuses the message or no longer knows the browser does not stop the others or fail the code that sent the notification. `PushChannel` writes each failure to the `logger` of `mvp_community.integrations.push.channels` at warning level, and goes on to the person's next browser. A browser the push service reports as gone is retired by django-push-notifications.
 

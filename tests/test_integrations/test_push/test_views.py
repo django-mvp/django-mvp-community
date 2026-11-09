@@ -88,6 +88,15 @@ class TestSubscribeView:
         assert payload["title"]
         assert payload["body"]
 
+    def test_the_test_push_shows_the_project_s_icon(
+        self, client, signed_in, sent, settings
+    ) -> None:
+        settings.MVP_COMMUNITY_PUSH_ICON = "https://cdn.example.org/icon.png"
+
+        post(client, body())
+
+        assert json.loads(sent[0][1])["icon"] == "https://cdn.example.org/icon.png"
+
     def test_the_same_endpoint_twice_leaves_one_subscription(
         self, client, signed_in, sent
     ) -> None:
