@@ -87,7 +87,7 @@ A type that does not list `PushChannel` is still offered on push: the preference
 
 A notification is pushed to every browser of its recipient that has push turned on, at the moment it is created. Push has no digest: a type a person receives as a daily email digest is still pushed at once. A person with push off for the type gets nothing.
 
-What each push shows is the notification's subject as the title, its text as the body, cut to 400 characters, an icon, and a link that opens the notification on the site, which marks it read on the way.
+What each push shows is the notification's subject as the title, its text as the body, cut to 400 characters, an icon, and a link that opens the notification on the site, which marks it read on the way. The link outlives the notification: a project that deletes notifications, for example a reminder for an appointment that has passed, leaves that push on the person's device, and tapping it then opens their notifications page.
 
 The icon is the first of these that is set:
 

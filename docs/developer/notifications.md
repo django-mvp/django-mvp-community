@@ -166,7 +166,7 @@ send_notification(
 )
 ```
 
-The person sees it on the notifications page and in the bell's count when the website channel is on for that type. A notification with a `url` opens that address and is marked read on the way. One without a `url` is drawn as plain text.
+The person sees it on the notifications page and in the bell's count when the website channel is on for that type. A notification with a `url` opens that address and is marked read on the way. A link to a notification that has since been deleted, such as the one in a push sent before the project deleted it, opens the notifications page instead. One without a `url` is drawn as plain text.
 
 ## Send digests
 
@@ -262,7 +262,7 @@ Each route has a name in the `mvp_community_notifications` namespace. The prefer
 | Name | Address | View | What it does |
 |---|---|---|---|
 | `list` | `notifications/` | `NotificationListView` | The signed-in person's notifications, newest first, 20 to a page. |
-| `open` | `notifications/<int:pk>/` | `OpenNotificationView` | Marks one of their notifications read and redirects to its `url`, or to the list when it has none or points at another site. Another person's notification is a 404. |
+| `open` | `notifications/<int:pk>/` | `OpenNotificationView` | Marks one of their notifications read and redirects to its `url`, or to the list when it has none or points at another site. A notification the person does not have, because it was deleted or is someone else's, redirects to the list and changes nothing. |
 | `mark_all_read` | `notifications/read/` | `MarkAllReadView` | POST only. Marks every unread notification on the site as read, and redirects to the list. A notification sent only by email stays unread. |
 | `bell` | `notifications/bell/` | `BellView` | The bell alone, for its own refresh. |
 | `preferences` | `account/notifications/` | `PreferencesView` | GET shows the grid of types, channels and email frequencies. POST saves it, adds a success message and redirects back. |

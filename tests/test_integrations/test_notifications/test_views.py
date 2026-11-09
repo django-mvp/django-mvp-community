@@ -139,7 +139,17 @@ class TestOpenNotificationView:
         assert notification.read is not None
         assert response["Location"] == reverse("mvp_community_notifications:list")
 
-    def test_another_persons_is_not_found_and_stays_unread(
+    def test_a_deleted_one_goes_to_the_list(
+        self, client, signed_in, notification
+    ) -> None:
+        address = reverse("mvp_community_notifications:open", args=[notification.pk])
+        notification.delete()
+
+        response = client.get(address)
+
+        assert (response.status_code, response["Location"]) == (302, LIST_URL)
+
+    def test_another_persons_goes_to_the_list_and_stays_unread(
         self, client, signed_in, make_notifications, django_user_model
     ) -> None:
         stranger = django_user_model.objects.create_user("stranger", password="x")
@@ -150,7 +160,11 @@ class TestOpenNotificationView:
         )
 
         theirs.refresh_from_db()
-        assert (response.status_code, theirs.read) == (404, None)
+        assert (response.status_code, response["Location"], theirs.read) == (
+            302,
+            LIST_URL,
+            None,
+        )
 
     def test_one_with_no_url_goes_to_the_list(
         self, client, signed_in, make_notifications

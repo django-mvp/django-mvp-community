@@ -41,7 +41,7 @@ mvp_community/
 | Name | Path | View |
 |---|---|---|
 | `list` | `notifications/` | `NotificationListView(LoginRequiredMixin, MVPListView)`, `paginate_by = 20`, queryset `get_notifications(request.user)` |
-| `open` | `notifications/<int:pk>/` | `OpenNotificationView(LoginRequiredMixin, View)`: the person's own notification only (404 otherwise), marks it read, redirects to its `url`, or to the list when it has none |
+| `open` | `notifications/<int:pk>/` | `OpenNotificationView(LoginRequiredMixin, View)`: the person's own notification only, marks it read, redirects to its `url`, or to the list when it has none. A notification the person does not have, deleted or someone else's, redirects to the list and changes nothing, the same answer for both |
 | `mark_all_read` | `notifications/read/` | `MarkAllReadView(LoginRequiredMixin, View)`: POST only. Marks the person's unread **site** notifications read with `get_notifications(user, unread_only=True).update(read=now)`, never `mark_notifications_as_read`, which also marks email-only ones read and would stop their digest. Redirects to the list |
 | `bell` | `notifications/bell/` | `BellView(View)`: renders the bell alone for its own refresh. **A signed-out request gets 204 and no body**, never a redirect: htmx would follow a redirect and swap the sign-in page into the header, and the spec's edge case keeps the last count |
 | `preferences` | `account/notifications/` | `PreferencesView(LoginRequiredMixin, MVPTemplateView)`: GET draws the grid, POST saves it, adds a success message and redirects back |
