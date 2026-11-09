@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.1.4] - 2026-11-09
+
 ### Fixed
 
 - Opening a notification that no longer exists goes to the notifications page instead of "Page not
