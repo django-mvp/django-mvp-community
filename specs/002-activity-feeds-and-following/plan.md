@@ -43,7 +43,7 @@ mvp_community/
 | Name | Path | View |
 |---|---|---|
 | `following` and the routes below | | the package's own. **No feed route**: the host mounts `ActivityFeedView` itself (below) |
-| `following` | `account-center/following/` | `FollowingView(LoginRequiredMixin, MVPListView)`, `paginate_by = 20`, queryset `Follow.objects.following_qs(request.user).order_by("-started")` |
+| `following` | `account/following/` | `FollowingView(LoginRequiredMixin, MVPListView)`, `paginate_by = 20`, queryset `Follow.objects.following_qs(request.user).order_by("-started")` |
 | `follow_control` | `activity/control/<int:content_type_id>/<str:object_id>/` | `FollowControlView(LoginRequiredMixin, View)`, GET only: resolves the object through `ContentType`, 404 for an unknown type, an unknown object or a model not registered with django-activity-stream, and renders the `follow` component alone. Its `next` query parameter, when it is a safe local path (`url_has_allowed_host_and_scheme`), is passed to the component as the page the plain form returns to |
 | `actstream_follow`, `actstream_follow_all`, `actstream_unfollow`, `actstream_unfollow_all` | under `activity/` | django-activity-stream's own four follow patterns, taken from `actstream.urls.urlpatterns` by name. Nothing else of `actstream.urls` is mounted: its `detail/` view shows actions that are not public and its `following/` view shows anyone's follows, to anyone |
 

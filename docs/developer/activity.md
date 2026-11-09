@@ -255,11 +255,11 @@ Replacing one leaves the rest of the feature as it was.
 
 ## Pages and routes
 
-The following page is in the `mvp_community_activity` namespace. django-activity-stream's follow routes keep their own names, with no namespace, because its template tags look them up by those names.
+The following page is in the `mvp_community_activity` namespace. django-activity-stream's follow routes keep their own names, with no namespace, because its template tags look them up by those names. The following page belongs to the Account Center, so it sits under `account/`, the address django-mvp's URLs give the Account Center.
 
 | Name | Address | What it does |
 |---|---|---|
-| `mvp_community_activity:following` | `account-center/following/` | `FollowingView`: the signed-in person's follows, newest first, 20 to a page. A signed-out visitor is sent to sign in. |
+| `mvp_community_activity:following` | `account/following/` | `FollowingView`: the signed-in person's follows, newest first, 20 to a page. A signed-out visitor is sent to sign in. |
 | `mvp_community_activity:follow_control` | `activity/control/<content_type_id>/<object_id>/` | `FollowControlView`: draws one object's follow control alone. A signed-out visitor is sent to sign in, and a model not registered with django-activity-stream is not found. Its `next` parameter is used when it is an address on your site. |
 | `actstream_follow` | `activity/follow/<content_type_id>/<object_id>/` | Follows the object, recording what it does. |
 | `actstream_follow_all` | `activity/follow_all/<content_type_id>/<object_id>/` | Follows the object, recording what it does and what happens to it. |

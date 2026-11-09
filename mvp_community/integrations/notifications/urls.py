@@ -21,7 +21,7 @@ urlpatterns = [
         name="unsubscribe",
     ),
     path(
-        "account-center/notifications/",
+        "account/notifications/",
         views.PreferencesView.as_view(),
         name="preferences",
     ),

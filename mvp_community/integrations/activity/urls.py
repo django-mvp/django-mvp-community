@@ -23,7 +23,7 @@ FOLLOW_ROUTES = {
 
 pages = [
     path(
-        "account-center/following/",
+        "account/following/",
         views.FollowingView.as_view(),
         name="following",
     ),

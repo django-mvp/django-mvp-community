@@ -257,7 +257,7 @@ Replacing one leaves the rest of the feature as it was.
 
 ## Pages and routes
 
-Each route has a name in the `mvp_community_notifications` namespace.
+Each route has a name in the `mvp_community_notifications` namespace. The preferences page belongs to the Account Center, so it sits under `account/`, the address django-mvp's URLs give the Account Center.
 
 | Name | Address | View | What it does |
 |---|---|---|---|
@@ -265,7 +265,7 @@ Each route has a name in the `mvp_community_notifications` namespace.
 | `open` | `notifications/<int:pk>/` | `OpenNotificationView` | Marks one of their notifications read and redirects to its `url`, or to the list when it has none or points at another site. Another person's notification is a 404. |
 | `mark_all_read` | `notifications/read/` | `MarkAllReadView` | POST only. Marks every unread notification on the site as read, and redirects to the list. A notification sent only by email stays unread. |
 | `bell` | `notifications/bell/` | `BellView` | The bell alone, for its own refresh. |
-| `preferences` | `account-center/notifications/` | `PreferencesView` | GET shows the grid of types, channels and email frequencies. POST saves it, adds a success message and redirects back. |
+| `preferences` | `account/notifications/` | `PreferencesView` | GET shows the grid of types, channels and email frequencies. POST saves it, adds a success message and redirects back. |
 | `unsubscribe` | `notifications/unsubscribe/<str:token>/` | `UnsubscribeView` | GET asks to confirm. POST turns email off for the types the link names. Open to a signed-out visitor. |
 
 The views live in `mvp_community.integrations.notifications.views`. To change one, subclass it and route your subclass at the same address ahead of the include.
