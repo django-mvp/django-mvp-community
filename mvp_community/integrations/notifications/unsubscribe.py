@@ -2,6 +2,7 @@
 
 from django.contrib.auth import get_user_model
 from django.core import signing
+from django.core.exceptions import ValidationError
 from django.urls import reverse
 from generic_notifications.registry import registry
 from mvp.templatetags.mvp_email import EmailSite
@@ -68,10 +69,13 @@ class UnsubscribeLink:
 
     @property
     def path(self):
-        """The signed address on the site."""
-        token = signing.dumps(
-            {"u": self.user.pk, "t": self.type_keys}, salt=UNSUBSCRIBE_SALT
-        )
+        """The signed address on the site.
+
+        The person's key is signed as text, so a user model keyed by anything
+        JSON cannot hold, such as a UUID, gets an address too.
+        """
+        key = self.user._meta.pk.value_to_string(self.user)
+        token = signing.dumps({"u": key, "t": self.type_keys}, salt=UNSUBSCRIBE_SALT)
         return reverse("mvp_community_notifications:unsubscribe", args=[token])
 
     def url(self, request=None):
@@ -96,15 +100,23 @@ class UnsubscribeLink:
             token: The signed token from the address.
 
         Returns:
-            The link, or None when the signature is bad, the person no longer
-            exists or no type it names is still registered and optional.
+            The link, or None when the signature is bad, the key it names is
+            not one the user model can hold, the person no longer exists or no
+            type it names is still registered and optional.
         """
         user_model = get_user_model()
         try:
             data = signing.loads(token, salt=UNSUBSCRIBE_SALT)
             user = user_model.objects.get(pk=data["u"])
             keys = list(data["t"])
-        except (signing.BadSignature, KeyError, TypeError, user_model.DoesNotExist):
+        except (
+            signing.BadSignature,
+            KeyError,
+            TypeError,
+            ValueError,
+            ValidationError,
+            user_model.DoesNotExist,
+        ):
             return None
         return cls.for_email(user, keys)
 

@@ -24,3 +24,7 @@ ROOT_URLCONF = "tests.urls"
 # Templates that exist only to put something in one exact situation a test
 # needs. They are not part of the demo project and are never distributed.
 TEMPLATES[0]["DIRS"] = [BASE_DIR / "tests" / "templates"]  # noqa: F405
+
+# A user model keyed by UUID, for the tests that swap it in with
+# override_settings. Its table is created from the model, with no migration.
+INSTALLED_APPS = [*INSTALLED_APPS, "tests.uuid_users"]  # noqa: F405

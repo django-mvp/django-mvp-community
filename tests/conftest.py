@@ -15,7 +15,7 @@ from generic_notifications import send_notification
 from generic_notifications.models import Notification
 
 from demo.notifications import NewFollower, ReplyReceived
-from tests.factories import GroupFactory, UserFactory
+from tests.factories import GroupFactory, UserFactory, UUIDUserFactory
 
 
 @pytest.fixture(scope="session")
@@ -59,6 +59,13 @@ def chromium():
 @pytest.fixture
 def person(db):
     return UserFactory()
+
+
+@pytest.fixture
+def uuid_person(db, settings):
+    # A host project may swap in a user model keyed by UUID rather than number.
+    settings.AUTH_USER_MODEL = "uuid_users.UUIDUser"
+    return UUIDUserFactory()
 
 
 @pytest.fixture
