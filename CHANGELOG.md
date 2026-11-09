@@ -22,6 +22,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The notification preferences page fits a phone. With the site, email and push channels registered,
+  the choice of how often email arrives widened the first column until the last channel's toggles
+  sat off the edge of the card, so a person had to scroll sideways to reach them. That choice now
+  sits on a line of its own under each type, spanning the table, and the channel columns are
+  narrower, so every toggle is in reach at 360 pixels wide. A project that overrides
+  `mvp_community/notifications/preferences.html` keeps its own layout.
+
 ## [v0.1.1] - 2026-11-09
 
 ### Fixed
