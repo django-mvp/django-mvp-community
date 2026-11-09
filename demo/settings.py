@@ -21,6 +21,12 @@ ALLOWED_HOSTS = ["*"]
 # by the browser, which leaves GET pages rendering perfectly while every form
 # post comes back 403.
 SESSION_COOKIE_SECURE = False
+# The demo can also be served over HTTPS through a proxy, so that a phone
+# treats it as secure and allows push. The proxy says which scheme the browser
+# used, and DEMO_TRUSTED_ORIGINS names the origins whose form posts are
+# trusted, separated by spaces, such as "https://demo.example.org:8443".
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = os.environ.get("DEMO_TRUSTED_ORIGINS", "").split()
 CSRF_COOKIE_SECURE = False
 
 # Own apps first so demo/templates/base.html wins over the libraries' copies.
@@ -165,6 +171,9 @@ MVP_CONFIG = {
             ],
         },
     },
+    # The demo installs as an app, so push can be tried on a phone that only
+    # delivers it to a site on its Home Screen.
+    "pwa": {"theme_color": "#ffffff"},
     "theme": {
         # Several to switch between, so what this package renders can be looked
         # at light and dark without editing a setting.
@@ -225,4 +234,4 @@ PUSH_NOTIFICATIONS_SETTINGS = {
 }
 # The icon every push shows. Browsers draw a PNG wherever they show one, and
 # not all of them draw an SVG.
-MVP_COMMUNITY_PUSH_ICON = "demo/push-icon.png"
+MVP_COMMUNITY_PUSH_ICON = "brand/pwa/icon-192.png"

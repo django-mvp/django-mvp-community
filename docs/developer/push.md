@@ -125,7 +125,7 @@ The card is the Cotton component `mvp_community.notifications.push_card`, and th
 
 Stopping a browser from the list deletes its subscription. It does not touch the subscription inside the browser itself, because two people can share one browser and it holds a single subscription for both. After a person stops the browser they are using, the card offers to turn push on again.
 
-On an iPhone or iPad, push reaches a site only once it is added to the Home Screen and opened from there, so the card says so instead of offering the button in an ordinary Safari tab.
+On an iPhone or iPad, push reaches a site only once it is added to the Home Screen and opened from there, so the card says so instead of offering the button in an ordinary Safari tab. The site has to be installable for that: with django-mvp, set `MVP_CONFIG["pwa"]` as its installable-app guide describes. The demo project does.
 
 ## Pages and routes
 

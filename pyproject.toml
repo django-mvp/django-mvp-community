@@ -89,6 +89,7 @@ dev = [
     # installs them. The base-install test blocks them again to prove the
     # package imports without them.
     "django-mvp-community[notifications,push,mail,activity]",
+    "resvg-py>=0.5.0",
 ]
 
 [tool.uv.sources]
