@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.1.1] - 2026-11-09
+
 ### Fixed
 
 - Notification email and digests are sent in a project whose user model has a UUID primary key.
