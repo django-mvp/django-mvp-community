@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.1.3] - 2026-11-09
+
 ### Fixed
 
 - The notification preferences page and the following page sit under the Account Center's address.
