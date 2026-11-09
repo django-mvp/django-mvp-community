@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -70,15 +70,24 @@ class OpenNotificationView(LoginRequiredMixin, View):
     def get(self, request, pk):
         """Mark it read, then go to where it points.
 
+        A push or an email links here for as long as it is kept, which can be
+        long after the project deleted the notification. Such a link, and one
+        to another person's notification, goes to the list and changes nothing.
+        The two get the same answer, so the address never tells anyone whether
+        another person's notification exists.
+
         Args:
             request: The GET request.
-            pk: The notification's primary key. Another person's is a 404.
+            pk: The notification's primary key.
 
         Returns:
             A redirect to the notification's url, or to the list when it has
-            none or it points at another site.
+            none, it points at another site, or the person has no notification
+            with this key.
         """
-        notification = get_object_or_404(request.user.notifications, pk=pk)
+        notification = request.user.notifications.filter(pk=pk).first()
+        if notification is None:
+            return redirect("mvp_community_notifications:list")
         notification.mark_as_read()
         # A url can be built from what someone typed, so a link off this site
         # is never followed from here.

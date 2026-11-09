@@ -22,6 +22,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Opening a notification that no longer exists goes to the notifications page instead of "Page not
+  found". A push links to its notification for as long as it stays on the person's device, so a
+  project that deletes notifications, for example a reminder once the appointment has passed, left
+  every push already sent pointing at a 404. A link to someone else's notification gets the same
+  redirect and is still not marked read, so the address never says whether it exists. Nothing to
+  change on upgrade.
+
 ## [v0.1.3] - 2026-11-09
 
 ### Fixed

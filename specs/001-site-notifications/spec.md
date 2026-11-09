@@ -143,6 +143,8 @@ that person a notification of that type, and see that it does not arrive on the 
 - A signed-out visitor sees no bell, and is sent to sign in from the notifications and preferences
   pages.
 - A notification whose link no longer resolves is still listed, and opening it still marks it read.
+- A link to a notification the person does not have, because it was deleted after a push carried
+  the link or because it is someone else's, opens their notifications page and changes nothing.
 - The bell's refresh fails, for example because the person signed out in another tab: the page
   keeps working and the bell keeps its last count.
 - A site that declares no notification types shows a preferences page saying there is nothing to
