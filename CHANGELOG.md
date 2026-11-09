@@ -22,6 +22,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The notification preferences page and the following page sit under the Account Center's address.
+  Both say in their breadcrumbs that they are in the Account Center, which django-mvp's URLs mount at
+  `account/`, but they were served from `account-center/notifications/` and
+  `account-center/following/`. They are now at `account/notifications/` and `account/following/`.
+  Their URL names, `mvp_community_notifications:preferences` and `mvp_community_activity:following`,
+  are unchanged, so links built with `{% url %}` or `reverse()` follow them. A link or bookmark
+  written as the old address no longer resolves; point it at the new one.
+
 ## [v0.1.2] - 2026-11-09
 
 ### Fixed

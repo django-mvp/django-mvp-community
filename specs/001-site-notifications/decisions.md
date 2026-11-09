@@ -14,10 +14,10 @@
 **Revisit if:** the extras get apps of their own.
 **ADR:** none — local to this extra.
 
-## D3 — Preferences sit under account-center/
+## D3 — Preferences sit under account/
 
-**Decision:** `account-center/notifications/`.
-**Why:** Sam's ruling at the sketch gate: pages that belong to the Account Center sit behind `account-center/`. django-mvp's own Account Center landing page is at `account/` in the demo, and the projects built on it mount it under `account-center/` themselves, so this page is where those projects put the rest of their Account Center.
+**Decision:** `account/notifications/`.
+**Why:** Sam's ruling at the sketch gate: pages that belong to the Account Center sit under the Account Center's address. django-mvp's URLs put the Account Center at `account/`, so the preferences page, whose breadcrumbs place it in the Account Center, is at an address inside it too.
 **ADR:** none — a route, recorded in the spec and the docs.
 
 ## D4 — Saving preferences clears digest-frequency choices

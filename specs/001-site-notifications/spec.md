@@ -38,8 +38,8 @@ django-generic-notifications.
 - Q: Which channels does the preferences page list? → A: Every channel the host project has
   installed. With this feature alone that is the site. A channel added later, such as email,
   appears on the same page without this feature changing.
-- Q: Where does the preferences page live? → A: Under `account-center/`, where pages that
-  belong to the Account Center sit: `account-center/notifications/`.
+- Q: Where does the preferences page live? → A: Under the Account Center's own address,
+  `account/`, where pages that belong to the Account Center sit: `account/notifications/`.
 - Q: What does a signed-out visitor see? → A: No bell. A signed-out visit to the notifications
   page or the preferences page is sent to sign in, as for every other Account Center page.
 

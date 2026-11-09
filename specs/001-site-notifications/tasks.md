@@ -52,7 +52,7 @@ Issue: #11. Delivers FR-010, FR-011, FR-013.
 
 **Files**: `views.py`, `urls.py`, `mvp_community/templates/mvp_community/notifications/preferences.html`, `tests/test_integrations/test_notifications/test_views.py`
 
-`PreferencesView` GET on `MVPTemplateView` and the `preferences` route at `account-center/notifications/`. `preferences.html` gains `{% block title %}{{ page.title }}{% endblock %}`. Tests: signed out redirects; every registered type is listed against every channel with the person's current choice; a required choice is drawn on and disabled; with no types registered the empty state is drawn; the page's `<title>` carries the view's page title.
+`PreferencesView` GET on `MVPTemplateView` and the `preferences` route at `account/notifications/`. `preferences.html` gains `{% block title %}{{ page.title }}{% endblock %}`. Tests: signed out redirects; every registered type is listed against every channel with the person's current choice; a required choice is drawn on and disabled; with no types registered the empty state is drawn; the page's `<title>` carries the view's page title.
 
 - [ ] T007 [US3] Saving preferences
 

@@ -242,6 +242,9 @@ def toggle(page: str, name: str) -> str:
 
 
 class TestPreferencesViewGet:
+    def test_its_address_is_under_the_account_center_s(self) -> None:
+        assert PREFERENCES_URL.startswith(reverse("account-center"))
+
     def test_signed_out_is_sent_to_sign_in(self, client, db) -> None:
         response = client.get(PREFERENCES_URL)
 

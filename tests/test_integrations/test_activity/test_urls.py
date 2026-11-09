@@ -33,8 +33,8 @@ class TestFollowRoutes:
         assert resolve(address_of(name, person)).func is views.follow_unfollow
 
     def test_the_following_page_has_a_route_under_the_account_center(self) -> None:
-        assert (
-            reverse("mvp_community_activity:following") == "/account-center/following/"
+        assert reverse("mvp_community_activity:following").startswith(
+            reverse("account-center")
         )
 
     def test_there_is_no_feed_route(self) -> None:

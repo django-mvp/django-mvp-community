@@ -33,5 +33,5 @@
 ## What was ruled by eye
 
 - Every page is built from django-mvp and daisy-cotton components and the classes django-mvp's stylesheet already ships, with no styles of its own.
-- The pages belonging to the Account Center sit behind `account-center/`, so the preferences page is at `account-center/notifications/`. The notifications page and the bell stay under `notifications/`.
+- The pages belonging to the Account Center sit under its address, `account/`, so the preferences page is at `account/notifications/`. The notifications page and the bell stay under `notifications/`.
 - The "System Message" row and the Email column, which django-generic-notifications registers by itself, stay on the preferences page for now.
