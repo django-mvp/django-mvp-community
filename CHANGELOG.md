@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.1.2] - 2026-11-09
+
 ### Fixed
 
 - The notification preferences page fits a phone. With the site, email and push channels registered,
