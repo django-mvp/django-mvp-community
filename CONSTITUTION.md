@@ -33,7 +33,9 @@ what might be needed.
 
 No wrapper layers, base classes, or future-proofing indirection without a
 present, concrete second use. Duplication is cheaper than the wrong
-abstraction, and easier to undo.
+abstraction, and easier to undo. A second use also counts as present when
+it is in another approved specification built in the same batch, such as
+several features specified together from one prototype.
 
 ### Article IV — Integration-First
 
@@ -228,4 +230,4 @@ Read at planning and at review; applies to every change.
 
 ---
 
-**Version**: 2.1.0 | **Ratified**: 2026-11-04 | **Last Amended**: 2026-11-04
+**Version**: 2.1.1 | **Ratified**: 2026-11-04 | **Last Amended**: 2026-11-11
