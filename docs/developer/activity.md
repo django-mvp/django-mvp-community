@@ -200,6 +200,7 @@ class CourseDetail(DetailView):
         context = super().get_context_data(**kwargs)
         # The course's own activity, and its lessons' that this person may see.
         lessons = self.object.lessons.visible_to(self.request.user)
+        lesson_ids = [str(pk) for pk in lessons.values_list("pk", flat=True)]
         context["course_activity"] = Action.objects.filter(
             Q(
                 target_content_type=ContentType.objects.get_for_model(Course),
@@ -207,7 +208,7 @@ class CourseDetail(DetailView):
             )
             | Q(
                 target_content_type=ContentType.objects.get_for_model(Lesson),
-                target_object_id__in=[str(pk) for pk in lessons.values_list("pk", flat=True)],
+                target_object_id__in=lesson_ids,
             )
         ).order_by("-timestamp")
         return context
