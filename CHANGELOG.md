@@ -22,6 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Recent activity takes the activities to show as `actions`, a list or a queryset, instead of
+  choosing them itself. Use it for activity that is not public and is filtered for the person
+  looking, or for the activity of several related objects on one page.
+
 ## [v0.1.4] - 2026-11-09
 
 ### Fixed

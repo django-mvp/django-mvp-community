@@ -91,6 +91,9 @@ and find each of them and the following page.
 4b. **Given** a feed page mounted to show the whole site, **When** anyone opens it, **Then** it
    lists the site's public activity, newest first, split into pages. Mounted for one object, it
    lists only activity around that object.
+4c. **Given** recent activity given a list of activities the project chose, **When** the page
+   renders, **Then** it shows those activities in the order given, including ones not recorded as
+   public, with the same limit, link to the full list and empty state, and chooses none itself.
 5. **Given** a feed page or recent activity limited to some kinds of activity, **When** it renders,
    **Then** it lists activity of those kinds only.
 6. **Given** a follow control placed for a person or an object, **When** the page renders, **Then**
@@ -198,7 +201,9 @@ following one person, and see them gone from the list and their new activity gon
   itself.
 - **FR-006**: The feature MUST provide a recent activity component showing the newest public
   activity, newest first, either across the whole site, around one given object (where it acted,
-  was acted on, or was where it happened), or from what the signed-in person follows.
+  was acted on, or was where it happened), or from what the signed-in person follows. A host
+  project MUST be able to give it the activities to show instead, chosen and ordered by the
+  project.
 - **FR-007**: A host project MUST be able to choose how many activities recent activity shows,
   and give it the address of the full list, which it then links to whenever there is more than it
   shows.

@@ -84,7 +84,7 @@ from actstream import action
 action.send(request.user, verb="finished", target=lesson, public=True)
 ```
 
-A feed and recent activity show activity recorded as public, which is the default. Activity recorded with `public=False` appears in no feed. Hiding activity about an object from people who may not see it is your project's decision: record it as not public.
+A feed and recent activity show activity recorded as public, which is the default. Activity recorded with `public=False` appears in no feed, unless you [give recent activity the activities to show](#show-activities-you-chose). Hiding activity about an object from people who may not see it is your project's decision: record it as not public.
 
 Activity whose actor, target or action object has since been deleted is not shown.
 
@@ -172,12 +172,52 @@ Recent activity is the newest few activities in a card, for a dashboard or any p
 
 | Prop | What it does |
 |---|---|
+| `actions` | Shows these activities instead of choosing them. See below. |
 | `object` | Shows the public activity around this person or object. Without it, the whole site's. |
 | `following` | Shows what the signed-in person follows. A signed-out visitor sees the empty state. |
 | `verb` | Shows only activity of this kind. |
 | `limit` | How many of the newest to show. Default 10. |
 | `more_url` | Where the full list lives. When given and there is more than `limit` shows, a link to it appears at the foot. |
 | `more_text` | The link's text. Default "View all activity". |
+
+### Show activities you chose
+
+Recent activity chooses its activities from one of the streams above. When your project has already chosen them, pass them as `actions`: a list or a queryset of django-activity-stream `Action`s, newest first. The component shows them in the order given and chooses none itself, so `object`, `following` and `verb` do nothing. `limit`, `more_url`, `more_text`, the empty state and the row template work as they do for the streams.
+
+This is how to show activity that is not public, filtered for the person looking, or the activity of several related objects on one page:
+
+```python
+from actstream.models import Action
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
+from django.views.generic import DetailView
+
+
+class CourseDetail(DetailView):
+    model = Course
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # The course's own activity, and its lessons' that this person may see.
+        lessons = self.object.lessons.visible_to(self.request.user)
+        context["course_activity"] = Action.objects.filter(
+            Q(
+                target_content_type=ContentType.objects.get_for_model(Course),
+                target_object_id=str(self.object.pk),
+            )
+            | Q(
+                target_content_type=ContentType.objects.get_for_model(Lesson),
+                target_object_id__in=[str(pk) for pk in lessons.values_list("pk", flat=True)],
+            )
+        ).order_by("-timestamp")
+        return context
+```
+
+```django
+<c-mvp_community.activity.recent :actions="course_activity" limit="5" />
+```
+
+What you pass is shown as it is: activity recorded as not public, or about an object since deleted, appears if it is in the list. Only one more than `limit` is read from a queryset.
 
 ## Place a followers list on a page
 

@@ -202,6 +202,74 @@ class TestRecentActivityLimit:
         assert "View all activity" not in render_recent('limit="2"')
 
 
+class TestRecentActivityOfGivenActions:
+    def test_it_shows_the_actions_it_is_given_in_their_order(
+        self, render_recent, person, place_of_work, make_action
+    ) -> None:
+        make_action(person, verb="wandered", target=place_of_work)
+        older = make_action(person, verb="drafted", public=False, minutes_ago=2)
+        newer = make_action(person, verb="revised", public=False, minutes_ago=1)
+
+        markup = render_recent(':actions="chosen"', chosen=[older, newer])
+
+        assert "wandered" not in markup
+        assert markup.index("drafted") < markup.index("revised")
+
+    def test_it_takes_a_queryset(
+        self, render_recent, person, place_of_work, make_action
+    ) -> None:
+        from actstream.models import Action
+
+        make_action(person, verb="drafted", public=False)
+        make_action(person, verb="wandered", target=place_of_work)
+
+        markup = render_recent(
+            ':actions="chosen"', chosen=Action.objects.filter(public=False)
+        )
+
+        assert ("drafted" in markup, "wandered" in markup) == (True, False)
+
+    def test_the_limit_caps_the_rows_and_links_to_the_rest(
+        self, render_recent, person, make_action
+    ) -> None:
+        chosen = [
+            make_action(person, verb=f"did{minutes}", public=False, minutes_ago=minutes)
+            for minutes in range(3)
+        ]
+
+        markup = render_recent(
+            ':actions="chosen" limit="2" more_url="/everything/"', chosen=chosen
+        )
+
+        assert ("did1" in markup, "did2" in markup) == (True, False)
+        assert 'href="/everything/"' in markup
+
+    def test_it_has_no_link_when_nothing_more_is_left(
+        self, render_recent, person, make_action
+    ) -> None:
+        for minutes in range(3):
+            make_action(person, minutes_ago=minutes)
+        chosen = [
+            make_action(person, public=False, minutes_ago=minutes)
+            for minutes in range(2)
+        ]
+
+        markup = render_recent(
+            ':actions="chosen" limit="2" more_url="/everything/"', chosen=chosen
+        )
+
+        assert "/everything/" not in markup
+
+    def test_it_says_so_when_it_is_given_nothing(
+        self, render_recent, person, place_of_work, make_action
+    ) -> None:
+        make_action(person, target=place_of_work)
+
+        assert "Nothing has happened yet" in render_recent(
+            ':actions="chosen"', chosen=[]
+        )
+
+
 class TestRecentActivityEmpty:
     def test_it_says_so_when_there_is_nothing_to_show(self, render_recent) -> None:
         assert "Nothing has happened yet" in render_recent()
