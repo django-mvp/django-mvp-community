@@ -1005,7 +1005,7 @@ wheels = [
 
 [[package]]
 name = "django-mvp"
-version = "0.34.0"
+version = "0.34.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "coloraide" },
@@ -1021,9 +1021,9 @@ dependencies = [
     { name = "mergedeep" },
     { name = "tinycss2" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/25/13/9f8449f67bde3b1d80014bbfa901c7097d18b3db3f5caff89b8525795099/django_mvp-0.34.0.tar.gz", hash = "sha256:2cdf8f849b886e4485b8afd1b8c9fc80a3f5208b20326a1eac421d8bb27be3a6", size = 346480, upload-time = "2026-11-06T12:59:14.691Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/58/11/6009118e502609a164b050ec2f3109073e0514d28c58f8981f7d77f718f4/django_mvp-0.34.2.tar.gz", hash = "sha256:9d12c483eaa4ab2d3a28c173927e09e24352ef0fe1c725eb6fbee39079a05018", size = 348048, upload-time = "2026-11-09T17:52:22.949Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dd/a2/543096f93008e7989b2922eb56afa570af73bb8745a7734ad865e73e8c06/django_mvp-0.34.0-py3-none-any.whl", hash = "sha256:2d23bce09af59c9bd0b4650704402a69e3f14e81e6021baba7326a6aaf45de25", size = 408732, upload-time = "2026-11-06T12:59:13.209Z" },
+    { url = "https://files.pythonhosted.org/packages/64/d2/90ce3e98a41fdabdcc1b66a19989c5bd2a42fda4357152841c5e158f4f41/django_mvp-0.34.2-py3-none-any.whl", hash = "sha256:d9f216e1fcfc6b534eef2add716e6aecdaf86bca2fa5a6e8dd12114addd1fade", size = 410370, upload-time = "2026-11-09T17:52:21.397Z" },
 ]
 
 [[package]]
